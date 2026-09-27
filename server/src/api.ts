@@ -60,6 +60,7 @@ export interface FeaturePatch {
   type?: string;
   doneWhen?: string[];
   steps?: Step[];
+  links?: string[];
 }
 
 /** Turn a patch into board commands: field edits first, then step diffs. */
@@ -70,6 +71,13 @@ function applyPatch(ctx: Ctx, p: Project, key: string, patch: FeaturePatch): Fea
   if (patch.status !== undefined) argv.push("--status", str(patch.status, "status"));
   if (patch.type !== undefined) argv.push("--type", str(patch.type, "type"));
   for (const d of patch.doneWhen ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
+  if (patch.links) {
+    // The patch is the whole list: link what's new, unlink what's gone.
+    const before = feature(p, key).links;
+    const after = patch.links.map((l) => str(l, "link").trim()).filter(Boolean);
+    for (const l of after) if (!before.includes(l)) argv.push("--link", l);
+    for (const l of before) if (!after.includes(l)) argv.push("--unlink", l);
+  }
   if (argv.length > 2) board<Feature>(ctx, p, argv);
 
   if (patch.steps) {
@@ -138,7 +146,7 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
   // POST /api/projects/:id/notes · PATCH|DELETE /api/projects/:id/notes/:id
   if (seg[2] === "notes") {
     const b = (req.body ?? {}) as Record<string, unknown>;
-    const fields = [["--title", "title"], ["--body", "body"], ["--url", "url"], ["--file", "file"]] as const;
+    const fields = [["--title", "title"], ["--body", "body"], ["--considered", "considered"], ["--url", "url"], ["--file", "file"]] as const;
 
     if (seg.length === 3) {
       if (method !== "POST") throw new HttpError(405, "use POST");

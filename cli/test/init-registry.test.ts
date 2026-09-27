@@ -11,7 +11,7 @@ describe("board init", () => {
     expect(r.code).toBe(0);
     expect(r.out).toContain("Created board Looper (LOOP)");
     expect(sb.read()).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       project: { name: "Looper", key: "LOOP" },
       settings: { granularity: "normal" },
       nextNum: 1,

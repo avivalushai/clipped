@@ -26,19 +26,19 @@ const COMMANDS: Record<string, Command> = {
   list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: cmd.listCmd },
   show: { usage: "show LOOP-3", options: {}, run: cmd.show },
   add: {
-    usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
-    options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
+    usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]...`,
+    options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many },
     run: cmd.add,
   },
   update: {
-    usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
-    options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many },
+    usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]...",
+    options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many },
     run: cmd.update,
   },
   step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: cmd.step },
   park: { usage: `park LOOP-3 --stopped "Where we stopped"`, options: { stopped: s, note: s }, run: cmd.park },
-  review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: cmd.review },
-  done: { usage: "done LOOP-3", options: {}, run: cmd.done },
+  review: { usage: `review LOOP-3 [--check "What to check"] [--link url|commit]...`, options: { check: s, note: s, link: many }, run: cmd.review },
+  done: { usage: "done LOOP-3 [--link url|commit]...", options: { link: many }, run: cmd.done },
   merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: cmd.merge },
   rename: { usage: `rename "Loop Station"   # the project, not a card; the key stays`, options: {}, run: cmd.rename },
   ask: {
@@ -48,8 +48,8 @@ const COMMANDS: Record<string, Command> = {
   },
   answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: cmd.answer },
   note: {
-    usage: `note add brainstorm|plan|reference "Title" [--body ...] [--url ...] [--file ...] [--card LOOP-3]...\n         note list [--kind plan] · note show LOOP-N3 · note update LOOP-N3 ... · note link LOOP-N3 LOOP-4 · note rm LOOP-N3`,
-    options: { kind: s, title: s, body: s, url: s, file: s, card: many },
+    usage: `note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LOOP-3]...\n         note list [--kind plan] · note show LOOP-N3 · note update LOOP-N3 ... · note link LOOP-N3 LOOP-4 · note rm LOOP-N3`,
+    options: { kind: s, title: s, body: s, considered: s, url: s, file: s, card: many },
     run: cmd.note,
   },
   delete: { usage: "delete LOOP-3", options: {}, run: cmd.remove },
@@ -81,7 +81,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.5.0");
+    ctx.out("0.6.0");
     return 0;
   }
   const command = COMMANDS[name];

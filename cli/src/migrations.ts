@@ -11,6 +11,12 @@ export type Migration = (board: Record<string, unknown>) => Record<string, unkno
 export const MIGRATIONS: Record<number, Migration> = {
   // v1 → v2: brainstorms, plans and references live beside the cards.
   1: (board) => ({ ...board, nextNoteNum: 1, notes: [] }),
+  // v2 → v3: cards carry proof links; brainstorms keep what was considered.
+  2: (board) => ({
+    ...board,
+    features: ((board.features as Record<string, unknown>[]) ?? []).map((f) => ({ ...f, links: f.links ?? [] })),
+    notes: ((board.notes as Record<string, unknown>[]) ?? []).map((n) => ({ ...n, considered: n.considered ?? "" })),
+  }),
 };
 
 export class MigrationError extends Error {}

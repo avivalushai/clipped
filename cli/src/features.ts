@@ -94,6 +94,7 @@ export function formatDetail(ctx: Ctx, f: Feature): string {
   if (f.note) lines.push(`${label}: ${f.note}`);
   if (f.doneWhen.length) lines.push("Done when:", ...f.doneWhen.map((d) => `  - ${d}`));
   if (total) lines.push(`Steps (${done}/${total}):`, ...f.steps.map((s, i) => `  ${i + 1}. [${s.done ? "x" : " "}] ${s.text}`));
+  if (f.links.length) lines.push("Proof:", ...f.links.map((x) => `  ${x}`));
   if (f.files.length) lines.push("Files:", ...f.files.map((x) => `  ${x}`));
   if (f.log.length) lines.push("Log:", ...f.log.slice(-5).map((e) => `  ${e.at.slice(0, 16).replace("T", " ")} ${e.by}: ${e.text}`));
   return lines.join("\n");

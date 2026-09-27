@@ -18,10 +18,10 @@ board context                                  # what's open, parked, in review
 board list [--status parked] [--type bug|chore|question] [--all] [--json]
 board show LE-3
 board add "Save loops to library" [--status active] [--type bug|chore] [--next "..."] [--step "..."]... [--done-when "..."]... [--file path]...
-board update LE-3 [--title ...] [--next ...] [--status ...] [--type ...] [--file path]... [--unfile path]...
+board update LE-3 [--title ...] [--next ...] [--status ...] [--type ...] [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]...
 board step LE-3 "Wire the Save button" [--done]
 board park LE-3 --stopped "Where we stopped"   # saying where you stopped is required
-board review LE-3 [--check "What to check"]    # review = the user's turn to look
+board review LE-3 [--check "What to check"] [--link url|commit]...   # review = the user's turn to look
 board done LE-3
 board merge LE-15 --into LE-3
 board rename "Clipped"                         # the project's name; the key stays
@@ -29,7 +29,7 @@ board rename "Clipped"                         # the project's name; the key sta
 board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided
 
-board note add brainstorm|plan|reference "Title" [--body ...] [--url ...] [--file ...] [--card LE-3]...
+board note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LE-3]...
 board note list [--kind plan] · note show LE-N3 · note update LE-N3 ... · note link LE-N3 LE-4 · note rm LE-N3
 ```
 
@@ -241,11 +241,14 @@ worth keeping too, add one brainstorm note alongside the cards and link them:
 
 ```
 board note add brainstorm "Should the board hold more than features?" \
-  --body "Ideas and references evaporate in chat too. Settled on: questions are cards, the rest are notes."
+  --body "Ideas and references evaporate in chat too. Settled on: questions are cards, the rest are notes." \
+  --considered "Everything as cards: rejected, a reference has no next step. A wiki: rejected, nobody opens it."
 board note link LE-N4 LE-12 LE-13
 ```
 
-One note for the whole conversation, never one per idea. The body says what was
+One note for the whole conversation, never one per idea. `--considered` keeps the
+options that lost and why, in a line or two — it's what answers "why didn't we just…"
+a month later. The body says what was
 **decided**, not what was said — if you can't write a decision, there wasn't
 one, and the note shouldn't exist.
 
@@ -325,6 +328,10 @@ The note means something different in each: **next step** when active, **where w
 stopped** when parked, **what to check** in review. Write it so the user can pick
 the work up cold, weeks later — name the file or the exact next action, not
 "continue work".
+
+When you send a card to review, give the user something to check it *with*:
+`--link` the commit hash, the PR, or the page where the change shows. The UI turns
+a commit hash into a link to the repo. One or two links, not every commit.
 
 When the user switches topics, close the loop on the current card first:
 - looks finished → `board review`, and ask one short question

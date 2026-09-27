@@ -277,6 +277,7 @@ function formatDetail(ctx, f) {
   if (f.note) lines.push(`${label}: ${f.note}`);
   if (f.doneWhen.length) lines.push("Done when:", ...f.doneWhen.map((d) => `  - ${d}`));
   if (total) lines.push(`Steps (${done2}/${total}):`, ...f.steps.map((s2, i) => `  ${i + 1}. [${s2.done ? "x" : " "}] ${s2.text}`));
+  if (f.links.length) lines.push("Proof:", ...f.links.map((x) => `  ${x}`));
   if (f.files.length) lines.push("Files:", ...f.files.map((x) => `  ${x}`));
   if (f.log.length) lines.push("Log:", ...f.log.slice(-5).map((e) => `  ${e.at.slice(0, 16).replace("T", " ")} ${e.by}: ${e.text}`));
   return lines.join("\n");
@@ -381,6 +382,7 @@ function validateBoard(b) {
     if (!isStr(f.note)) err(`${p}.note`, "must be a string");
     if (!Array.isArray(f.doneWhen) || !f.doneWhen.every(isStr)) err(`${p}.doneWhen`, "must be an array of strings");
     if (!Array.isArray(f.files) || !f.files.every(isStr)) err(`${p}.files`, "must be an array of strings");
+    if (!Array.isArray(f.links) || !f.links.every(isStr)) err(`${p}.links`, "must be an array of strings");
     if (!Array.isArray(f.steps)) err(`${p}.steps`, "must be an array");
     else
       f.steps.forEach((s2, j) => {
@@ -416,7 +418,7 @@ function validateBoard(b) {
     }
     if (!oneOf(NOTE_KINDS, n.kind)) err(`${p}.kind`, `must be one of ${NOTE_KINDS.join(", ")}`);
     if (!isStr(n.title) || !n.title.trim()) err(`${p}.title`, "must be a non-empty string");
-    for (const k of ["body", "url", "file"]) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
+    for (const k of ["body", "considered", "url", "file"]) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
     if (!Array.isArray(n.cards) || !n.cards.every(isStr)) err(`${p}.cards`, "must be an array of card keys");
     else for (const key of n.cards) if (!seen.has(key)) err(`${p}.cards`, `no card ${key} on this board`);
     for (const k of ["createdAt", "updatedAt"])
@@ -440,7 +442,7 @@ var SCHEMA_VERSION, STATUSES, TYPES, NOTE_KINDS, ACTORS, GRANULARITIES, KEY_RE, 
 var init_schema = __esm({
   "cli/src/schema.ts"() {
     "use strict";
-    SCHEMA_VERSION = 2;
+    SCHEMA_VERSION = 3;
     STATUSES = ["idea", "active", "parked", "review", "done"];
     TYPES = ["feature", "bug", "chore", "question"];
     NOTE_KINDS = ["brainstorm", "plan", "reference"];
@@ -517,6 +519,7 @@ function formatNoteDetail(ctx, n) {
   if (n.file) lines.push(`File: ${n.file}`);
   if (n.cards.length) lines.push(`Cards: ${n.cards.join(", ")}`);
   if (n.body) lines.push("", n.body);
+  if (n.considered) lines.push("", "Considered:", n.considered);
   return lines.join("\n");
 }
 var KIND_ORDER, clip2, oneLine;
@@ -559,7 +562,13 @@ var init_migrations = __esm({
     init_schema();
     MIGRATIONS = {
       // v1 → v2: brainstorms, plans and references live beside the cards.
-      1: (board2) => ({ ...board2, nextNoteNum: 1, notes: [] })
+      1: (board2) => ({ ...board2, nextNoteNum: 1, notes: [] }),
+      // v2 → v3: cards carry proof links; brainstorms keep what was considered.
+      2: (board2) => ({
+        ...board2,
+        features: (board2.features ?? []).map((f) => ({ ...f, links: f.links ?? [] })),
+        notes: (board2.notes ?? []).map((n) => ({ ...n, considered: n.considered ?? "" }))
+      })
     };
     MigrationError = class extends Error {
     };
@@ -696,6 +705,18 @@ var init_discover = __esm({
 });
 
 // server/src/projects.ts
+function repoUrl(dir) {
+  let cfg;
+  try {
+    cfg = import_node_fs8.default.readFileSync(`${dir}/.git/config`, "utf8");
+  } catch {
+    return void 0;
+  }
+  const origin = /\[remote "origin"\][^[]*?url\s*=\s*(\S+)/.exec(cfg)?.[1];
+  if (!origin) return void 0;
+  const m = /^(?:git@|ssh:\/\/git@|https:\/\/)(github\.com|gitlab\.com|bitbucket\.org)[:/](.+?)(?:\.git)?\/?$/.exec(origin);
+  return m ? `https://${m[1]}/${m[2]}` : void 0;
+}
 function listProjects(ctx) {
   return readRegistry(ctx).filter((e) => import_node_fs8.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
 }
@@ -721,7 +742,8 @@ function summarize(project2) {
     key: board2.project.key,
     total,
     parked: base.counts.parked,
-    percentComplete: total ? Math.round(100 * base.counts.done / total) : 0
+    percentComplete: total ? Math.round(100 * base.counts.done / total) : 0,
+    repoUrl: repoUrl(project2.path)
   };
 }
 var import_node_crypto2, import_node_fs8, projectId;
@@ -763,6 +785,12 @@ function applyPatch(ctx, p, key, patch) {
   if (patch.status !== void 0) argv.push("--status", str(patch.status, "status"));
   if (patch.type !== void 0) argv.push("--type", str(patch.type, "type"));
   for (const d of patch.doneWhen ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
+  if (patch.links) {
+    const before = feature(p, key).links;
+    const after = patch.links.map((l) => str(l, "link").trim()).filter(Boolean);
+    for (const l of after) if (!before.includes(l)) argv.push("--link", l);
+    for (const l of before) if (!after.includes(l)) argv.push("--unlink", l);
+  }
   if (argv.length > 2) board(ctx, p, argv);
   if (patch.steps) {
     const before = feature(p, key).steps;
@@ -807,7 +835,7 @@ function handleApi(ctx, req) {
   }
   if (seg[2] === "notes") {
     const b = req.body ?? {};
-    const fields = [["--title", "title"], ["--body", "body"], ["--url", "url"], ["--file", "file"]];
+    const fields = [["--title", "title"], ["--body", "body"], ["--considered", "considered"], ["--url", "url"], ["--file", "file"]];
     if (seg.length === 3) {
       if (method !== "POST") throw new HttpError(405, "use POST");
       const argv = ["note", "add", str(b.kind, "kind"), str(b.title, "title")];
@@ -1278,6 +1306,12 @@ function context(ctx, { opts }) {
     lines.push("(mine) = I wrote it and you never checked it \u2014 verify it against the repo before building on it.");
   ctx.out(lines.join("\n"));
 }
+function addLinks(f, xs) {
+  const added = linksOf(xs).filter((x) => !f.links.includes(x));
+  if (!added.length) return [];
+  f.links.push(...added);
+  return [`Proof: ${added.join(", ")}`];
+}
 function add(ctx, { pos, opts }) {
   const title = need(pos, 0, `title (e.g. board add "Export loop as WAV")`).trim();
   if (!title) throw new UserError("title can't be empty");
@@ -1297,6 +1331,7 @@ function add(ctx, { pos, opts }) {
       doneWhen: list(opts, "done-when"),
       steps: list(opts, "step").map((text) => ({ text, done: false })),
       files: projectFiles(loc.root, ctx.cwd, list(opts, "file")),
+      links: linksOf(list(opts, "link")),
       createdAt: at,
       updatedAt: at,
       updatedBy: by,
@@ -1318,8 +1353,9 @@ function update(ctx, { pos, opts }) {
   const note3 = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
-  if (!status && !type && title === void 0 && note3 === void 0 && !doneWhen.length && !list(opts, "file").length && !list(opts, "unfile").length)
-    throw new UserError("nothing to update (use --title, --note, --status, --type or --done-when)");
+  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length);
+  if (!status && !type && title === void 0 && note3 === void 0 && !doneWhen.length && !edits)
+    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file or --link)");
   const f = mutateBoard(requireBoard(ctx), (b) => {
     const f2 = findFeature(b, keyArg);
     const logs = [];
@@ -1345,6 +1381,12 @@ function update(ctx, { pos, opts }) {
     if (dropped.length) {
       f2.files = f2.files.filter((x) => !dropped.includes(x));
       logs.push(`Removed files: ${dropped.join(", ")}`);
+    }
+    logs.push(...addLinks(f2, list(opts, "link")));
+    const unlink = linksOf(list(opts, "unlink")).filter((x) => f2.links.includes(x));
+    if (unlink.length) {
+      f2.links = f2.links.filter((x) => !unlink.includes(x));
+      logs.push(`Removed proof: ${unlink.join(", ")}`);
     }
     if (status && status !== f2.status) {
       setStatus(ctx, f2, status, by, note3);
@@ -1380,6 +1422,7 @@ function statusCommand(to) {
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f2 = findFeature(b, keyArg);
       setStatus(ctx, f2, to, by, note3);
+      for (const l of addLinks(f2, list(opts, "link"))) stamp(ctx, f2, by, l);
       return f2;
     });
     emit(ctx, opts, f, `${f.key} ${f.title} \u2192 ${f.status}`);
@@ -1427,6 +1470,7 @@ function merge(ctx, { pos, opts }) {
     const known = new Set(into2.steps.map((s2) => s2.text.toLowerCase()));
     for (const s2 of from2.steps) if (!known.has(s2.text.toLowerCase())) into2.steps.push(s2);
     into2.files = [.../* @__PURE__ */ new Set([...into2.files, ...from2.files])];
+    into2.links = [.../* @__PURE__ */ new Set([...into2.links, ...from2.links])];
     into2.doneWhen = [.../* @__PURE__ */ new Set([...into2.doneWhen, ...from2.doneWhen])];
     if (!into2.note && from2.note) into2.note = from2.note;
     into2.log = [...into2.log, ...from2.log].sort((x, y) => x.at.localeCompare(y.at));
@@ -1560,6 +1604,7 @@ function noteAdd(ctx, pos, opts) {
       kind,
       title,
       body: str2(opts, "body") ?? "",
+      considered: str2(opts, "considered") ?? "",
       url: str2(opts, "url") ?? "",
       file: noteFile(ctx, loc.root, str2(opts, "file")) ?? "",
       cards: noteCards(b, list(opts, "card")),
@@ -1589,9 +1634,9 @@ function noteUpdate(ctx, pos, opts) {
   const idArg = need(pos, 0, "note id");
   const by = actor(ctx, str2(opts, "by"));
   const loc = requireBoard(ctx);
-  const fields = ["title", "body", "url", "file"];
+  const fields = ["title", "body", "considered", "url", "file"];
   if (!fields.some((f) => str2(opts, f) !== void 0) && !list(opts, "card").length && !str2(opts, "kind"))
-    throw new UserError("nothing to update (use --title, --body, --url, --file, --kind or --card)");
+    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind or --card)");
   const n = mutateBoard(loc, (b) => {
     const n2 = findNote(b, idArg);
     const title = str2(opts, "title")?.trim();
@@ -1599,6 +1644,7 @@ function noteUpdate(ctx, pos, opts) {
     if (title !== void 0) n2.title = title;
     if (str2(opts, "kind") !== void 0) n2.kind = parseKind(str2(opts, "kind"));
     if (str2(opts, "body") !== void 0) n2.body = str2(opts, "body");
+    if (str2(opts, "considered") !== void 0) n2.considered = str2(opts, "considered");
     if (str2(opts, "url") !== void 0) n2.url = str2(opts, "url");
     const file = noteFile(ctx, loc.root, str2(opts, "file"));
     if (file !== void 0) n2.file = file;
@@ -1704,7 +1750,7 @@ function telemetry(ctx, { pos, opts }) {
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous)."
   ]);
 }
-var import_node_child_process, import_node_fs11, import_node_path10, str2, list, STALE_DAYS, park, review, done, wait;
+var import_node_child_process, import_node_fs11, import_node_path10, str2, list, STALE_DAYS, linksOf, park, review, done, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
@@ -1724,6 +1770,7 @@ var init_commands = __esm({
     str2 = (o, k) => typeof o[k] === "string" ? o[k] : void 0;
     list = (o, k) => Array.isArray(o[k]) ? o[k] : [];
     STALE_DAYS = 14;
+    linksOf = (xs) => [...new Set(xs.map((x) => x.trim()).filter(Boolean))];
     park = statusCommand("parked");
     review = statusCommand("review");
     done = statusCommand("done");
@@ -1750,7 +1797,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.5.0");
+    ctx.out("0.6.0");
     return 0;
   }
   const command = COMMANDS[name];
@@ -1802,19 +1849,19 @@ var init_cli = __esm({
       list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: listCmd },
       show: { usage: "show LOOP-3", options: {}, run: show },
       add: {
-        usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
-        options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
+        usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]...`,
+        options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many },
         run: add
       },
       update: {
-        usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
-        options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many },
+        usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]...",
+        options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many },
         run: update
       },
       step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: step },
       park: { usage: `park LOOP-3 --stopped "Where we stopped"`, options: { stopped: s, note: s }, run: park },
-      review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: review },
-      done: { usage: "done LOOP-3", options: {}, run: done },
+      review: { usage: `review LOOP-3 [--check "What to check"] [--link url|commit]...`, options: { check: s, note: s, link: many }, run: review },
+      done: { usage: "done LOOP-3 [--link url|commit]...", options: { link: many }, run: done },
       merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: merge },
       rename: { usage: `rename "Loop Station"   # the project, not a card; the key stays`, options: {}, run: rename },
       ask: {
@@ -1824,9 +1871,9 @@ var init_cli = __esm({
       },
       answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: answer },
       note: {
-        usage: `note add brainstorm|plan|reference "Title" [--body ...] [--url ...] [--file ...] [--card LOOP-3]...
+        usage: `note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LOOP-3]...
          note list [--kind plan] \xB7 note show LOOP-N3 \xB7 note update LOOP-N3 ... \xB7 note link LOOP-N3 LOOP-4 \xB7 note rm LOOP-N3`,
-        options: { kind: s, title: s, body: s, url: s, file: s, card: many },
+        options: { kind: s, title: s, body: s, considered: s, url: s, file: s, card: many },
         run: note2
       },
       delete: { usage: "delete LOOP-3", options: {}, run: remove },

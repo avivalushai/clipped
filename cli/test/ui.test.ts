@@ -71,7 +71,7 @@ describe("the bundled UI", () => {
     expect(script).toContain("function renderNoteDrawer(){");
     expect(script).toContain("if(openNote) return renderNoteDrawer();");
     expect(script).toContain("data-nopen=");
-    for (const field of ["What was decided", "What it produced", "Where it came from"])
+    for (const field of ["What was decided", "What it produced", "Linked notes"])
       expect(script).toContain(field);
     // both directions: a note lists the cards it produced, a card names its source
     expect(script).toContain("const noteCards=n=>n.cards.map(");
@@ -82,7 +82,7 @@ describe("the bundled UI", () => {
   it("stops asking a question the things it only asks a feature", () => {
     expect(script).toContain("const isQ=f.type==='question'");
     // no progress bar and no empty file list on a question
-    expect(script).toContain("${isQ?'':progBar(f)}");
+    expect(script).toContain("${isQ||!f.steps.length?'':progBar(f)}");
     expect(script).toContain("${isQ&&!f.files.length?'':`<div class=\"field\"><span class=\"lbl\">Files touched");
     // and it records an answer rather than deciding
     expect(script).toContain("that marks it Answered, not Decided");

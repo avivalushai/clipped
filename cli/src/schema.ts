@@ -1,6 +1,6 @@
 // board.json schema (SPEC §3) and a dependency-free validator.
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export const STATUSES = ["idea", "active", "parked", "review", "done"] as const;
 export const TYPES = ["feature", "bug", "chore", "question"] as const;
@@ -34,6 +34,8 @@ export interface Feature {
   doneWhen: string[];
   steps: Step[];
   files: string[];
+  /** Where to see the work: a commit, a PR, a page. What "what to check" points at. */
+  links: string[];
   createdAt: string;
   updatedAt: string;
   updatedBy: Actor;
@@ -50,6 +52,8 @@ export interface Note {
   kind: NoteKind;
   title: string;
   body: string;
+  /** A brainstorm's other options — what was weighed and not chosen. */
+  considered: string;
   url: string;
   file: string;
   cards: string[]; // card keys this note produced or is about
@@ -127,6 +131,7 @@ export function validateBoard(b: unknown): string[] {
     if (!isStr(f.note)) err(`${p}.note`, "must be a string");
     if (!Array.isArray(f.doneWhen) || !f.doneWhen.every(isStr)) err(`${p}.doneWhen`, "must be an array of strings");
     if (!Array.isArray(f.files) || !f.files.every(isStr)) err(`${p}.files`, "must be an array of strings");
+    if (!Array.isArray(f.links) || !f.links.every(isStr)) err(`${p}.links`, "must be an array of strings");
 
     if (!Array.isArray(f.steps)) err(`${p}.steps`, "must be an array");
     else
@@ -169,7 +174,7 @@ export function validateBoard(b: unknown): string[] {
 
     if (!oneOf(NOTE_KINDS, n.kind)) err(`${p}.kind`, `must be one of ${NOTE_KINDS.join(", ")}`);
     if (!isStr(n.title) || !n.title.trim()) err(`${p}.title`, "must be a non-empty string");
-    for (const k of ["body", "url", "file"] as const) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
+    for (const k of ["body", "considered", "url", "file"] as const) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
     if (!Array.isArray(n.cards) || !n.cards.every(isStr)) err(`${p}.cards`, "must be an array of card keys");
     else for (const key of n.cards as string[]) if (!seen.has(key)) err(`${p}.cards`, `no card ${key} on this board`);
 

@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 30,
+  "nextNum": 31,
   "features": [
     {
       "key": "LE-1",
@@ -1184,6 +1184,160 @@
           "at": "2026-09-27T13:07:26Z",
           "by": "claude",
           "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-30",
+      "title": "Board UI review fixes: close the loop, honest numbers, faster builders",
+      "type": "feature",
+      "status": "review",
+      "note": "Update the plugin to 0.6.0 first (board format v3). Then open a Your turn card: Looks good / Needs work, proof links, undo toast, ticking rows for bulk Done, blue dots for Claude's changes, 'What was considered' on a brainstorm",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "A1 Done / Needs work on Your turn cards",
+          "done": true
+        },
+        {
+          "text": "A2 Drawer edits save themselves",
+          "done": true
+        },
+        {
+          "text": "A4 Proof links on cards (schema v3)",
+          "done": true
+        },
+        {
+          "text": "A5 Undo toast after a status change",
+          "done": true
+        },
+        {
+          "text": "B1 Progress counts only Done",
+          "done": true
+        },
+        {
+          "text": "B2 Card bar only from steps",
+          "done": true
+        },
+        {
+          "text": "C3 New-since-last-visit dots",
+          "done": true
+        },
+        {
+          "text": "D3 Brainstorms keep what was considered (schema v3)",
+          "done": true
+        },
+        {
+          "text": "D4 Card shows its linked notes",
+          "done": true
+        },
+        {
+          "text": "E1 Copy prompt on each row",
+          "done": true
+        },
+        {
+          "text": "E4 Select several cards: done, move, delete",
+          "done": true
+        },
+        {
+          "text": "F1 One word everywhere",
+          "done": true
+        },
+        {
+          "text": "F2 Timeline that means something",
+          "done": true
+        },
+        {
+          "text": "F3 ~ instead of /Users path",
+          "done": true
+        }
+      ],
+      "files": [
+        "cli/test/proof-considered.test.ts"
+      ],
+      "createdAt": "2026-09-27T15:54:36Z",
+      "updatedAt": "2026-09-27T16:07:25Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T15:54:36Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: A1 Done / Needs work on Your turn cards"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: A2 Drawer edits save themselves"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: A4 Proof links on cards (schema v3)"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: A5 Undo toast after a status change"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: B1 Progress counts only Done"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: B2 Card bar only from steps"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: C3 New-since-last-visit dots"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: D3 Brainstorms keep what was considered (schema v3)"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: D4 Card shows its linked notes"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: E1 Copy prompt on each row"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: E4 Select several cards: done, move, delete"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: F1 One word everywhere"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: F2 Timeline that means something"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Step done: F3 ~ instead of /Users path"
+        },
+        {
+          "at": "2026-09-27T16:07:25Z",
+          "by": "claude",
+          "text": "Moved to review — Update the plugin to 0.6.0 first (board format v3). Then open a Your turn card: Looks good / Needs work, proof links, undo toast, ticking rows for bulk Done, blue dots for Claude's changes, 'What was considered' on a brainstorm"
         }
       ]
     }

@@ -368,6 +368,53 @@ details.cols .menu input{accent-color:var(--accent)}
   h1{font-size:25px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- review fixes ---------- */
+/* a card with no steps has nothing to measure */
+.prog.none{min-width:0}
+/* in the table the bar fits its column instead of spilling into Steps */
+.grid .prog{min-width:0}
+.prog.none .pct{width:auto;text-align:left;color:var(--faint)}
+/* new since you looked */
+.newdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:middle;flex:none}
+.newbits{display:inline-flex;align-items:baseline;gap:10px}
+.fresh{border:0;background:none;padding:0;cursor:pointer;color:var(--accent);display:inline-flex;align-items:baseline;gap:6px}
+.fresh b{color:var(--accent)}
+.fresh:hover{text-decoration:underline}
+/* selection */
+.keycell{white-space:nowrap}
+.rowsel{width:14px;height:14px;margin:0 8px 0 0;vertical-align:middle;accent-color:var(--accent);cursor:pointer}
+.grid tr:not(:hover) td.keycell .rowsel:not(:checked){opacity:.35}
+.bulkbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:10px}
+.bulkbar b{font-weight:600;margin-right:4px}
+.bulkbar select{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;margin-left:6px}
+/* copy prompt and linked notes, on the row */
+.rowcopy{opacity:0;border:0;background:none;color:var(--muted);padding:3px 5px;border-radius:5px;vertical-align:middle;margin-left:2px;line-height:0}
+.grid tr:hover .rowcopy,.card:hover .rowcopy,.rowcopy:focus-visible{opacity:.75}
+.rowcopy:hover{opacity:1;color:var(--accent);background:var(--sunk)}
+.card .meta .rowcopy{margin-left:auto}
+.rownotes{margin-left:6px;vertical-align:middle}
+/* Your turn: the verdict */
+.verdict{border:1px solid color-mix(in srgb,var(--s-review) 45%,var(--line));background:color-mix(in srgb,var(--s-review) 8%,var(--surface));border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.verdict .vq{display:flex;flex-direction:column;gap:2px}
+.verdict .vq span{font-size:13px;color:var(--muted)}
+.verdict .vbtns{display:flex;gap:8px;flex-wrap:wrap}
+.verdict .vback{display:flex;flex-direction:column;gap:6px}
+.verdict textarea{border:1px solid var(--line);background:var(--ground);border-radius:8px;padding:8px 10px;resize:vertical;min-height:64px}
+.r{display:flex;gap:6px;justify-content:flex-end}
+/* proof links */
+.proof{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.proof li{display:flex;align-items:center;gap:6px;min-width:0}
+.proof a.ext{flex:1;min-width:0}
+/* autosave */
+.saved{font-size:12px;color:var(--faint);align-self:center;transition:color .2s ease}
+.saved.on{color:var(--s-done)}
+/* toast with undo */
+.toast{display:flex;align-items:center;gap:12px}
+.toast button{border:0;background:none;color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:0}
+/* timeline: time spent waiting on you */
+.tl-idle.wait{border-top-color:var(--s-review)}
+.tl-idle.wait span{color:var(--s-review)}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -468,17 +515,17 @@ async function api(path,opts){
 /* board.json card -> the shape the views already speak */
 const toFeature=(pid,c)=>({id:pid+':'+c.key,key:c.key,num:+c.key.slice(c.key.lastIndexOf('-')+1),project:pid,
   title:c.title,type:c.type,status:c.status,note:c.note,doneWhen:c.doneWhen||[],
-  steps:(c.steps||[]).map(x=>({...x})),files:(c.files||[]).slice(),
+  steps:(c.steps||[]).map(x=>({...x})),files:(c.files||[]).slice(),links:(c.links||[]).slice(),
   createdAt:Date.parse(c.createdAt),updatedAt:Date.parse(c.updatedAt),by:c.updatedBy==='claude'?'claude':'you',
   log:(c.log||[]).map(l=>({at:Date.parse(l.at),by:l.by==='claude'?'claude':'you',text:l.text}))});
 
 const toNote=(pid,n)=>({id:pid+':'+n.id,nid:n.id,project:pid,kind:n.kind,title:n.title,
-  body:n.body||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
+  body:n.body||'',considered:n.considered||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
   createdAt:Date.parse(n.createdAt),updatedAt:Date.parse(n.updatedAt),by:n.updatedBy==='claude'?'claude':'you'});
 
 async function loadAll(){
   const ps=await api('/api/projects');
-  S.projects=ps.map((p,i)=>({id:p.id,key:p.key,name:p.name,path:p.path,color:PCOLORS[i%PCOLORS.length],error:p.error}));
+  S.projects=ps.map((p,i)=>({id:p.id,key:p.key,name:p.name,path:p.path,repoUrl:p.repoUrl||'',color:PCOLORS[i%PCOLORS.length],error:p.error}));
   const boards=await Promise.all(ps.map(p=>p.error?Promise.resolve(null):api('/api/projects/'+p.id+'/board').catch(()=>null)));
   S.features=[]; S.notes=[];
   boards.forEach((b,i)=>{ if(!b) return;
@@ -556,6 +603,7 @@ let live=false, dirty=false, pendingPark=null;
 let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files'],hideDone:false,collapsed:['idea']};
 try{Object.assign(P,JSON.parse(localStorage.getItem(KEY+'.prefs'))||{})}catch(e){}
 const savePrefs=()=>{try{localStorage.setItem(KEY+'.prefs',JSON.stringify(P))}catch(e){}};
+let sel=new Set();   /* cards ticked for a bulk action */
 let view='home', query='', openId=null, sort={k:'updated',dir:1}, filter='all', addingProject=false, editCell=null;
 /* A note opens its own drawer: same shell, different questions answered. */
 let openNote=null;
@@ -571,21 +619,46 @@ const pn=id=>S.notes.filter(n=>n.project===id);
 const proj=id=>S.projects.find(p=>p.id===id);
 const fkey=f=>f.key;
 const pbadge=(p,sm)=>`<span class="pkey ${sm?'sm':''}" style="background:${p.color}">${esc(p.key.slice(0,2))}</span>`;
+/* A card's bar is its checklist and nothing else. With no steps there is nothing
+   to measure, so there is no bar — a guessed 80% looked like a fact. */
 function progress(f){
   if(f.status==='done') return 100;
   if(f.steps.length) return Math.round(100*f.steps.filter(s=>s.done).length/f.steps.length);
-  return {idea:0,active:20,parked:20,review:80}[f.status]||0;
+  return null;
 }
 /* Ideas are not work yet: counting them at 0% would make a good brainstorm
    look like the project went backwards. */
 const committed=fs=>fs.filter(f=>f.status!=='idea');
-const avgProg=fs=>{const c=committed(fs);return c.length?Math.round(c.reduce((a,f)=>a+progress(f),0)/c.length):0};
-const progBar=f=>{const pg=progress(f);return `<div class="prog"><div class="track"><div class="fill" style="width:${pg}%;background:${color(f.status)}"></div></div><span class="pct">${pg}%</span></div>`};
+/* Done out of everything that isn't an idea. Waiting on you is not done. */
+const doneShare=fs=>{const c=committed(fs);return c.length?Math.round(100*c.filter(f=>f.status==='done').length/c.length):0};
+const progBar=f=>{const pg=progress(f);if(pg===null) return `<div class="prog none"><span class="pct" title="No steps to count">—</span></div>`;
+  return `<div class="prog"><div class="track"><div class="fill" style="width:${pg}%;background:${color(f.status)}"></div></div><span class="pct">${pg}%</span></div>`};
+/* Home folders read as ~ — the path is for recognising, not typing. */
+const tilde=p=>String(p||'').replace(/^\/(Users|home)\/[^/]+/,'~');
+
+/* ---------- new since you last looked ---------- */
+/* Remembered in this browser only: when you started looking, and when you last
+   opened each card. A card Claude changed after that gets a dot until you open it. */
+const prefsSeenKey=KEY+'.prefs.seen';
+let SEEN={since:Date.now(),cards:{}};
+try{const v=JSON.parse(localStorage.getItem(prefsSeenKey));if(v&&typeof v.since==='number'&&v.cards)SEEN=v;else localStorage.setItem(prefsSeenKey,JSON.stringify(SEEN))}catch(e){}
+const saveSeen=()=>{try{localStorage.setItem(prefsSeenKey,JSON.stringify(SEEN))}catch(e){}};
+const isNew=f=>f.by==='claude'&&f.updatedAt>Math.max(SEEN.since,SEEN.cards[f.id]||0);
+function markSeen(f){ if(!isNew(f)) return; SEEN.cards[f.id]=Date.now(); saveSeen() }
+function markAllSeen(){ SEEN={since:Date.now(),cards:{}}; saveSeen() }
+const newDot=f=>isNew(f)?`<span class="newdot" title="Changed by Claude since you last opened it"></span>`:'';
 /* Parked and waiting both mean "nothing has happened here", and after a few
    days that is the most useful thing the row can tell you. */
 const stale=f=>(f.status==='parked'||f.status==='review')&&Date.now()-f.updatedAt>3*D;
 const sinceLabel=f=>f.status==='parked'?`idle ${ago(f.updatedAt)}`:f.status==='review'?`waiting ${ago(f.updatedAt)}`:`updated ${ago(f.updatedAt)} ago`;
-function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1900)}
+/* A toast can carry an Undo. It stays longer then, long enough to reach for it. */
+function toast(t,undo){
+  document.querySelectorAll('.toast').forEach(x=>x.remove());
+  const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');
+  const span=document.createElement('span');span.textContent=t;el.appendChild(span);
+  if(undo){const b=document.createElement('button');b.textContent='Undo';b.onclick=()=>{el.remove();undo()};el.appendChild(b)}
+  document.body.appendChild(el);setTimeout(()=>el.remove(),undo?6000:1900);
+}
 
 /* ---------- left menu ---------- */
 function renderNav(){
@@ -596,7 +669,7 @@ function renderNav(){
   <div class="nav-label" style="margin-top:14px"><span>Projects · ${S.projects.length}</span><button id="addProjBtn" title="Add project" aria-label="Add project">+</button></div>`;
   if(false) h+=`<form class="newproj" id="newProjForm"><input id="npName" placeholder="Project name" aria-label="Project name" required><input id="npPath" class="mono" placeholder="~/code/my-app" aria-label="Project folder"><div class="r"><button type="button" class="btn sm ghost" id="npCancel">Cancel</button><button class="btn sm primary">Add</button></div></form>`;
   for(const p of S.projects){
-    const pk=pf(p.id).filter(f=>f.status==='parked').length, pr=avgProg(pf(p.id));
+    const pk=pf(p.id).filter(f=>f.status==='parked').length, pr=doneShare(pf(p.id));
     h+=`<button class="nav-item ${pk?'has-parked':''}" data-go="${p.id}" aria-current="${view===p.id}" title="${esc(p.name)}">
       ${pbadge(p)}<span class="name">${esc(p.name)}</span>${pk?`<span class="pip" title="Parked">${pk}</span>`:'<span></span>'}
       <span class="mini" aria-hidden="true"><span style="width:${pr}%"></span></span></button>`;
@@ -624,7 +697,7 @@ function tabCards(){
 function scopeFeatures(){
   const q=query.toLowerCase();
   return tabCards().filter(f=>
-    (filter==='all'||f.status===filter)&&(!P.hideDone||f.status!=='done'||filter==='done')&&
+    (filter==='all'||f.status===filter||(filter==='new'&&isNew(f)))&&(!P.hideDone||f.status!=='done'||filter==='done')&&
     (!q||f.title.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q)||fkey(f).toLowerCase().includes(q)));
 }
 function scopeNotes(){
@@ -660,7 +733,7 @@ function renderPage(){
   const parked=S.features.filter(f=>(!p||f.project===p.id)&&f.type!=='question'&&f.status==='parked').length;
   const noun=P.tab==='questions'?'question':'card';
   let h=`<div class="head"><div>
-      ${p?`<div class="crumb">${pbadge(p)}<span class="mono">${esc(p.path)}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>`
+      ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>`
          :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>`}
     </div>
     <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search ${esc(TAB().label.toLowerCase())}" value="${esc(query)}" aria-label="Search ${esc(TAB().label.toLowerCase())}" title="Press / to search">
@@ -671,7 +744,7 @@ function renderPage(){
   if(isNoteTab()) return h;
   h+=`
   <div class="stats">
-    <div class="bigbar"><div class="statrow"><div class="stat"><b>${avgProg(all)}%</b> complete</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
+    <div class="bigbar"><div class="statrow"><div class="stat" title="Done, out of everything that isn\u2019t an idea"><b>${doneShare(all)}%</b> ${P.tab==='questions'?'decided':'done'}</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}${(()=>{const n=all.filter(isNew).length;return n?`<span class="newbits"><button class="stat fresh" data-filter="new" title="Show only these"><span class="newdot"></span><b>${n}</b> new since you looked</button><button class="linkbtn" id="seenAll">Mark all seen</button></span>`:''})()}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
     ${STATUSES.map(s=>`<div class="stat"><span class="dot" style="background:${color(s.id)}"></span><b>${c(s.id)}</b>${sl(s.id).toLowerCase()}</div>`).join('')}
   </div>
   <div class="chips" role="group" aria-label="Filter by status">
@@ -679,7 +752,7 @@ function renderPage(){
     ${['parked','active','review','idea','done'].map(s=>`<button data-filter="${s}" aria-pressed="${filter===s}"><span class="dot" style="background:${color(s)}"></span>${sl(s)} <span class="c">${c(s)}</span></button>`).join('')}
   </div>
   <div class="viewbar">
-    <div class="tabs" role="group" aria-label="View">${['table','board','timeline'].map(m=>`<button data-mode="${m}" aria-pressed="${P.mode===m}">${ICON[m]}${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>
+    <div class="tabs" role="group" aria-label="View">${(P.tab==='questions'?['table','board']:['table','board','timeline']).map(m=>`<button data-mode="${m}" aria-pressed="${P.mode===m}">${ICON[m]}${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>
     <div class="opts">
       ${P.mode!=='board'?`<span class="opt">Group by<select id="groupSel" aria-label="Group by">
         <option value="status" ${P.group==='status'?'selected':''}>Status</option>
@@ -695,6 +768,7 @@ function renderPage(){
     </div>
   </div>`;
   const fs=scopeFeatures();
+  if(P.tab==='questions'&&P.mode==='timeline') P.mode='table';   /* a question has no duration worth drawing */
   h+= P.mode==='table'?renderTable(fs,isHome): P.mode==='board'?renderBoard(fs,isHome): renderTimeline(fs,isHome);
   return h;
 }
@@ -707,7 +781,7 @@ function groupsOf(fs,isHome){
   return ['parked','active','review','idea','done'].map(s=>({id:s,head:`<span class="dot" style="background:${color(s)}"></span> ${sl(s)}`,items:fs.filter(f=>f.status===s)})).filter(x=>x.items.length);
 }
 function sortFs(fs){
-  const val={key:f=>fkey(f),project:f=>proj(f.project).name,title:f=>f.title.toLowerCase(),status:f=>GORDER[f.status],progress:progress,updated:f=>-f.updatedAt};
+  const val={key:f=>fkey(f),project:f=>proj(f.project).name,title:f=>f.title.toLowerCase(),status:f=>GORDER[f.status],progress:f=>progress(f)??-1,updated:f=>-f.updatedAt};
   const v=val[sort.k]||val.updated;
   return [...fs].sort((a,b)=>{const x=v(a),y=v(b);return (x>y?1:x<y?-1:(b.updatedAt-a.updatedAt))*sort.dir});
 }
@@ -767,6 +841,7 @@ function renderNotesPage(isHome){
 
 /* ---------- table ---------- */
 /* A row is for opening. A cell becomes a field only after its pencil is clicked. */
+const COPYICON=`<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="8.5" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
 const PENCIL=`<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M11.5 1.6 14.4 4.5 5.9 13H3v-2.9zM12.9.2a1 1 0 0 1 1.4 0l1.5 1.5a1 1 0 0 1 0 1.4l-1 1L11.9 1.2z"/></svg>`;
 function editableCell({id,k,attr,value,ph,cls,label,shown}){
   if(editCell===id+'|'+k) return `<td class="vcell editing ${cls}"><input class="cell-in ${cls}" ${attr}="${k}" data-id="${id}" value="${esc(value)}" placeholder="${esc(ph)}" aria-label="${esc(label)}"></td>`;
@@ -775,9 +850,15 @@ function editableCell({id,k,attr,value,ph,cls,label,shown}){
 function cell(c,f){
   const pr=proj(f.project);
   switch(c.id){
-    case 'key': return `<td><button class="keybtn" data-open="${f.id}" title="Open details">${fkey(f)}</button></td>`;
+    case 'key': return `<td class="keycell"><input type="checkbox" class="rowsel" data-sel="${f.id}" ${sel.has(f.id)?'checked':''} aria-label="Select ${fkey(f)}">${newDot(f)}<button class="keybtn" data-open="${f.id}" title="Open details">${fkey(f)}</button></td>`;
     case 'project': return `<td><span class="projcell">${pbadge(pr,true)}${esc(pr.name)}</span></td>`;
-    case 'title': return editableCell({id:f.id,k:'title',attr:'data-edit',value:f.title,ph:'',cls:'title',label:f.type==='question'?'Question':'Title'});
+    case 'title': {
+      const td=editableCell({id:f.id,k:'title',attr:'data-edit',value:f.title,ph:'',cls:'title',label:f.type==='question'?'Question':'Title'});
+      const notes=S.notes.filter(n=>n.project===f.project&&n.cards.includes(f.key));
+      const extra=(notes.length?`<span class="rownotes">${notes.map(n=>`<button class="clink" data-nopen="${n.id}" title="${esc(KINDL[n.kind]+': '+n.title)}">${esc(n.nid.slice(n.nid.indexOf('-')+1))}</button>`).join('')}</span>`:'')
+        +(f.status!=='done'?`<button class="rowcopy" data-copy="${f.id}" title="Copy the prompt that picks this up in Claude" aria-label="Copy prompt for ${fkey(f)}">${COPYICON}</button>`:'');
+      return extra?td.replace(/<\/td>$/,extra+'</td>'):td;
+    }
     case 'status': return `<td><span class="sel ${f.status}"><select class="status ${f.status}" data-edit="status" data-id="${f.id}" aria-label="Status">${STATUSES.map(s=>`<option value="${s.id}" ${s.id===f.status?'selected':''}>${sl(s.id)}</option>`).join('')}</select></span></td>`;
     case 'note': {
       const ph=f.status==='parked'?'Where did you stop?':f.status==='done'?'':noteLabel(f);
@@ -803,24 +884,55 @@ function composerRow(cols,isHome){
     else break;
   }
   const rest=cols.length-i;
-  if(rest>0) out+=`<td colspan="${rest}"><button class="btn sm primary" id="cAdd">Add card</button></td>`;
+  if(rest>0) out+=`<td colspan="${rest}"><button class="btn sm primary" id="cAdd">Add ${P.tab==='questions'?'question':'card'}</button></td>`;
   if(isHome&&!cols.some(c=>c.id==='project')) out=out.replace('<td class="key">+ New</td>',`<td class="key">+ New</td>`);
   return `<tr class="composer">${out}</tr>`;
 }
 function renderTable(fs,isHome){
   const cols=visibleCols(isHome);
-  const th=c=>`<th style="${c.flex?`min-width:${c.w}px`:`width:${c.w}px`}">${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
+  const th=c=>`<th style="${c.flex?`min-width:${c.w}px`:`width:${c.w}px`}">${c.id==='key'?`<input type="checkbox" class="rowsel" id="selAll" aria-label="Select all shown" ${fs.length&&fs.every(f=>sel.has(f.id))?'checked':''}>`:''}${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
   let rows=composerRow(cols,isHome);
   for(const g of groupsOf(sortFs(fs),isHome)){
     const shut=g.id&&(P.collapsed||[]).includes(g.id);
-    if(g.id) rows+=`<tr class="grp"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}">${shut?'▸':'▾'}</button>${g.head} · ${g.items.length}${g.id==='idea'?'':` <span class="mono" style="margin-left:8px;font-weight:400">${avgProg(g.items)}% avg</span>`}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
+    if(g.id) rows+=`<tr class="grp"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}">${shut?'▸':'▾'}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
     if(shut) continue;
     for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
   }
   if(!fs.length) rows+=`<tr><td colspan="${cols.length}" class="empty">Nothing here yet. Add one in the row above.</td></tr>`;
   const minW=cols.reduce((a,c)=>a+c.w,0);
-  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  return `${bulkBar()}<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint">Click a row to open its card. Hover a title or note and click its pencil to edit it here.</p>`;
+}
+
+/* ---------- bulk actions ---------- */
+/* Parked isn't offered: parking needs a line per card saying where it stopped. */
+function bulkBar(){
+  if(!sel.size) return '';
+  const n=sel.size, targets=STATUSES.filter(s=>s.id!=='parked');
+  return `<div class="bulkbar" role="region" aria-label="Selected cards"><b>${n} selected</b>
+    <button class="btn sm primary" id="bulkDone">Mark done</button>
+    <span class="opt">Move to<select id="bulkMove" aria-label="Move selected to"><option value="">\u2026</option>${targets.map(s=>`<option value="${s.id}">${sl(s.id)}</option>`).join('')}</select></span>
+    <button class="btn sm danger" id="bulkDel">Delete</button>
+    <button class="linkbtn" id="bulkClear">Clear</button></div>`;
+}
+async function bulkStatus(status){
+  const cards=[...sel].map(id=>S.features.find(f=>f.id===id)).filter(f=>f&&f.status!==status);
+  if(!cards.length){sel.clear();render();return}
+  const before=cards.map(f=>({id:f.id,status:f.status,note:f.note}));
+  let ok=0;
+  for(const f of cards){ try{ replaceCard(f.project,await api('/api/projects/'+f.project+'/features/'+f.key,{method:'PATCH',body:JSON.stringify({status})})); ok++ }catch(e){ toast(fkey(f)+': '+e.message) } }
+  sel.clear(); render();
+  toast(`${ok} card${ok===1?'':'s'} \u2192 ${sl(status)}`,async()=>{
+    for(const b of before){const f=S.features.find(x=>x.id===b.id); if(f) try{ replaceCard(f.project,await api('/api/projects/'+f.project+'/features/'+f.key,{method:'PATCH',body:JSON.stringify({status:b.status,note:b.note})})) }catch(e){} }
+    render(); toast('Put back');
+  });
+}
+async function bulkDelete(){
+  const cards=[...sel].map(id=>S.features.find(f=>f.id===id)).filter(Boolean);
+  if(!cards.length) return;
+  if(!confirm(`Delete ${cards.length} card${cards.length===1?'':'s'}? ${cards.map(fkey).join(', ')}\n\nThis can\u2019t be undone. Merging a card into another keeps its history.`)) return;
+  let ok=0; for(const f of cards) if(await deleteCard(f)) ok++;
+  sel.clear(); render(); toast(`Deleted ${ok} card${ok===1?'':'s'}`);
 }
 
 /* ---------- board ---------- */
@@ -839,8 +951,8 @@ function renderBoard(fs,isHome){
     for(const f of cs){
       h+=`<div class="card ${f.status}" draggable="true" data-open="${f.id}" data-id="${f.id}" tabindex="0" role="button" aria-label="${esc(f.title)}">
         <div class="t">${esc(f.title)}</div>${f.note&&['parked','active','review'].includes(f.status)?`<div class="note">${esc(f.note)}</div>`:''}
-        ${progBar(f)}
-        <div class="meta">${isHome?pbadge(proj(f.project),true):''}<span>${fkey(f)}</span><span class="age ${stale(f)?'stale':''}" title="${esc(sinceLabel(f))}">${ago(f.updatedAt)}</span><span class="by">${who(f.by)}</span></div></div>`;
+        ${progress(f)===null?'':progBar(f)}
+        <div class="meta">${isHome?pbadge(proj(f.project),true):''}${newDot(f)}<span>${fkey(f)}</span><span class="age ${stale(f)?'stale':''}" title="${esc(sinceLabel(f))}">${ago(f.updatedAt)}</span><span class="by">${who(f.by)}</span>${f.status!=='done'?`<button class="rowcopy" data-copy="${f.id}" title="Copy the prompt that picks this up in Claude" aria-label="Copy prompt for ${fkey(f)}">${COPYICON}</button>`:''}</div></div>`;
     }
     h+='</div>';
   }
@@ -864,15 +976,17 @@ function renderTimeline(fs,isHome){
         const e=f.status==='active'?x(Date.now()):x(f.updatedAt);
         marks=`<span class="tl-bar" style="left:${s}%;width:${Math.max(0.6,e-s)}%;background:${color(f.status)}" title="${sl(f.status)}"></span>`;
         if(f.status==='parked'){const n=x(Date.now());marks+=`<span class="tl-idle" style="left:${e}%;width:${Math.max(0,n-e)}%"><span>idle ${ago(f.updatedAt)}</span></span>`}
+        /* Your turn: the useful length is how long it has waited on you. */
+        if(f.status==='review'){const n=x(Date.now());marks+=`<span class="tl-idle wait" style="left:${e}%;width:${Math.max(0,n-e)}%"><span>waiting ${ago(f.updatedAt)}</span></span>`}
       }
       body+=`<div class="tl-lbl" data-open="${f.id}"><span class="k">${fkey(f)}</span><span class="t">${esc(f.title)}</span></div>
         <div class="tl-row" data-open="${f.id}" style="--day:${100/days}%">${marks}<span class="tl-now" style="left:${x(Date.now())}%"></span></div>`;
     }
   }
-  if(!fs.length) body=`<div class="empty" style="grid-column:1/-1">No features match.</div>`;
-  return `<div class="tl-wrap"><div class="tl"><div class="tl-h"><div style="border-right:1px solid var(--line);padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:600">Feature</div><div class="tl-days">${hd}</div></div>${body}</div></div>
-  <div class="legend">${STATUSES.filter(s=>s.id!=='idea').map(s=>`<span><i style="background:${color(s.id)}"></i>${s.label}</span>`).join('')}<span><i style="border:2px dashed var(--s-parked);height:0;background:none"></i>Idle since parked</span><span><i style="border:2px solid var(--s-idea);border-radius:50%;width:10px;height:10px;background:none"></i>Idea added</span></div>
-  <p class="hint">Last 14 days. Bars run from when a feature was opened to its last update; active work runs to now.</p>`;
+  if(!fs.length) body=`<div class="empty" style="grid-column:1/-1">Nothing matches.</div>`;
+  return `<div class="tl-wrap"><div class="tl"><div class="tl-h"><div style="border-right:1px solid var(--line);padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:600">Card</div><div class="tl-days">${hd}</div></div>${body}</div></div>
+  <div class="legend">${STATUSES.filter(s=>s.id!=='idea').map(s=>`<span><i style="background:${color(s.id)}"></i>${s.label}</span>`).join('')}<span><i style="border:2px dashed var(--s-parked);height:0;background:none"></i>Idle since parked</span><span><i style="border:2px dashed var(--s-review);height:0;background:none"></i>Waiting on you</span><span><i style="border:2px solid var(--s-idea);border-radius:50%;width:10px;height:10px;background:none"></i>Idea added</span></div>
+  <p class="hint">Last 14 days. Bars run from when a card was opened to its last update; active work runs to now, and a dashed line is time spent waiting.</p>`;
 }
 
 /* ---------- render & bind ---------- */
@@ -887,16 +1001,19 @@ function render(){
     if(n&&idle){n.focus();n.setSelectionRange(n.value.length,n.value.length)}
   }
 }
-async function setStatus(id,status){
-  const f=S.features.find(x=>x.id===id); if(!f||f.status===status) return;
+async function setStatus(id,status,extra){
+  const f=S.features.find(x=>x.id===id); if(!f||f.status===status) return false;
   // Parking needs a note — the CLI refuses without one, so collect it before saving.
-  if(status==='parked'&&!f.note.trim()){
+  if(status==='parked'&&!f.note.trim()&&!extra?.note){
     pendingPark=f.id; openId=f.id; render();
     setTimeout(()=>{const n=$('noteIn'); if(n) n.focus()},30);
-    toast('Say where you stopped, then Save');
-    return;
+    toast('Say where you stopped, then press Park');
+    return false;
   }
-  await saveCard(f,{status});
+  const before={status:f.status,note:f.note};
+  const ok=await saveCard(f,{status,...(extra||{})});
+  if(ok) toast(`${fkey(f)} \u2192 ${sl(status)}`,()=>{const g=S.features.find(x=>x.id===id);if(g) saveCard(g,before).then(k=>k&&toast(`${fkey(f)} back to ${sl(before.status)}`))});
+  return ok;
 }
 function openDialog(title,text){$('dlgTitle').textContent=title;$('dlgPre').textContent=text;$('dlg').showModal()}
 async function addFeature(projectId,title,status,note){
@@ -962,7 +1079,7 @@ function bindPencils(){
 function bindTabs(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
     if(P.tab===b.dataset.tab) return;
-    P.tab=b.dataset.tab; filter='all'; openId=null; openNote=null; sort={k:'updated',dir:1}; savePrefs(); render();
+    P.tab=b.dataset.tab; filter='all'; openId=null; openNote=null; sel.clear(); sort={k:'updated',dir:1}; savePrefs(); render();
   });
 }
 
@@ -982,7 +1099,7 @@ function bindPage(){
     });
   }
   if(p&&$('showJson')) $('showJson').onclick=()=>api('/api/projects/'+p.id+'/board')
-    .then(b=>openDialog(p.path+'/.board/board.json',JSON.stringify(b,null,2)))
+    .then(b=>openDialog(tilde(p.path)+'/.board/board.json',JSON.stringify(b,null,2)))
     .catch(e=>toast(e.message));
   if(isNoteTab()) return bindNotes(p,isHome);
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{P.mode=b.dataset.mode;savePrefs();render()});
@@ -1015,13 +1132,21 @@ function bindPage(){
     el.addEventListener('keydown',e=>{if(e.key==='Enter'&&el.tagName==='INPUT'){e.preventDefault();el.blur()}if(e.key==='Escape'){el.value=S.features.find(x=>x.id===el.dataset.id)[el.dataset.edit];el.blur()}});
     el.addEventListener('change',()=>{
       const f=S.features.find(x=>x.id===el.dataset.id); if(!f) return; const k=el.dataset.edit, v=el.value.trim();
-      if(k==='status'){setStatus(f.id,v).then(()=>toast(fkey(f)+' → '+sl(v)));return}
+      if(k==='status'){setStatus(f.id,v);return}
       if(k==='title'&&!v){el.value=f.title;return}
       if(v===f[k]){editCell=null;render();return}
       editCell=null;
       saveCard(f,{[k]:v}).then(ok=>ok&&toast('Saved'));
     });
   });
+  // selection and bulk actions
+  document.querySelectorAll('input.rowsel[data-sel]').forEach(c=>c.onchange=()=>{c.checked?sel.add(c.dataset.sel):sel.delete(c.dataset.sel);render()});
+  if($('selAll')) $('selAll').onchange=e=>{const ids=scopeFeatures().map(f=>f.id);if(e.target.checked) ids.forEach(i=>sel.add(i)); else ids.forEach(i=>sel.delete(i));render()};
+  if($('bulkDone')) $('bulkDone').onclick=()=>bulkStatus('done');
+  if($('bulkMove')) $('bulkMove').onchange=e=>{if(e.target.value) bulkStatus(e.target.value)};
+  if($('bulkDel')) $('bulkDel').onclick=bulkDelete;
+  if($('bulkClear')) $('bulkClear').onclick=()=>{sel.clear();render()};
+  if($('seenAll')) $('seenAll').onclick=()=>{markAllSeen();if(filter==='new')filter='all';render();toast('All caught up')};
   // row click opens card (except on controls)
   bindPencils();
   document.querySelectorAll('tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{
@@ -1039,7 +1164,7 @@ function bindPage(){
     col.addEventListener('dragleave',()=>col.classList.remove('over'));
     col.addEventListener('drop',e=>{e.preventDefault();col.classList.remove('over');const id=e.dataTransfer.getData('text/plain');const st=col.dataset.col;
       const f=S.features.find(x=>x.id===id); if(!f||f.status===st) return;
-      setStatus(id,st).then(()=>{ if(st==='parked'){openId=id;render();setTimeout(()=>$('noteIn')?.focus(),30)} else toast('Moved to '+sl(st)) })});
+      setStatus(id,st)});
   });
 }
 
@@ -1061,27 +1186,51 @@ function handoffPrompt(f){
 /* A drawer's long text shows whole: the box grows with it instead of scrolling. */
 function fitText(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px'}
 function fitDrawerText(){document.querySelectorAll('#drawerRoot textarea').forEach(t=>{fitText(t);t.addEventListener('input',()=>fitText(t))})}
+/* Proof: a commit hash becomes a link into the repo; a URL shows its host. */
+const isSha=x=>/^[0-9a-f]{7,40}$/i.test(x);
+function proofItem(f,x){
+  const repo=proj(f.project)?.repoUrl;
+  const href=isSha(x)?(repo?repo+'/commit/'+x:''):/^https?:\/\//.test(x)?x:'';
+  const label=isSha(x)?'commit '+x.slice(0,7):x.replace(/^https?:\/\/(www\.)?/,'');
+  return `<li>${href?`<a class="ext" href="${esc(href)}" target="_blank" rel="noreferrer noopener" title="${esc(x)}">${esc(label)}</a>`:`<span class="mono">${esc(label)}</span>`}<button class="xbtn" data-unlink="${esc(x)}" title="Remove" aria-label="Remove ${esc(label)}">×</button></li>`;
+}
 function renderDrawer(){
   if(openNote) return renderNoteDrawer();
   const f=S.features.find(x=>x.id===openId);
   if(!f){$('drawerRoot').innerHTML='';return}
+  markSeen(f);
   const isQ=f.type==='question', noteLbl=noteLabel(f);
   const done=f.steps.filter(s=>s.done).length;
+  const parking=pendingPark===f.id;
+  /* Your turn is a question for you: does it work? Answer it in one click. */
+  const verdict=f.status==='review'?`<div class="verdict" id="verdict">
+      <div class="vq"><b>${isQ?'Claude found an answer':'Your turn'}</b><span>${isQ?'Settle it, or send Claude back to look further.':'Check it against what’s below. Does it work?'}</span></div>
+      <div class="vbtns"><button class="btn primary" id="vDone">${isQ?'Decide — mark Decided':'Looks good — Done'}</button><button class="btn" id="vBack">${isQ?'Keep looking':'Needs work'}</button></div>
+      <div class="vback" id="vBackForm" hidden><label class="lbl" for="vBackNote">${isQ?'What’s still missing':'What’s wrong or missing'}</label>
+        <textarea id="vBackNote" placeholder="${isQ?'What the answer doesn’t cover yet':'Claude sees this as the next step when it picks the card up'}"></textarea>
+        <div class="r"><button class="btn sm ghost" id="vBackCancel">Cancel</button><button class="btn sm primary" id="vBackSave">Send back</button></div></div>
+    </div>`:'';
+  const showProof=f.links.length||f.status==='review'||f.status==='done';
   $('drawerRoot').innerHTML=`<div class="scrim" id="scrim"></div>
   <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(f.title)}">
     <div class="drawer-h"><div class="row"><span class="mono">${fkey(f)} · ${esc(proj(f.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
-      <input class="title-in" id="titleIn" value="${esc(f.title)}" aria-label="${isQ?'Question':'Feature title'}">${isQ?'':progBar(f)}</div>
+      <input class="title-in" id="titleIn" value="${esc(f.title)}" aria-label="${isQ?'Question':'Title'}">${isQ||!f.steps.length?'':progBar(f)}</div>
     <div class="drawer-b">
+      ${verdict}
       <div class="field"><span class="lbl">Status</span><div class="seg">${STATUSES.map(s=>`<button data-st="${s.id}" aria-pressed="${f.status===s.id}"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}</button>`).join('')}</div></div>
-      <div class="field"><label class="lbl" for="noteIn">${noteLbl}</label><textarea id="noteIn" class="${f.status==='parked'?'stopnote':''}" placeholder="${f.status==='parked'?'What was left undone, and why you switched away':'Context for the next session'}">${esc(f.note)}</textarea></div>
+      <div class="field"><label class="lbl" for="noteIn">${noteLbl}</label><textarea id="noteIn" class="${f.status==='parked'||parking?'stopnote':''}" placeholder="${f.status==='parked'||parking?'What was left undone, and why you switched away':'Context for the next session'}">${esc(f.note)}</textarea>
+        ${parking?`<div class="r"><button class="btn sm primary" id="parkBtn">Park with this note</button></div>`:''}</div>
+      ${showProof?`<div class="field"><span class="lbl"><span>Proof</span><span class="hint">A commit, a PR or a page to check it on</span></span>
+        ${f.links.length?`<ul class="proof">${f.links.map(x=>proofItem(f,x)).join('')}</ul>`:`<span class="hint">Nothing linked yet. Claude adds the commit or page when it hands a card to you.</span>`}
+        <form class="addstep" id="linkForm"><input id="linkIn" class="mono" placeholder="https://… or a commit hash" aria-label="Add a link"><button class="btn sm">Add</button></form></div>`:''}
       <div class="field"><span class="lbl"><span>${isQ?'What to check':'Steps'}</span>${f.steps.length?`<span class="mono">${done}/${f.steps.length}</span>`:''}</span>
         <ul class="checklist">${f.steps.map((s,i)=>`<li><label class="${s.done?'done':''}"><input type="checkbox" data-step="${i}" ${s.done?'checked':''}><span>${esc(s.text)}</span></label></li>`).join('')}</ul>
         <form class="addstep" id="stepForm"><input id="stepIn" placeholder="${isQ?'Add something to check':'Add a step'}" aria-label="New step"><button class="btn sm">Add</button></form></div>
-      ${f.status!=='done'?`<div class="handoff"><b>${isQ?'Find this out with Claude':'Continue with Claude'}</b><p>${isQ?'Hands Claude the question and what you\u2019re checking. It records what it finds as the answer \u2014 deciding stays yours.':'Gives Claude everything it needs to pick this up: where you stopped, the remaining steps and the files involved.'}</p><div><button class="btn primary sm" id="handoffBtn">Get the prompt</button></div></div>`:''}
+      ${f.status!=='done'?`<div class="handoff"><b>${isQ?'Find this out with Claude':'Continue with Claude'}</b><p>${isQ?'Hands Claude the question and what you’re checking. It records what it finds as the answer — deciding stays yours.':'Gives Claude everything it needs to pick this up: where you stopped, the remaining steps and the files involved.'}</p><div><button class="btn primary sm" id="handoffBtn">Copy the prompt</button></div></div>`:''}
       ${isQ&&!f.files.length?'':`<div class="field"><span class="lbl">Files touched</span>${f.files.length?`<ul class="files">${f.files.map(x=>`<li class="mono">${esc(x)}</li>`).join('')}</ul>`:'<span class="hint">None yet. Claude records files as it edits them.</span>'}</div>`}
       ${sourceNotes(f)}
       <div class="field"><span class="lbl">Activity</span><ul class="log">${[...f.log].reverse().map(l=>`<li>${who(l.by)}<span>${esc(l.text)}<div class="when">${ago(l.at)} ago</div></span></li>`).join('')}</ul></div>
-      <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete card'}</button><button class="btn primary" id="dSave">Save</button></div>
+      <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete card'}</button><span class="saved" id="savedTag" aria-live="polite">Changes save when you leave a field</span></div>
     </div></aside>`;
   fitDrawerText();
   const close=()=>commit().then(()=>{openId=null;pendingPark=null;render()});
@@ -1093,20 +1242,44 @@ function renderDrawer(){
   $('stepForm').onsubmit=e=>{e.preventDefault();const t=$('stepIn').value.trim();if(!t)return;
     commit().then(()=>saveCard(f,{steps:[...f.steps.map(s=>({text:s.text,done:s.done})),{text:t,done:false}]}))
       .then(()=>$('stepIn')?.focus())};
-  if($('handoffBtn')) $('handoffBtn').onclick=()=>commit().then(()=>openDialog('Paste this into Claude',handoffPrompt(f)));
+  if($('linkForm')) $('linkForm').onsubmit=e=>{e.preventDefault();const t=$('linkIn').value.trim();if(!t)return;
+    commit().then(()=>saveCard(f,{links:[...f.links,t]})).then(()=>$('linkIn')?.focus())};
+  document.querySelectorAll('[data-unlink]').forEach(b=>b.onclick=()=>commit().then(()=>saveCard(f,{links:f.links.filter(x=>x!==b.dataset.unlink)})));
+  if($('handoffBtn')) $('handoffBtn').onclick=()=>commit().then(()=>copyPrompt(f));
   document.querySelectorAll('[data-nopen]').forEach(b=>b.onclick=()=>commit().then(()=>openTheNote(b.dataset.nopen)));
-  $('dSave').onclick=()=>commit().then(ok=>{if(ok===false)return;openId=null;pendingPark=null;render();toast('Saved')});
   $('dDel').onclick=()=>{ if(!confirm('Delete '+fkey(f)+' "'+f.title+'"? Merging it into another card keeps the history.')) return;
     deleteCard(f).then(ok=>{if(ok){openId=null;render();toast('Deleted')}})};
 
-  /* Write the open fields back. Returns false if the server refused. */
+  // A1: one click to close the loop, or send it back with a reason.
+  if($('vDone')) $('vDone').onclick=()=>commit().then(()=>setStatus(f.id,'done'));
+  if($('vBack')) $('vBack').onclick=()=>{$('vBackForm').hidden=false;$('vBack').hidden=true;$('vBackNote').focus()};
+  if($('vBackCancel')) $('vBackCancel').onclick=()=>{$('vBackForm').hidden=true;$('vBack').hidden=false};
+  if($('vBackSave')) $('vBackSave').onclick=()=>{const why=$('vBackNote').value.trim();
+    if(!why){$('vBackNote').focus();toast('Say what’s wrong, so the next session knows');return}
+    commit().then(()=>setStatus(f.id,'active',{note:(isQ?'Still missing: ':'Needs work: ')+why}))};
+
+  // A2: title and note save when you leave them (or press ⌘Enter); closing saves too.
+  const autosave=el=>{ if(!el) return;
+    el.addEventListener('blur',()=>{ if(pendingPark===f.id&&el.id==='noteIn') return; saveNow() });
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();saveNow()} if(e.key==='Enter'&&el.tagName==='INPUT'){e.preventDefault();el.blur()} });
+  };
+  autosave($('titleIn')); autosave($('noteIn'));
+  if($('parkBtn')) $('parkBtn').onclick=()=>commit().then(ok=>{if(ok!==false) toast(fkey(f)+' parked')});
+
+  async function saveNow(){
+    const back=document.activeElement&&document.activeElement.id;   /* keep the cursor where you moved it */
+    const tag=$('savedTag'); const ok=await commit();
+    if(back&&back!=='titleIn'&&back!=='noteIn'&&$(back)) $(back).focus();
+    const t=$('savedTag'); if(t&&ok&&ok!=='same'){t.textContent='Saved';t.classList.add('on');setTimeout(()=>{const u=$('savedTag');if(u){u.classList.remove('on');u.textContent='Changes save when you leave a field'}},1600)}
+  }
+  /* Write the open fields back. Returns false if the server refused, 'same' if nothing changed. */
   async function commit(){
     const ti=$('titleIn'), ni=$('noteIn'); if(!ti) return true;
     const t=ti.value.trim()||f.title, n=ni.value.trim();
-    const parking=pendingPark===f.id&&n;
-    if(t===f.title&&n===f.note&&!parking) return true;
-    if(parking) pendingPark=null;
-    return saveCard(f,{title:t,note:n,...(parking?{status:'parked'}:{})});
+    const parkNow=pendingPark===f.id&&n;
+    if(t===f.title&&n===f.note&&!parkNow) return 'same';
+    if(parkNow) pendingPark=null;
+    return saveCard(f,{title:t,note:n,...(parkNow?{status:'parked'}:{})});
   }
 }
 
@@ -1138,7 +1311,7 @@ function cardTally(cards){
 function sourceNotes(f){
   const ns=S.notes.filter(n=>n.project===f.project&&n.cards.includes(f.key));
   if(!ns.length) return '';
-  return `<div class="field"><span class="lbl">Where it came from</span><ul class="nlinks">${ns.map(n=>
+  return `<div class="field"><span class="lbl">Linked notes</span><ul class="nlinks">${ns.map(n=>
     `<li><button class="nlink" data-nopen="${n.id}"><span class="mono st">${esc(n.nid)}</span><span class="t">${esc(n.title)}</span><span class="st">${esc(KINDL[n.kind])}</span></button></li>`).join('')}</ul></div>`;
 }
 function openTheNote(id){
@@ -1171,17 +1344,21 @@ function renderNoteDrawer(){
     <div class="drawer-b">
       ${target}
       <div class="field"><label class="lbl" for="nBody">${esc(fld.label)}</label><textarea id="nBody" placeholder="${esc(fld.ph)}">${esc(n.body)}</textarea></div>
+      ${n.kind==='brainstorm'?`<div class="field"><label class="lbl" for="nConsidered">What was considered</label><textarea id="nConsidered" placeholder="The options that lost, and why \u2014 what answers \u201cwhy didn\u2019t we just\u2026\u201d later">${esc(n.considered)}</textarea></div>`:''}
       <div class="field"><span class="lbl"><span>${n.kind==='reference'?'Where it was used':'What it produced'}</span>${cards.length?`<span class="mono">${esc(cardTally(cards))}</span>`:''}</span>
         ${cards.length?`<ul class="nlinks">${cards.map(f=>`<li><button class="nlink" data-gocard="${f.id}"><span class="dot" style="background:${color(f.status)}"></span><span class="mono st">${esc(f.key)}</span><span class="t">${esc(f.title)}</span><span class="st">${esc(stLabel(f))}</span></button></li>`).join('')}</ul>`
           :`<span class="hint">${esc(NOTE_UNLINKED[n.kind])}</span>`}</div>
       ${n.kind==='plan'&&n.file?`<div class="handoff"><b>Bring it to the board again</b><p>Plans get edited. This asks Claude to re-read the document and add only what isn\u2019t on the board yet.</p><div><button class="btn primary sm" id="nHandoff">Get the prompt</button></div></div>`:''}
-      <div class="drawer-f"><button class="btn danger ghost" id="nDel">Delete ${esc(KINDL[n.kind].toLowerCase())}</button><button class="btn primary" id="nSave">Save</button></div>
+      <div class="drawer-f"><button class="btn danger ghost" id="nDel">Delete ${esc(KINDL[n.kind].toLowerCase())}</button><span class="saved" id="savedTag" aria-live="polite">Changes save when you leave a field</span></div>
     </div></aside>`;
 
   fitDrawerText();
   const close=()=>commitNote().then(()=>{openNote=null;render()});
   $('scrim').onclick=close; $('dClose').onclick=close;
-  $('nSave').onclick=()=>commitNote().then(ok=>{if(ok===false)return;openNote=null;render();toast('Saved')});
+  ['nTitleIn','nBody','nConsidered','nUrl','nFile'].forEach(id=>{const el=$(id); if(!el) return;
+    el.addEventListener('blur',()=>commitNote().then(ok=>{const t=$('savedTag');if(t&&ok&&ok!=='same'){t.textContent='Saved';t.classList.add('on')}}));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey||el.tagName==='INPUT')){e.preventDefault();el.blur()}});
+  });
   $('nDel').onclick=()=>{ if(!confirm('Delete '+n.nid+' \u201c'+n.title+'\u201d? The cards it produced stay.')) return;
     deleteNote(n).then(ok=>{if(ok){openNote=null;render();toast(n.nid+' deleted')}})};
   if($('nHandoff')) $('nHandoff').onclick=()=>commitNote().then(()=>openDialog('Paste this into Claude',planPrompt(n)));
@@ -1196,15 +1373,22 @@ function renderNoteDrawer(){
     const patch={};
     const title=ti.value.trim()||n.title; if(title!==n.title) patch.title=title;
     const body=$('nBody').value.trim(); if(body!==n.body) patch.body=body;
+    if($('nConsidered')&&$('nConsidered').value.trim()!==n.considered) patch.considered=$('nConsidered').value.trim();
     if($('nUrl')&&$('nUrl').value.trim()!==n.url) patch.url=$('nUrl').value.trim();
     if($('nFile')&&$('nFile').value.trim()!==n.file) patch.file=$('nFile').value.trim();
-    if(!Object.keys(patch).length) return true;
+    if(!Object.keys(patch).length) return 'same';
     return saveNote(n,patch);
   }
 }
 
+async function copyPrompt(f){
+  const text=handoffPrompt(f);
+  try{ await navigator.clipboard.writeText(text); toast('Prompt copied \u2014 paste it into Claude') }
+  catch(e){ openDialog('Paste this into Claude',text) }
+}
 document.addEventListener('click',e=>{
-  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;render();window.scrollTo(0,0);return}
+  const cp=e.target.closest('[data-copy]'); if(cp){e.stopPropagation();const f=S.features.find(x=>x.id===cp.dataset.copy);if(f) copyPrompt(f);return}
+  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();window.scrollTo(0,0);return}
   const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
   const no=e.target.closest('[data-nopen]'); if(no&&!e.target.closest('.drawer')){openTheNote(no.dataset.nopen);return}
   const d=document.querySelector('details.cols[open]'); if(d&&!e.target.closest('details.cols')) d.removeAttribute('open');
@@ -1229,7 +1413,7 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&editCell){editCell=null;render();return}
-  if(e.key==='Escape'&&(openId||openNote)&&!$('dlg').open){openId=null;openNote=null;render()}
+  if(e.key==='Escape'&&(openId||openNote)&&!$('dlg').open){ $('dClose')?.click() }
 });
 $('dlgClose').onclick=()=>$('dlg').close();
 $('dlgCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('dlgPre').textContent);toast('Copied')}catch(e){const r=document.createRange();r.selectNodeContents($('dlgPre'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Selected — press ⌘C to copy')}};

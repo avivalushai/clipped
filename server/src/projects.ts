@@ -22,7 +22,23 @@ export interface ProjectSummary extends Project {
   total: number;
   parked: number;
   percentComplete: number;
+  /** The repo's web address, when origin is on a known host — turns a commit hash into a link. */
+  repoUrl?: string;
   error?: string;
+}
+
+/** origin's URL as a browsable https address, from .git/config. Local read only. */
+export function repoUrl(dir: string): string | undefined {
+  let cfg: string;
+  try {
+    cfg = fs.readFileSync(`${dir}/.git/config`, "utf8");
+  } catch {
+    return undefined;
+  }
+  const origin = /\[remote "origin"\][^[]*?url\s*=\s*(\S+)/.exec(cfg)?.[1];
+  if (!origin) return undefined;
+  const m = /^(?:git@|ssh:\/\/git@|https:\/\/)(github\.com|gitlab\.com|bitbucket\.org)[:/](.+?)(?:\.git)?\/?$/.exec(origin);
+  return m ? `https://${m[1]}/${m[2]}` : undefined;
 }
 
 /** Stable, path-derived id — survives restarts, and keeps paths out of URLs. */
@@ -60,5 +76,6 @@ export function summarize(project: Project): ProjectSummary {
     total,
     parked: base.counts.parked,
     percentComplete: total ? Math.round((100 * base.counts.done) / total) : 0,
+    repoUrl: repoUrl(project.path),
   };
 }

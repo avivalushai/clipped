@@ -54,5 +54,6 @@ export function formatNoteDetail(ctx: Ctx, n: Note): string {
   if (n.file) lines.push(`File: ${n.file}`);
   if (n.cards.length) lines.push(`Cards: ${n.cards.join(", ")}`);
   if (n.body) lines.push("", n.body);
+  if (n.considered) lines.push("", "Considered:", n.considered);
   return lines.join("\n");
 }

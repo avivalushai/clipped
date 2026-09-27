@@ -281,6 +281,17 @@ export function context(ctx: Ctx, { opts }: Args) {
 
 // --- write commands --------------------------------------------------------
 
+/** Proof links: trimmed, de-duplicated, blanks dropped. A URL or a commit hash. */
+const linksOf = (xs: string[]) => [...new Set(xs.map((x) => x.trim()).filter(Boolean))];
+
+/** Add proof links to a card; returns the log line, if anything was new. */
+function addLinks(f: Feature, xs: string[]): string[] {
+  const added = linksOf(xs).filter((x) => !f.links.includes(x));
+  if (!added.length) return [];
+  f.links.push(...added);
+  return [`Proof: ${added.join(", ")}`];
+}
+
 export function add(ctx: Ctx, { pos, opts }: Args) {
   const title = need(pos, 0, `title (e.g. board add "Export loop as WAV")`).trim();
   if (!title) throw new UserError("title can't be empty");
@@ -301,6 +312,7 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
       doneWhen: list(opts, "done-when"),
       steps: list(opts, "step").map((text) => ({ text, done: false })),
       files: projectFiles(loc.root, ctx.cwd, list(opts, "file")),
+      links: linksOf(list(opts, "link")),
       createdAt: at,
       updatedAt: at,
       updatedBy: by,
@@ -323,8 +335,9 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
   const note = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
-  if (!status && !type && title === undefined && note === undefined && !doneWhen.length && !list(opts, "file").length && !list(opts, "unfile").length)
-    throw new UserError("nothing to update (use --title, --note, --status, --type or --done-when)");
+  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length);
+  if (!status && !type && title === undefined && note === undefined && !doneWhen.length && !edits)
+    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file or --link)");
 
   const f = mutateBoard(requireBoard(ctx), (b) => {
     const f = findFeature(b, keyArg);
@@ -352,6 +365,12 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
     if (dropped.length) {
       f.files = f.files.filter((x) => !dropped.includes(x));
       logs.push(`Removed files: ${dropped.join(", ")}`);
+    }
+    logs.push(...addLinks(f, list(opts, "link")));
+    const unlink = linksOf(list(opts, "unlink")).filter((x) => f.links.includes(x));
+    if (unlink.length) {
+      f.links = f.links.filter((x) => !unlink.includes(x));
+      logs.push(`Removed proof: ${unlink.join(", ")}`);
     }
     if (status && status !== f.status) {
       setStatus(ctx, f, status, by, note);
@@ -392,6 +411,7 @@ function statusCommand(to: Status) {
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f = findFeature(b, keyArg);
       setStatus(ctx, f, to, by, note);
+      for (const l of addLinks(f, list(opts, "link"))) stamp(ctx, f, by, l);
       return f;
     });
     emit(ctx, opts, f, `${f.key} ${f.title} → ${f.status}`);
@@ -448,6 +468,7 @@ export function merge(ctx: Ctx, { pos, opts }: Args) {
     const known = new Set(into.steps.map((s) => s.text.toLowerCase()));
     for (const s of from.steps) if (!known.has(s.text.toLowerCase())) into.steps.push(s);
     into.files = [...new Set([...into.files, ...from.files])];
+    into.links = [...new Set([...into.links, ...from.links])];
     into.doneWhen = [...new Set([...into.doneWhen, ...from.doneWhen])];
     if (!into.note && from.note) into.note = from.note;
     into.log = [...into.log, ...from.log].sort((x, y) => x.at.localeCompare(y.at));
@@ -619,6 +640,7 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
       kind,
       title,
       body: str(opts, "body") ?? "",
+      considered: str(opts, "considered") ?? "",
       url: str(opts, "url") ?? "",
       file: noteFile(ctx, loc.root, str(opts, "file")) ?? "",
       cards: noteCards(b, list(opts, "card")),
@@ -651,9 +673,9 @@ function noteUpdate(ctx: Ctx, pos: string[], opts: Opts) {
   const idArg = need(pos, 0, "note id");
   const by = actor(ctx, str(opts, "by"));
   const loc = requireBoard(ctx);
-  const fields = ["title", "body", "url", "file"] as const;
+  const fields = ["title", "body", "considered", "url", "file"] as const;
   if (!fields.some((f) => str(opts, f) !== undefined) && !list(opts, "card").length && !str(opts, "kind"))
-    throw new UserError("nothing to update (use --title, --body, --url, --file, --kind or --card)");
+    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind or --card)");
 
   const n = mutateBoard(loc, (b) => {
     const n = findNote(b, idArg);
@@ -662,6 +684,7 @@ function noteUpdate(ctx: Ctx, pos: string[], opts: Opts) {
     if (title !== undefined) n.title = title;
     if (str(opts, "kind") !== undefined) n.kind = parseKind(str(opts, "kind"));
     if (str(opts, "body") !== undefined) n.body = str(opts, "body")!;
+    if (str(opts, "considered") !== undefined) n.considered = str(opts, "considered")!;
     if (str(opts, "url") !== undefined) n.url = str(opts, "url")!;
     const file = noteFile(ctx, loc.root, str(opts, "file"));
     if (file !== undefined) n.file = file;

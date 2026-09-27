@@ -144,7 +144,7 @@ describe("schemaVersion 2", () => {
       ],
     };
     const { board, from, to, migrated } = migrate(v1 as any);
-    expect({ from, to, migrated }).toEqual({ from: 1, to: 2, migrated: true });
+    expect({ from, to, migrated }).toEqual({ from: 1, to: 3, migrated: true });
     expect(board).toMatchObject({ nextNoteNum: 1, notes: [] });
     expect(validateBoard(board)).toEqual([]);
   });
@@ -158,7 +158,7 @@ describe("schemaVersion 2", () => {
     fs.writeFileSync(file, JSON.stringify(v1));
 
     expect(sb.board("list").code).toBe(0);
-    expect(sb.read().schemaVersion).toBe(2);
+    expect(sb.read().schemaVersion).toBe(3);
     expect(JSON.parse(fs.readFileSync(file + ".v1.bak", "utf8")).schemaVersion).toBe(1);
   });
 
@@ -166,7 +166,7 @@ describe("schemaVersion 2", () => {
     const sb = withBoard();
     const bad = (note: unknown) => validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [note] }).join(" ");
     const ok = {
-      id: "APP-N1", kind: "plan", title: "The spec", body: "", url: "", file: "", cards: [],
+      id: "APP-N1", kind: "plan", title: "The spec", body: "", considered: "", url: "", file: "", cards: [],
       createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-20T10:00:00Z", updatedBy: "claude",
     };
     expect(validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [ok] })).toEqual([]);

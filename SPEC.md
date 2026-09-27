@@ -55,7 +55,7 @@ produced them, the **Plan** they came from, the **Reference** that answered them
 
 ```json
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "project": { "name": "Looper", "key": "LOOP" },
   "settings": { "granularity": "normal" },
   "nextNum": 15,
@@ -70,6 +70,7 @@ produced them, the **Plan** they came from, the **Reference** that answered them
       "doneWhen": ["A saved loop shows in the library", "Reloading the page keeps it"],
       "steps": [{ "text": "IndexedDB schema", "done": true }, { "text": "Save button", "done": false }],
       "files": ["src/store/library.ts"],
+      "links": [],
       "createdAt": "2026-09-18T10:00:00Z",
       "updatedAt": "2026-09-20T14:12:00Z",
       "updatedBy": "claude",
@@ -82,6 +83,7 @@ produced them, the **Plan** they came from, the **Reference** that answered them
       "kind": "reference",
       "title": "Clerk device-code flow",
       "body": "",
+      "considered": "",
       "url": "https://clerk.com/docs/references/backend/device",
       "file": "",
       "cards": ["LOOP-7"],
@@ -96,6 +98,8 @@ produced them, the **Plan** they came from, the **Reference** that answered them
 - `status`: `idea | active | parked | review | done`
 - `type`: `feature | bug | chore | question`
 - `note`: one line whose meaning depends on status, which is why the CLI takes `--next`, `--stopped` and `--check` for it (`--note` still works) — *Next step* (active), *Where we stopped* (parked), *What to check* (review)
+- `links`: proof for "what to check" — a commit hash, a PR or a page URL (`--link`, `--unlink`)
+- `considered` (notes): for a brainstorm, the options weighed and not chosen (`--considered`)
 - `updatedBy`: `claude | user`
 - `settings.granularity`: `coarse | normal | fine`
 
