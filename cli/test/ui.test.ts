@@ -48,12 +48,21 @@ describe("the bundled UI", () => {
     expect(script).not.toContain("addEventListener('dblclick'");
   });
 
-  it("shows the note as text, with a pencil to edit it", () => {
-    expect(script).toContain('data-editnote=');
-    expect(script).toContain("editingNote===f.id");
+  it("shows row cells as text, and edits one only from its pencil", () => {
+    // a click anywhere else on the row opens the panel
+    expect(script).toContain("function editableCell(");
+    expect(script).toContain('data-editcell=');
+    expect(script).toContain("editCell===id+'|'+k");
+    for (const k of ["k:'title',attr:'data-edit'", "k:'note',attr:'data-edit'", "k:'title',attr:'data-nedit'", "k:f.k,attr:'data-nedit'"])
+      expect(script).toContain(k);
     // a re-render leaves the field unfocused, so a click outside has to close it too
     expect(script).toContain("addEventListener('mousedown'");
-    expect(script).toContain("if(editingNote){");
+    expect(script).toContain("if(editCell){");
+  });
+
+  it("grows a drawer's text box to fit its text", () => {
+    expect(script).toContain("function fitText(el)");
+    expect((script.match(/fitDrawerText\(\);/g) ?? []).length).toBe(2);
   });
 
   it("gives a note its own panel instead of the card one", () => {

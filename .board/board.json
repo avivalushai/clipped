@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 23,
+  "nextNum": 24,
   "features": [
     {
       "key": "LE-1",
@@ -713,7 +713,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "active",
-      "note": "Board explainer added (open card + five tabs). Next: Aviv's read, then deploy",
+      "note": "Dark/light switch, how-it-works, facts strip and FAQ added. Next: Aviv's read, then deploy",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -737,10 +737,13 @@
         ".claude/launch.json",
         "landing/img/board.png",
         "landing/img/card.png",
-        "landing/img/tabs.png"
+        "landing/img/tabs.png",
+        "landing/img/board-light.png",
+        "landing/img/card-light.png",
+        "landing/img/tabs-light.png"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T09:58:55Z",
+      "updatedAt": "2026-09-27T10:10:17Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -782,6 +785,16 @@
           "at": "2026-09-27T09:58:55Z",
           "by": "claude",
           "text": "Note: Board explainer added (open card + five tabs). Next: Aviv's read, then deploy"
+        },
+        {
+          "at": "2026-09-27T10:10:17Z",
+          "by": "claude",
+          "text": "Files: landing/img/board-light.png, landing/img/card-light.png, landing/img/tabs-light.png"
+        },
+        {
+          "at": "2026-09-27T10:10:17Z",
+          "by": "claude",
+          "text": "Note: Dark/light switch, how-it-works, facts strip and FAQ added. Next: Aviv's read, then deploy"
         }
       ]
     },
@@ -874,6 +887,36 @@
           "at": "2026-09-27T10:03:46Z",
           "by": "claude",
           "text": "Moved to review — Update the plugin to 0.3.1, then ask a research question in a Braille session: it should land in Questions → Answered on its own, and any 'do this first' should appear as an idea"
+        }
+      ]
+    },
+    {
+      "key": "LE-23",
+      "title": "Rows open on click, cells edit from a pencil",
+      "type": "feature",
+      "status": "review",
+      "note": "Refresh the board: click a row anywhere (title, note, empty space) and its panel opens; hover and click a pencil to edit the title or note in place; open BRL-7 and the answer shows whole",
+      "doneWhen": [
+        "Clicking anywhere on a row but a pencil opens its panel",
+        "A drawer's text box shows all its text without scrolling"
+      ],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "createdAt": "2026-09-27T10:13:51Z",
+      "updatedAt": "2026-09-27T10:15:06Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T10:13:51Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-27T10:15:06Z",
+          "by": "claude",
+          "text": "Moved to review — Refresh the board: click a row anywhere (title, note, empty space) and its panel opens; hover and click a pencil to edit the title or note in place; open BRL-7 and the answer shows whole"
         }
       ]
     }
