@@ -509,18 +509,23 @@
       "title": "Set the GitHub repo website once the site is deployed",
       "type": "feature",
       "status": "idea",
-      "note": "",
+      "note": "Site is live at https://clipped-mocha.vercel.app — set it as the repo website (needs gh or the GitHub settings page)",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-24T12:20:26Z",
+      "updatedAt": "2026-09-27T11:13:31Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-24T12:20:26Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-27T11:13:31Z",
+          "by": "claude",
+          "text": "Note: Site is live at https://clipped-mocha.vercel.app — set it as the repo website (needs gh or the GitHub settings page)"
         }
       ]
     },
@@ -712,8 +717,8 @@
       "key": "LE-19",
       "title": "A landing page I can send to friends",
       "type": "feature",
-      "status": "active",
-      "note": "Dark/light switch, how-it-works, facts strip and FAQ added. Next: Aviv's read, then deploy",
+      "status": "review",
+      "note": "Live at https://clipped-mocha.vercel.app (guide: /install.html). Redeploy: cd landing && npx vercel deploy --prod. Read it once as a friend would",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -725,11 +730,11 @@
         },
         {
           "text": "Preview locally and iterate",
-          "done": false
+          "done": true
         },
         {
           "text": "Deploy (GitHub Pages or Vercel)",
-          "done": false
+          "done": true
         }
       ],
       "files": [
@@ -743,7 +748,7 @@
         "landing/img/tabs-light.png"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T10:10:17Z",
+      "updatedAt": "2026-09-27T11:13:31Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -795,6 +800,21 @@
           "at": "2026-09-27T10:10:17Z",
           "by": "claude",
           "text": "Note: Dark/light switch, how-it-works, facts strip and FAQ added. Next: Aviv's read, then deploy"
+        },
+        {
+          "at": "2026-09-27T11:13:30Z",
+          "by": "claude",
+          "text": "Step done: Preview locally and iterate"
+        },
+        {
+          "at": "2026-09-27T11:13:31Z",
+          "by": "claude",
+          "text": "Step done: Deploy (GitHub Pages or Vercel)"
+        },
+        {
+          "at": "2026-09-27T11:13:31Z",
+          "by": "claude",
+          "text": "Moved to review — Live at https://clipped-mocha.vercel.app (guide: /install.html). Redeploy: cd landing && npx vercel deploy --prod. Read it once as a friend would"
         }
       ]
     },
