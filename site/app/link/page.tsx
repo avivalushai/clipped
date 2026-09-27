@@ -3,7 +3,7 @@ import { currentSignedInUser } from "@/lib/auth";
 import { clerkConfigured } from "@/lib/site";
 import { ApproveForm } from "./approve-form";
 
-export const metadata: Metadata = { title: "Link your terminal — Loose Ends" };
+export const metadata: Metadata = { title: "Link your terminal — Clipped" };
 export const dynamic = "force-dynamic";
 
 export default async function LinkPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {

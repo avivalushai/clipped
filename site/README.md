@@ -1,4 +1,4 @@
-# The Loose Ends site
+# The Clipped site
 
 Landing page, sign-up, the device-code link page, and the hosted board UI.
 
@@ -19,7 +19,7 @@ production the missing keys are a hard error instead of a quiet fallback.
 | **Supabase** | A project; run `supabase/schema.sql` in the SQL editor | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` |
 | **Vercel** | Import this repo, root directory `site/` | the env vars above |
 | **Domain** | Point it at the Vercel project | `NEXT_PUBLIC_SITE_URL` |
-| **PostHog** | A project in the **EU** region | `LOOSE_ENDS_POSTHOG_KEY` in the CLI's environment |
+| **PostHog** | A project in the **EU** region | `CLIPPED_POSTHOG_KEY` in the CLI's environment |
 
 Until the domain exists, `NEXT_PUBLIC_SITE_URL` can be the Vercel preview URL —
 it's the only place the domain is written down (and `SITE_URL` in

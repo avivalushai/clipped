@@ -13,7 +13,7 @@ describe("board touch", () => {
   it("attaches files to the most recently updated active card", () => {
     const sb = active();
     sb.board("add", "Older work", "--status", "active");
-    sb.env.LOOSE_ENDS_NOW = "2026-09-20T11:00:00Z";
+    sb.env.CLIPPED_NOW = "2026-09-20T11:00:00Z";
     sb.board("update", "APP-1", "--note", "still on this");
 
     expect(sb.board("touch", "src/store/library.ts", "src/ui/Save.tsx").out).toBe(
@@ -75,10 +75,10 @@ describe("board context", () => {
     sb.board("add", "Bigger buttons");
     sb.board("add", "Dark mode", "--status", "done");
 
-    sb.env.LOOSE_ENDS_NOW = "2026-09-24T10:00:00Z";
+    sb.env.CLIPPED_NOW = "2026-09-24T10:00:00Z";
     expect(sb.board("context").out).toBe(
       [
-        "Loose Ends board: My App (APP) — 1 idea, 1 active, 1 parked, 1 review, 1 done",
+        "Clipped board: My App (APP) — 1 idea, 1 active, 1 parked, 1 review, 1 done",
         "Active:",
         "  APP-1 Save loops (1/2) — next: Wire the Save button",
         "Parked:",
@@ -92,7 +92,7 @@ describe("board context", () => {
 
   it("stays quiet on an empty board and exits 0 without one", () => {
     const sb = withBoard();
-    expect(sb.board("context").out).toBe("Loose Ends board: My App (APP) — empty");
+    expect(sb.board("context").out).toBe("Clipped board: My App (APP) — empty");
 
     const bare = sandbox();
     const r = bare.board("context");

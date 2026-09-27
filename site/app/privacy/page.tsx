@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Privacy — Loose Ends" };
+export const metadata: Metadata = { title: "Privacy — Clipped" };
 
 export default function Privacy() {
   return (
     <main>
       <h1>What we store</h1>
       <p className="lede">
-        Loose Ends is a local tool with a thin account on top. Your boards, code, notes and file paths stay on your
+        Clipped is a local tool with a thin account on top. Your boards, code, notes and file paths stay on your
         machine. This page is the whole list, not a summary of one.
       </p>
 
@@ -22,13 +22,13 @@ export default function Privacy() {
           </tr>
           <tr>
             <td>
-              <code>~/.loose-ends/projects.json</code>
+              <code>~/.clipped/projects.json</code>
             </td>
             <td>Which folders have boards. Never uploaded.</td>
           </tr>
           <tr>
             <td>
-              <code>~/.loose-ends/auth.json</code>
+              <code>~/.clipped/auth.json</code>
             </td>
             <td>Your sign-in token, if you signed in.</td>
           </tr>

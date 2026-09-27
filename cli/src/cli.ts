@@ -62,7 +62,7 @@ const COMMANDS: Record<string, Command> = {
 
 export function helpText(): string {
   return [
-    "board — the Loose Ends feature board",
+    "board — the Clipped feature board",
     "",
     "Usage:",
     ...Object.values(COMMANDS).map((c) => `  board ${c.usage}`),
@@ -80,7 +80,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.2.1");
+    ctx.out("0.3.0");
     return 0;
   }
   const command = COMMANDS[name];

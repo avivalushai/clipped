@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 19,
+  "nextNum": 22,
   "features": [
     {
       "key": "LE-1",
@@ -705,6 +705,114 @@
           "at": "2026-09-24T15:01:21Z",
           "by": "claude",
           "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-19",
+      "title": "A landing page I can send to friends",
+      "type": "feature",
+      "status": "active",
+      "note": "Hero is now a question, 'Sound familiar?' section, real board screenshot. Next: Aviv reads it, then deploy",
+      "doneWhen": [
+        "A friend can read it and decide to install without asking me anything",
+        "Every claim on it matches the code"
+      ],
+      "steps": [
+        {
+          "text": "Static page: what it does, what it doesn't, what runs, what leaves",
+          "done": true
+        },
+        {
+          "text": "Preview locally and iterate",
+          "done": false
+        },
+        {
+          "text": "Deploy (GitHub Pages or Vercel)",
+          "done": false
+        }
+      ],
+      "files": [
+        "landing/index.html",
+        ".claude/launch.json",
+        "landing/img/board.png"
+      ],
+      "createdAt": "2026-09-27T09:34:48Z",
+      "updatedAt": "2026-09-27T09:40:12Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T09:34:48Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-27T09:36:35Z",
+          "by": "claude",
+          "text": "Step done: Static page: what it does, what it doesn't, what runs, what leaves"
+        },
+        {
+          "at": "2026-09-27T09:36:35Z",
+          "by": "claude",
+          "text": "Files: .claude/launch.json"
+        },
+        {
+          "at": "2026-09-27T09:36:35Z",
+          "by": "claude",
+          "text": "Note: First draft in landing/index.html, previewing on localhost:4800 — waiting on Aviv's read"
+        },
+        {
+          "at": "2026-09-27T09:40:12Z",
+          "by": "claude",
+          "text": "Files: landing/img/board.png"
+        },
+        {
+          "at": "2026-09-27T09:40:12Z",
+          "by": "claude",
+          "text": "Note: Hero is now a question, 'Sound familiar?' section, real board screenshot. Next: Aviv reads it, then deploy"
+        }
+      ]
+    },
+    {
+      "key": "LE-20",
+      "title": "Rename the tool to Clipped",
+      "type": "chore",
+      "status": "review",
+      "note": "Plugin id, skill, commands (/clipped:*), env prefix, site and docs — plus ~/.loose-ends moves to ~/.clipped on first run. Start a new session and check the slash commands and the board context line read right",
+      "doneWhen": [
+        "A new session loads clipped@clipped and the commands work",
+        "The GitHub repo is renamed and the README install line matches"
+      ],
+      "steps": [],
+      "files": [],
+      "createdAt": "2026-09-27T09:35:59Z",
+      "updatedAt": "2026-09-27T09:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T09:35:59Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-21",
+      "title": "Renaming a project needs a command",
+      "type": "feature",
+      "status": "idea",
+      "note": "board init refuses once a board exists, and nothing else renames it — this repo's board still says Loose Ends (LE) after the rename",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "createdAt": "2026-09-27T09:35:59Z",
+      "updatedAt": "2026-09-27T09:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T09:35:59Z",
+          "by": "claude",
+          "text": "Created"
         }
       ]
     }

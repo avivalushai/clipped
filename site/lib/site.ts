@@ -4,11 +4,11 @@
 import { memoryStore, supabaseStore, type Store } from "./store.js";
 
 /** The domain isn't bought yet — change it here and nowhere else. */
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://looseends.dev";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://clipped.dev";
 
 export const INSTALL_STEPS = [
-  "/plugin marketplace add avivalushai/loose-ends",
-  "/plugin install loose-ends@loose-ends",
+  "/plugin marketplace add avivalushai/clipped",
+  "/plugin install clipped@clipped",
   "/board login",
 ];
 

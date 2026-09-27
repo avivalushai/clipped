@@ -20,7 +20,7 @@ export interface Candidate {
 }
 
 export const claudeHome = (ctx: Ctx) =>
-  ctx.env.LOOSE_ENDS_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
+  ctx.env.CLIPPED_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
 
 /** First `cwd` in a session file. Reads a bounded prefix — transcripts get large. */
 function cwdFromSession(file: string): string | null {

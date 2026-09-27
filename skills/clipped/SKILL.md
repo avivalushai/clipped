@@ -1,6 +1,6 @@
 ---
-name: loose-ends
-description: Keep the project's Loose Ends feature board up to date with the `board` CLI. Use whenever work starts, changes topic, gets parked, finished or mentioned — creating, updating, parking, reviewing and finishing cards without being asked.
+name: clipped
+description: Keep the project's Clipped feature board up to date with the `board` CLI. Use whenever work starts, changes topic, gets parked, finished or mentioned — creating, updating, parking, reviewing and finishing cards without being asked.
 ---
 
 You keep a feature board for this project so the user always knows what's in

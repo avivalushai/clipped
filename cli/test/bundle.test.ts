@@ -32,7 +32,7 @@ describe("bundled bin/board", () => {
       env: { ...process.env, ...sb.env, PATH: `${path.join(repo, "bin")}:${process.env.PATH}` } as NodeJS.ProcessEnv,
       encoding: "utf8",
     });
-    expect(out.trim()).toBe("0.2.1");
+    expect(out.trim()).toBe("0.3.0");
   });
 
   it("runs a real init → add → context cycle in a temp project", () => {
@@ -40,7 +40,7 @@ describe("bundled bin/board", () => {
     run(["init", "--name", "Looper", "--key", "LOOP"], sb.root, sb.env);
     run(["add", "Save loops", "--status", "active", "--next", "Wire Save"], sb.root, sb.env);
     const out = run(["context"], sb.root, sb.env);
-    expect(out).toContain("Loose Ends board: Looper (LOOP) — 1 active");
+    expect(out).toContain("Clipped board: Looper (LOOP) — 1 active");
     expect(out).toContain("LOOP-1 Save loops — next: Wire Save");
     expect(JSON.parse(fs.readFileSync(path.join(sb.home, "projects.json"), "utf8"))[0].key).toBe("LOOP");
   });

@@ -35,7 +35,7 @@ export function migrate(
     throw new MigrationError("board.json has no valid schemaVersion");
   if ((from as number) > target)
     throw new MigrationError(
-      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Loose Ends plugin.`,
+      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin.`,
     );
 
   let v = from as number;

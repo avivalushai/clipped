@@ -23,6 +23,37 @@ describe("board init", () => {
     expect(sb.registry()).toEqual([{ path: sb.root, name: "Looper", key: "LOOP", addedAt: "2026-09-20T10:00:00Z" }]);
   });
 
+  it("adopts the registry the tool kept under its old name", () => {
+    // Renaming Loose Ends to Clipped moves ~/.loose-ends to ~/.clipped. The
+    // boards are in the repos and never move; this list of them is all that
+    // lives in the home directory, and a lost one empties the sidebar.
+    const sb = sandbox();
+    const legacy = path.join(path.dirname(sb.home), "legacy-home");
+    fs.mkdirSync(legacy);
+    fs.writeFileSync(path.join(legacy, "projects.json"),
+      JSON.stringify([{ path: "/somewhere/looper", name: "Looper", key: "LOOP", addedAt: "2026-09-01T10:00:00Z" }]));
+    sb.env.CLIPPED_LEGACY_HOME = legacy;
+
+    sb.board("init", "--name", "My App", "--key", "APP");
+
+    expect(sb.registry().map((e: any) => e.name)).toEqual(["Looper", "My App"]);
+    expect(fs.existsSync(legacy)).toBe(false);
+  });
+
+  it("leaves an old home alone once the new one exists", () => {
+    const sb = sandbox();
+    const legacy = path.join(path.dirname(sb.home), "legacy-home");
+    fs.mkdirSync(legacy);
+    fs.writeFileSync(path.join(legacy, "projects.json"), JSON.stringify([{ path: "/gone", name: "Gone", key: "GO" }]));
+    sb.env.CLIPPED_LEGACY_HOME = legacy;
+
+    sb.board("init", "--name", "My App", "--key", "APP");   // creates the new home
+    sb.board("init", "--name", "My App", "--key", "APP");   // must not swallow the old one again
+
+    expect(sb.registry().map((e: any) => e.name)).toEqual(["Gone", "My App"]);
+    expect(fs.existsSync(legacy)).toBe(false);
+  });
+
   it("derives name and key from the folder", () => {
     const sb = sandbox();
     const res = sb.json("init");
@@ -78,6 +109,6 @@ describe("board init", () => {
     expect(deriveKey("a b c")).toBe("ABC");
     expect(deriveKey("X")).toBe("XX");
     expect(deriveKey("3d viewer")).toMatch(/^[A-Z][A-Z0-9]{1,5}$/);
-    expect(prettyName("/x/loose-ends")).toBe("Loose Ends");
+    expect(prettyName("/x/clipped")).toBe("Clipped");
   });
 });

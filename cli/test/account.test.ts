@@ -59,10 +59,10 @@ describe("the device-code flow", () => {
   it("hands the token to whoever holds the device code, once", async () => {
     const store = memoryStore();
     await store.upsertUser({ id: "u1", email: "a@b.c", createdAt: new Date().toISOString() });
-    const started = await start(store, "https://looseends.dev");
+    const started = await start(store, "https://clipped.dev");
 
     expect(started.userCode).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
-    expect(started.verifyUrl).toBe(`https://looseends.dev/link?code=${started.userCode}`);
+    expect(started.verifyUrl).toBe(`https://clipped.dev/link?code=${started.userCode}`);
     expect(await poll(store, started.deviceCode)).toEqual({ status: "pending" });
 
     expect(await approve(store, started.userCode.toLowerCase(), "u1")).toEqual({ ok: true });
@@ -79,12 +79,12 @@ describe("the device-code flow", () => {
 
   it("won't approve an unknown, expired or already-used code", async () => {
     const store = memoryStore();
-    const started = await start(store, "https://looseends.dev");
+    const started = await start(store, "https://clipped.dev");
     expect(await approve(store, "ZZZZ-ZZZZ", "u1")).toEqual({ ok: false, reason: "unknown" });
     expect(await approve(store, started.userCode, "u1")).toEqual({ ok: true });
     expect(await approve(store, started.userCode, "u2")).toEqual({ ok: false, reason: "used" });
 
-    const old = await start(store, "https://looseends.dev");
+    const old = await start(store, "https://clipped.dev");
     const later = new Date(Date.now() + 11 * 60_000);
     expect(await approve(store, old.userCode, "u1", "approve", later)).toEqual({ ok: false, reason: "expired" });
     expect(await poll(store, old.deviceCode, later)).toEqual({ status: "expired" });
@@ -94,14 +94,14 @@ describe("the device-code flow", () => {
     const store = memoryStore();
     expect(await poll(store, "not-a-real-device-code")).toEqual({ status: "expired" });
 
-    const started = await start(store, "https://looseends.dev");
+    const started = await start(store, "https://clipped.dev");
     await approve(store, started.userCode, "u1", "deny");
     expect(await poll(store, started.deviceCode)).toEqual({ status: "denied" });
   });
 
   it("guesses of the short user code can't claim a token", async () => {
     const store = memoryStore();
-    const started = await start(store, "https://looseends.dev");
+    const started = await start(store, "https://clipped.dev");
     await approve(store, started.userCode, "u1");
     // knowing the user code is not enough: polling takes the secret device code
     expect(await poll(store, started.userCode)).toEqual({ status: "expired" });
@@ -112,7 +112,7 @@ describe("the device-code flow", () => {
 describe("board login / logout", () => {
   it("signs in and stores the token privately", async () => {
     const { siteUrl } = await fakeSite({ autoApprove: true });
-    const sb = sandbox({ LOOSE_ENDS_SITE: siteUrl });
+    const sb = sandbox({ CLIPPED_SITE: siteUrl });
     // login finishes after run() returns, so watch the output as it arrives
     const out: string[] = [];
     const code = run(["login", "--no-open"], { cwd: sb.root, env: sb.env, out: (l) => out.push(l), err: (l) => out.push(l) });
@@ -130,7 +130,7 @@ describe("board login / logout", () => {
 
   it("reports a refusal instead of hanging", async () => {
     const { siteUrl } = await fakeSite({ deny: true });
-    const sb = sandbox({ LOOSE_ENDS_SITE: siteUrl });
+    const sb = sandbox({ CLIPPED_SITE: siteUrl });
     sb.board("login", "--no-open");
     expect(await until(() => process.exitCode === 1)).toBe(true);
     expect(fs.existsSync(authFile(sb))).toBe(false);
@@ -206,12 +206,12 @@ describe("what analytics may send", () => {
     const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/capture`;
 
     const { track } = await import("../src/analytics.js");
-    const ctx = { cwd: sb.root, env: { ...sb.env, LOOSE_ENDS_ANALYTICS_URL: url }, out: () => {}, err: () => {} };
+    const ctx = { cwd: sb.root, env: { ...sb.env, CLIPPED_ANALYTICS_URL: url }, out: () => {}, err: () => {} };
     track(ctx, "board_opened");
     await new Promise((r) => setTimeout(r, 150));
-    expect(calls).toEqual([]); // no LOOSE_ENDS_POSTHOG_KEY set
+    expect(calls).toEqual([]); // no CLIPPED_POSTHOG_KEY set
 
-    track({ ...ctx, env: { ...ctx.env, LOOSE_ENDS_POSTHOG_KEY: "phc_test" } }, "board_opened");
+    track({ ...ctx, env: { ...ctx.env, CLIPPED_POSTHOG_KEY: "phc_test" } }, "board_opened");
     await until(() => calls.length > 0);
     expect(calls).toEqual(["/capture"]);
   });
@@ -230,7 +230,7 @@ describe("what analytics may send", () => {
 
     const { track } = await import("../src/analytics.js");
     track(
-      { cwd: sb.root, env: { ...sb.env, LOOSE_ENDS_ANALYTICS_URL: url, LOOSE_ENDS_POSTHOG_KEY: "phc_test" }, out: () => {}, err: () => {} },
+      { cwd: sb.root, env: { ...sb.env, CLIPPED_ANALYTICS_URL: url, CLIPPED_POSTHOG_KEY: "phc_test" }, out: () => {}, err: () => {} },
       "feature_added",
       { by: "claude" },
     );

@@ -15,7 +15,7 @@ describe("board file handling", () => {
 
     // A board from a newer CLI must not be touched.
     sb.write({ ...board, schemaVersion: SCHEMA_VERSION + 1 });
-    expect(sb.board("list").err).toContain("Update the Loose Ends plugin");
+    expect(sb.board("list").err).toContain("Update the Clipped plugin");
     expect(sb.read().schemaVersion).toBe(SCHEMA_VERSION + 1);
   });
 
@@ -63,7 +63,7 @@ describe("cli surface", () => {
     // every command in SPEC §4 now exists
     for (const cmd of ["init", "list", "show", "add", "update", "step", "park", "review", "done", "merge", "delete", "touch", "context", "ui", "login", "logout", "telemetry"])
       expect(helpText()).toContain(`board ${cmd}`);
-    expect(sb.board().out).toContain("board — the Loose Ends feature board");
+    expect(sb.board().out).toContain("board — the Clipped feature board");
     expect(sb.board("help").code).toBe(0);
     expect(sb.board("add", "--help").out).toBe(`usage: board add "Title" [--status active] [--type bug] [--next "..."] [--step "..."]... [--done-when "..."]... [--file path]...`);
   });
@@ -77,9 +77,9 @@ describe("cli surface", () => {
   });
 
   it("defaults the author to claude inside Claude Code and to user outside it", () => {
-    const inside = withBoard({ LOOSE_ENDS_BY: undefined, CLAUDECODE: "1" });
+    const inside = withBoard({ CLIPPED_BY: undefined, CLAUDECODE: "1" });
     expect(inside.json("add", "X").updatedBy).toBe("claude");
-    const outside = withBoard({ LOOSE_ENDS_BY: undefined });
+    const outside = withBoard({ CLIPPED_BY: undefined });
     expect(outside.json("add", "X").updatedBy).toBe("user");
   });
 });

@@ -1,5 +1,5 @@
 {
-  "description": "Keeps the Loose Ends board in step with the work.",
+  "description": "Keeps the Clipped board in step with the work.",
   "hooks": {
     "SessionStart": [
       {

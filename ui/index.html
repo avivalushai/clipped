@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Loose Ends</title>
+<title>Clipped</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -363,7 +363,7 @@ details.cols .menu input{accent-color:var(--accent)}
 
 <div class="app">
   <aside class="side" aria-label="Projects">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Loose Ends</b></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Clipped</b></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
       <span class="sample-tag" id="connTag">Connecting…</span>
@@ -420,7 +420,7 @@ const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decid
   plan:{k:'file',label:'Document',ph:'docs/plan.md'},
   reference:{k:'url',label:'Link',ph:'https://…'}};
 const GORDER={parked:0,active:1,review:2,idea:3,done:4};
-const KEY='looseends.v2';
+const KEY='clipped.v2';
 const NOW=Date.now(), M=60000, H=60*M, D=24*H;
 const PCOLORS=['#2F5BFF','#0B93B5','#E0561F','#7B5CE0','#1E9E68','#C2367A','#4B6A8F'];
 const ICON={
@@ -628,7 +628,7 @@ function homeSub(parked){
     const open=tabCards().filter(f=>f.status!=='done').length;
     return `${open} unsettled question${open===1?'':'s'} ${across}. Answered ones are waiting on a decision.`;
   }
-  return `${parked} loose end${parked===1?'':'s'} ${across}. Parked work is listed first.`;
+  return `${parked} card${parked===1?'':'s'} parked ${across}. Parked work is listed first.`;
 }
 function renderPage(){
   const p=proj(view), isHome=!p, all=tabCards();
@@ -1061,7 +1061,7 @@ function renderDrawer(){
    came of it. */
 const NOTE_UNLINKED={
   brainstorm:'No cards yet. Claude links the ones a decision produced.',
-  plan:'No cards from this document yet \u2014 /loose-ends:plan turns it into some.',
+  plan:'No cards from this document yet \u2014 /clipped:plan turns it into some.',
   reference:'Not linked to a card yet.'};
 const hostOf=u=>{try{return new URL(u).host}catch(e){return u}};
 const noteCards=n=>n.cards.map(k=>S.features.find(f=>f.project===n.project&&f.key===k)).filter(Boolean);

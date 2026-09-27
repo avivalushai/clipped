@@ -1,4 +1,4 @@
-// ~/.loose-ends/projects.json — every board on this machine (SPEC §3).
+// ~/.clipped/projects.json — every board on this machine (SPEC §3).
 
 import fs from "node:fs";
 import path from "node:path";

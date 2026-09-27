@@ -18,19 +18,19 @@ describe("site configuration", () => {
   it("offers the three install steps from the spec", async () => {
     const { INSTALL_STEPS } = await site();
     expect(INSTALL_STEPS).toEqual([
-      "/plugin marketplace add avivalushai/loose-ends",
-      "/plugin install loose-ends@loose-ends",
+      "/plugin marketplace add avivalushai/clipped",
+      "/plugin install clipped@clipped",
       "/board login",
     ]);
   });
 
   it("keeps the unbought domain in exactly one place per side", async () => {
     const { SITE_URL } = await site();
-    expect(SITE_URL).toBe("https://looseends.dev");
-    const cliHits = (read("cli/src/account.ts").match(/looseends\.dev/g) ?? []).length;
+    expect(SITE_URL).toBe("https://clipped.dev");
+    const cliHits = (read("cli/src/account.ts").match(/clipped\.dev/g) ?? []).length;
     expect(cliHits).toBe(1);
     // and nowhere else in the CLI or server
-    for (const f of ["cli/src/cli.ts", "cli/src/commands.ts", "server/src/api.ts"]) expect(read(f)).not.toContain("looseends.dev");
+    for (const f of ["cli/src/cli.ts", "cli/src/commands.ts", "server/src/api.ts"]) expect(read(f)).not.toContain("clipped.dev");
   });
 
   it("uses the in-memory store in development and refuses it in production", async () => {

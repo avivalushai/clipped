@@ -141,7 +141,7 @@ export function show(ctx: Ctx, { pos, opts }: Args) {
 export function context(ctx: Ctx, { opts }: Args) {
   const loc = findBoard(ctx.cwd);
   if (!loc) {
-    return emit(ctx, opts, { board: null }, "Loose Ends: no board in this project yet. Offer to create one with `board init`.");
+    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet. Offer to create one with `board init`.");
   }
   const b = readBoard(loc.file);
   // Questions get their own section, so they don't show up twice.
@@ -172,7 +172,7 @@ export function context(ctx: Ctx, { opts }: Args) {
     );
 
   const summary = STATUSES.filter((s) => counts[s]).map((s) => `${counts[s]} ${s}`).join(", ") || "empty";
-  const lines = [`Loose Ends board: ${b.project.name} (${b.project.key}) — ${summary}`];
+  const lines = [`Clipped board: ${b.project.name} (${b.project.key}) — ${summary}`];
   const section = (title: string, fs: Feature[], extra: (f: Feature) => string) => {
     if (!fs.length) return;
     lines.push(`${title}:`);
@@ -433,7 +433,7 @@ export function ui(ctx: Ctx, { opts }: Args) {
     .then(({ listen, DEFAULT_PORT }) => listen(ctx, port ?? DEFAULT_PORT))
     .then(({ url }) => {
       const projects = readRegistry(ctx).length;
-      ctx.out(`Loose Ends → ${url}`);
+      ctx.out(`Clipped → ${url}`);
       ctx.out(`${projects} project${projects === 1 ? "" : "s"} · board data stays on this machine · Ctrl-C to stop`);
       if (!opts["no-open"]) openBrowser(url);
     })

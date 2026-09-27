@@ -22,7 +22,7 @@ function board<T>(ctx: Ctx, project: Project, argv: string[]): T {
   const err: string[] = [];
   const code = run([...argv, "--json"], {
     cwd: project.path,
-    env: { ...ctx.env, LOOSE_ENDS_BY: "user" }, // the UI is the user typing
+    env: { ...ctx.env, CLIPPED_BY: "user" }, // the UI is the user typing
     out: (l) => out.push(l),
     err: (l) => err.push(l),
   });

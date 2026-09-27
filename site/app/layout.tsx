@@ -4,11 +4,11 @@ import { clerkConfigured, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Loose Ends — the board Claude keeps while you build",
+  title: "Clipped — the board Claude keeps while you build",
   description:
     "A feature board Claude keeps for you per project: what's in progress, what you left halfway, what's done. Your code and plans never leave your machine.",
   metadataBase: new URL(SITE_URL),
-  openGraph: { title: "Loose Ends", description: "The board Claude keeps while you build.", url: SITE_URL, type: "website" },
+  openGraph: { title: "Clipped", description: "The board Claude keeps while you build.", url: SITE_URL, type: "website" },
 };
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -27,7 +27,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           <header className="top">
             <Link className="brand" href="/">
               <span className="mark" aria-hidden="true" />
-              Loose Ends
+              Clipped
             </Link>
             <nav>
               <Link href="/app">Open my board</Link>

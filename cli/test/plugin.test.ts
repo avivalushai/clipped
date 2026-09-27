@@ -23,7 +23,7 @@ function runHook(script: string, input: unknown, env: Env = {}) {
 describe("plugin manifests", () => {
   it("puts plugin.json in .claude-plugin/ and every component directory at the plugin root", () => {
     const m = readJson(".claude-plugin/plugin.json");
-    expect(m.name).toBe("loose-ends");
+    expect(m.name).toBe("clipped");
     expect(m.description).toBeTruthy();
     for (const dir of ["skills", "commands", "hooks", "bin"]) {
       expect(fs.existsSync(path.join(repo, dir))).toBe(true);
@@ -57,20 +57,20 @@ describe("skill and commands", () => {
   };
 
   it("ships one skill with a description that says when to use it", () => {
-    const fm = frontmatter(read("skills/loose-ends/SKILL.md"));
-    expect(fm.name).toBe("loose-ends");
+    const fm = frontmatter(read("skills/clipped/SKILL.md"));
+    expect(fm.name).toBe("clipped");
     expect((fm.description ?? "").length).toBeGreaterThan(40);
     expect((fm.description ?? "").length).toBeLessThan(1024);
   });
 
   it("teaches the rules that matter, in the CLI's real vocabulary", () => {
-    const body = read("skills/loose-ends/SKILL.md");
+    const body = read("skills/clipped/SKILL.md");
     for (const rule of ["board park", "board review", "board merge", "--done-when", "Board:"]) expect(body).toContain(rule);
     for (const status of ["idea", "active", "parked", "review", "done"]) expect(body).toContain(status);
   });
 
   it("says how to turn a plan document into cards without duplicating them", () => {
-    const body = read("skills/loose-ends/SKILL.md");
+    const body = read("skills/clipped/SKILL.md");
     expect(body).toContain("A planning document is not a board");
     expect(body).toContain("skip what's already there");
     expect(body).toContain("--file <the doc>");
@@ -80,14 +80,14 @@ describe("skill and commands", () => {
   });
 
   it("says what to do with a brainstorm: nothing, until it reaches a decision", () => {
-    const body = read("skills/loose-ends/SKILL.md");
+    const body = read("skills/clipped/SKILL.md");
     expect(body).toContain("Talk is not work");
     expect(body).toContain("Want these on the board as ideas?");
     expect(body).toContain("don't ask again this session");
   });
 
   it("draws the line between a card and a note, so the board can't fill up on its own", () => {
-    const body = read("skills/loose-ends/SKILL.md");
+    const body = read("skills/clipped/SKILL.md");
     expect(body).toContain("a card is work with a\nnext step");
     expect(body).toContain("scroll back through the chat to\nfind");
     // questions stop at answered; deciding is the user's move
@@ -152,10 +152,10 @@ describe("hook behaviour", () => {
     const { json } = runHook("session-start.mjs", { hook_event_name: "SessionStart", session_id: "s1", cwd: sb.root });
     expect(json.hookSpecificOutput.hookEventName).toBe("SessionStart");
     const ctx = json.hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("Loose Ends board: My App (APP)");
+    expect(ctx).toContain("Clipped board: My App (APP)");
     expect(ctx).toContain("APP-1 Save loops — next: Wire Save");
     expect(ctx).toContain("APP-2 Mobile layout — stopped: Header overlaps");
-    expect(ctx).toContain("loose-ends skill");
+    expect(ctx).toContain("clipped skill");
   });
 
   it("SessionStart offers to create a board when there is none, once", () => {
@@ -196,7 +196,7 @@ describe("hook behaviour", () => {
 
   it("Stop blocks once when code changed but the board didn't", async () => {
     const sb = withBoard();
-    delete sb.env.LOOSE_ENDS_NOW; // the Stop check compares card-log times against real edit times
+    delete sb.env.CLIPPED_NOW; // the Stop check compares card-log times against real edit times
     sb.board("add", "Save loops", "--status", "active");
     const env = { CLAUDE_PLUGIN_DATA: sb.home };
     const stop = () => runHook("stop.mjs", { hook_event_name: "Stop", session_id: "s4", cwd: sb.root }, env);
@@ -220,7 +220,7 @@ describe("hook behaviour", () => {
 
   it("Stop keeps quiet once the board has moved, and while a Stop hook is already blocking", () => {
     const sb = withBoard();
-    delete sb.env.LOOSE_ENDS_NOW;
+    delete sb.env.CLIPPED_NOW;
     sb.board("add", "Save loops", "--status", "active");
     const env = { CLAUDE_PLUGIN_DATA: sb.home };
     runHook("post-tool-use.mjs", {

@@ -20,7 +20,7 @@ function defaultUiDir(): string {
 }
 
 /** The hosted UI may talk to this server; a random web page may not. */
-const ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?looseends\.dev$/;
+const ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?clipped\.dev$/;
 
 /** Reject DNS-rebinding: only loopback hostnames may reach us. */
 const ALLOWED_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;

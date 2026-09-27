@@ -1,4 +1,4 @@
-// Shared helpers for the Loose Ends hooks. A hook must never break a session:
+// Shared helpers for the Clipped hooks. A hook must never break a session:
 // every entry point wraps its work in safely() and exits 0 on any surprise.
 
 import { execFileSync } from "node:child_process";
@@ -24,7 +24,7 @@ export function board(args, cwd) {
       cwd,
       encoding: "utf8",
       timeout: 10_000,
-      env: { ...process.env, LOOSE_ENDS_BY: "claude" },
+      env: { ...process.env, CLIPPED_BY: "claude" },
     }).trim();
   } catch {
     return null;
@@ -43,7 +43,7 @@ export function findBoardFile(start) {
 }
 
 /** Per-session scratch state, shared between the PostToolUse and Stop hooks. */
-const stateDir = () => process.env.CLAUDE_PLUGIN_DATA || path.join(os.tmpdir(), "loose-ends");
+const stateDir = () => process.env.CLAUDE_PLUGIN_DATA || path.join(os.tmpdir(), "clipped");
 const stateFile = (sessionId) => path.join(stateDir(), `session-${(sessionId || "unknown").replace(/\W/g, "")}.json`);
 
 export function readState(sessionId) {

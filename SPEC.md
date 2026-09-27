@@ -1,4 +1,4 @@
-# Loose Ends — Spec v0.1
+# Clipped — Spec v0.1
 
 A feature board that Claude keeps for you while you build. Every project gets a board; Claude writes to it as you work, so you always know what's in progress, what you left halfway, and what's done — across all your projects.
 
@@ -23,13 +23,13 @@ Claude Code session
   └─ plugin: skill (rules) + hooks (automatic triggers) + commands
         └─ `board` CLI  ──writes──►  <repo>/.board/board.json
                                       │
-                   ~/.loose-ends/projects.json   (registry of all boards on this machine)
+                   ~/.clipped/projects.json   (registry of all boards on this machine)
                                       │
         `board ui` → local server (localhost:4747)
               ├─ GET/PUT board JSON, watches files, pushes live updates (SSE)
               └─ serves bundled UI (fallback)
                                       │
-        Browser: UI hosted at looseends.dev/app  ──fetches data only from──►  localhost:4747
+        Browser: UI hosted at clipped.dev/app  ──fetches data only from──►  localhost:4747
                  (UI updates reach everyone instantly; data never touches our servers)
 ```
 
@@ -39,7 +39,7 @@ Claude Code session
 | Plugin | Skill + hooks + slash commands for Claude Code | Plugin marketplace (GitHub repo) |
 | `board` CLI | Node CLI; the only thing that writes board files | Inside the plugin |
 | Local server | Tiny HTTP server: JSON API + file watcher + SSE | `board ui` |
-| UI | The Loose Ends web app (see `prototype/loose-ends.html`) | Hosted site + bundled fallback |
+| UI | The Clipped web app (see `prototype/clipped.html`) | Hosted site + bundled fallback |
 | Site | Landing page, sign-up, install instructions | Vercel (later) |
 | Analytics | Anonymous events | PostHog EU (later) |
 
@@ -112,7 +112,7 @@ user makes the call.
 - No status, no steps, no progress: a note has no next step, which is exactly what keeps it off the work tabs
 - Every schema change bumps `schemaVersion`; the CLI migrates old files automatically.
 
-Registry `~/.loose-ends/projects.json`: `[{ "path": "/Users/x/code/looper", "name": "Looper", "key": "LOOP", "addedAt": "..." }]`
+Registry `~/.clipped/projects.json`: `[{ "path": "/Users/x/code/looper", "name": "Looper", "key": "LOOP", "addedAt": "..." }]`
 
 ---
 
@@ -192,7 +192,7 @@ If the user corrects ("that's part of saving"), merge/fix silently.
 
 ## 6. UI
 
-Start from `prototype/loose-ends.html` (working prototype with sample data). Keep:
+Start from `prototype/clipped.html` (working prototype with sample data). Keep:
 - Five tabs above the summary: Features · Questions · Brainstorms · Plans · References, each with a count
 - Left menu: all projects, parked count, progress
 - Views: Table (editable cells, add row, group/density/columns), Board (drag between columns), Timeline (idle time for parked)
@@ -235,11 +235,11 @@ Key metric: share of cards created/updated **by Claude** — proves the automati
 
 Goal: a public site where people sign up, plus usage analytics. We store **no user content** — only an account and anonymous events.
 
-**Site** (Next.js on Vercel, e.g. `looseends.dev`)
+**Site** (Next.js on Vercel, e.g. `clipped.dev`)
 - Landing: what it is, privacy promise ("your code and plans never leave your machine"), 3 install steps each with its own copy button:
   ```
-  /plugin marketplace add <github-user>/loose-ends
-  /plugin install loose-ends@loose-ends
+  /plugin marketplace add <github-user>/clipped
+  /plugin install clipped@clipped
   /board login
   ```
 - Sign-up / sign-in with Google and GitHub via a hosted auth provider (Clerk or Auth.js). No passwords.
@@ -247,9 +247,9 @@ Goal: a public site where people sign up, plus usage analytics. We store **no us
 - `/privacy`: exactly what is and isn't collected.
 
 **`/board login` — device-code flow**
-1. CLI requests a code from the site API, opens `looseends.dev/link?code=XXXX`
+1. CLI requests a code from the site API, opens `clipped.dev/link?code=XXXX`
 2. User signs in and approves
-3. CLI polls, receives a token, stores it in `~/.loose-ends/auth.json`
+3. CLI polls, receives a token, stores it in `~/.clipped/auth.json`
 `board logout` removes it. Everything works without login; events are then anonymous (install id).
 
 **Analytics** (PostHog, EU region): see section 7. Sent from the local server and CLI. `board telemetry off` disables all; mention it on first run.
@@ -262,11 +262,11 @@ Goal: a public site where people sign up, plus usage analytics. We store **no us
 
 ## 10. UI detail
 
-The prototype (`prototype/loose-ends.html`) is the reference; this section describes it.
+The prototype (`prototype/clipped.html`) is the reference; this section describes it.
 
 **Layout** — Left sidebar 232px, dark navy `#0B1220`: logo; "All projects" with parked-count pill; project list (colored 2-letter key badge, parked pill, thin progress bar); "+" to add a project (name + folder). Below 760px it collapses to icons with a dot for projects with parked work. Main: `#EDF1F7` with a faint 24px blueprint grid, white surfaces, accent `#2F5BFF`. Fonts: Bricolage Grotesque / IBM Plex Sans / IBM Plex Mono. Light + dark mode.
 
-**Header** — Project: key badge + path, name, search, "board.json" (raw file), "+ New feature". All projects: "All features" + "N loose ends across M projects". Summary strip (% complete, stacked status bar, counts). Status chips with counts. View bar: Table | Board | Timeline + Group by (Status/Project/Nothing), Density, Columns menu, Hide done (remembered per browser).
+**Header** — Project: key badge + path, name, search, "board.json" (raw file), "+ New feature". All projects: "All features" + "N cards parked across M projects". Summary strip (% complete, stacked status bar, counts). Status chips with counts. View bar: Table | Board | Timeline + Group by (Status/Project/Nothing), Density, Columns menu, Hide done (remembered per browser).
 
 **Tabs** — Features and Questions are the card tabs and share the Table / Board / Timeline views; the Questions tab shows only `type: question` cards and relabels the statuses. Brainstorms, Plans and References each show a plainer table (Id · Project · Title · body/document/link · Cards · Updated · Last by · delete) with an add-row at the top and no status, progress or grouping. A card chip in the Cards column jumps to that card and opens it.
 

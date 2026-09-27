@@ -1,4 +1,4 @@
--- Loose Ends stores exactly this. No board content, ever (SPEC §9).
+-- Clipped stores exactly this. No board content, ever (SPEC §9).
 
 create table if not exists users (
   id          text primary key,           -- Clerk user id

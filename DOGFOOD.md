@@ -8,8 +8,8 @@ Started: 2026-09-23. Boards seeded from git history (5 cards each).
 
 ## Setup
 
-1. In Claude Code: `/plugin marketplace add ~/Projects/loose-ends`, then
-   `/plugin install loose-ends@loose-ends`, then restart.
+1. In Claude Code: `/plugin marketplace add ~/Projects/clipped`, then
+   `/plugin install clipped@clipped`, then restart.
 2. Work normally. Don't tidy the board by hand — a board you have to maintain
    is the thing we're trying not to build.
 3. `board ui` when you want to look at it.

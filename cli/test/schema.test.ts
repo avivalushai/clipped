@@ -80,7 +80,7 @@ describe("migrate", () => {
   });
 
   it("refuses boards from a newer CLI", () => {
-    expect(() => migrate({ schemaVersion: SCHEMA_VERSION + 1 })).toThrow(/Update the Loose Ends plugin/);
+    expect(() => migrate({ schemaVersion: SCHEMA_VERSION + 1 })).toThrow(/Update the Clipped plugin/);
   });
 
   it("errors on a missing migration step or version", () => {

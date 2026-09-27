@@ -10,7 +10,7 @@ const script = /<script>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
 
 describe("the bundled UI", () => {
   it("is one self-contained page with valid script", () => {
-    expect(html).toContain("<title>Loose Ends");
+    expect(html).toContain("<title>Clipped");
     expect(script.length).toBeGreaterThan(10_000);
     expect(() => new vm.Script(script)).not.toThrow();
     // no build step, no CDN: the server serves this file as-is

@@ -1,8 +1,8 @@
 {
-  "name": "loose-ends",
-  "displayName": "Loose Ends",
+  "name": "clipped",
+  "displayName": "Clipped",
   "description": "A feature board Claude keeps for you while you build \u2014 per project, updated automatically, with everything you left halfway front and center.",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": {
     "name": "Aviv Alush"
   },

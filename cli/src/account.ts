@@ -1,4 +1,4 @@
-// ~/.loose-ends/{settings,auth}.json — the only state outside a project.
+// ~/.clipped/{settings,auth}.json — the only state outside a project.
 // Neither file ever holds board content.
 
 import crypto from "node:crypto";
@@ -8,8 +8,8 @@ import { type Ctx, homeDir, nowIso } from "./context.js";
 import { writeJsonAtomic } from "./fsutil.js";
 
 /** Where the site lives. One constant: the domain isn't bought yet. */
-export const SITE_URL = "https://looseends.dev";
-export const siteUrl = (ctx: Ctx) => (ctx.env.LOOSE_ENDS_SITE || SITE_URL).replace(/\/$/, "");
+export const SITE_URL = "https://clipped.dev";
+export const siteUrl = (ctx: Ctx) => (ctx.env.CLIPPED_SITE || SITE_URL).replace(/\/$/, "");
 
 export interface Settings {
   installId: string;
@@ -82,5 +82,5 @@ export function telemetryNoticeOnce(ctx: Ctx): string | null {
   const s = readSettings(ctx);
   if (s.toldAboutTelemetry || !s.telemetry) return null;
   writeSettings(ctx, { ...s, toldAboutTelemetry: true });
-  return "Loose Ends counts which actions happen (names and counts only — never titles, notes or paths). Turn it off with `board telemetry off`.";
+  return "Clipped counts which actions happen (names and counts only — never titles, notes or paths). Turn it off with `board telemetry off`.";
 }

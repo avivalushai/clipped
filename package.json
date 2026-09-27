@@ -1,6 +1,6 @@
 {
-  "name": "loose-ends",
-  "version": "0.2.1",
+  "name": "clipped",
+  "version": "0.3.0",
   "private": true,
   "description": "A feature board Claude keeps for you while you build.",
   "type": "module",
@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "board": "node bin/board",
-    "plugin:sync": "claude plugin uninstall loose-ends@loose-ends >/dev/null 2>&1; claude plugin install loose-ends@loose-ends"
+    "plugin:sync": "claude plugin uninstall clipped@clipped >/dev/null 2>&1; claude plugin install clipped@clipped"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

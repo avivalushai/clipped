@@ -30,7 +30,7 @@ safely(async (input) => {
       hookEventName: "Stop",
       decision: "block",
       reason:
-        "Code changed but the Loose Ends board didn't. Update it before finishing: move the card you worked on (`board update|park|review|done`), or add one if this was new work. If nothing worth recording changed, say so in one line and stop. Follow the loose-ends skill, and end with the one-line Board: footer.",
+        "Code changed but the Clipped board didn't. Update it before finishing: move the card you worked on (`board update|park|review|done`), or add one if this was new work. If nothing worth recording changed, say so in one line and stop. Follow the clipped skill, and end with the one-line Board: footer.",
     },
   });
 });

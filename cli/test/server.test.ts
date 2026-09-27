@@ -191,7 +191,7 @@ describe("serving the UI and staying local", () => {
     const page = await fetch(url + "/");
     expect(page.status).toBe(200);
     expect(page.headers.get("content-type")).toContain("text/html");
-    expect(await page.text()).toContain("Loose Ends");
+    expect(await page.text()).toContain("Clipped");
     expect((await fetch(url + "/../package.json")).status).toBe(404);
   });
 
@@ -199,9 +199,9 @@ describe("serving the UI and staying local", () => {
     const { url } = await serve(seeded());
     const preflight = await fetch(url + "/api/projects", {
       method: "OPTIONS",
-      headers: { Origin: "https://looseends.dev", "Access-Control-Request-Method": "GET", "Access-Control-Request-Private-Network": "true" },
+      headers: { Origin: "https://clipped.dev", "Access-Control-Request-Method": "GET", "Access-Control-Request-Private-Network": "true" },
     });
-    expect(preflight.headers.get("access-control-allow-origin")).toBe("https://looseends.dev");
+    expect(preflight.headers.get("access-control-allow-origin")).toBe("https://clipped.dev");
     expect(preflight.headers.get("access-control-allow-private-network")).toBe("true");
     expect(preflight.headers.get("vary")).toContain("Origin");
 
@@ -231,8 +231,8 @@ describe("adopting a project from the UI", () => {
   /** A sandbox with a fake Claude Code history for a folder that has no board. */
   const withHistory = () => {
     const sb = sandbox();
-    sb.env.LOOSE_ENDS_CLAUDE_HOME = path.join(sb.home, "claude");
-    const dir = path.join(sb.env.LOOSE_ENDS_CLAUDE_HOME, "projects", "-encoded-name");
+    sb.env.CLIPPED_CLAUDE_HOME = path.join(sb.home, "claude");
+    const dir = path.join(sb.env.CLIPPED_CLAUDE_HOME, "projects", "-encoded-name");
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "s.jsonl"), JSON.stringify({ type: "user", cwd: sb.root }) + "\n");
     return sb;

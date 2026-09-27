@@ -12,7 +12,7 @@ afterEach(() => {
 
 export interface Sandbox {
   root: string; // project folder
-  home: string; // LOOSE_ENDS_HOME
+  home: string; // CLIPPED_HOME
   env: Env;
   board: (...argv: string[]) => { code: number; out: string; err: string };
   json: <T = any>(...argv: string[]) => T;
@@ -30,7 +30,7 @@ export function sandbox(env: Env = {}): Sandbox {
   const sb: Sandbox = {
     root,
     home,
-    env: { LOOSE_ENDS_HOME: home, LOOSE_ENDS_NOW: "2026-09-20T10:00:00Z", LOOSE_ENDS_BY: "claude", ...env },
+    env: { CLIPPED_HOME: home, CLIPPED_NOW: "2026-09-20T10:00:00Z", CLIPPED_BY: "claude", ...env },
     board(...argv) {
       const out: string[] = [];
       const err: string[] = [];

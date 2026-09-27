@@ -7,14 +7,14 @@ safely(async (input) => {
   const out = board(["context"], cwd);
   if (!out) return;
 
-  const hasBoard = !out.startsWith("Loose Ends: no board");
+  const hasBoard = !out.startsWith("Clipped: no board");
   const additionalContext = hasBoard
     ? [
         out,
         "",
-        `Keep this board up to date as you work — see the loose-ends skill. Write to it with \`board\` (on PATH) or \`node ${BOARD_BIN}\`.`,
+        `Keep this board up to date as you work — see the clipped skill. Write to it with \`board\` (on PATH) or \`node ${BOARD_BIN}\`.`,
       ].join("\n")
-    : "This project has no Loose Ends board. If the user starts building something, offer once to create one with `board init` (you can seed it from recent git history). Don't ask again this session.";
+    : "This project has no Clipped board. If the user starts building something, offer once to create one with `board init` (you can seed it from recent git history). Don't ask again this session.";
 
   emit({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext } });
 });

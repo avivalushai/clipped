@@ -40,7 +40,7 @@ export function track(ctx: Ctx, event: EventName, props: Record<string, unknown>
   try {
     const settings = readSettings(ctx);
     if (!settings.telemetry) return;
-    const key = ctx.env.LOOSE_ENDS_POSTHOG_KEY;
+    const key = ctx.env.CLIPPED_POSTHOG_KEY;
     if (!key) return; // no project key yet: nothing is sent anywhere
 
     const auth = readAuth(ctx);
@@ -48,13 +48,13 @@ export function track(ctx: Ctx, event: EventName, props: Record<string, unknown>
       api_key: key,
       event,
       distinct_id: auth?.userId ?? settings.installId,
-      properties: { ...safeProps(props), $lib: "loose-ends-cli" },
+      properties: { ...safeProps(props), $lib: "clipped-cli" },
       timestamp: new Date().toISOString(),
     });
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2000);
-    void fetch(ctx.env.LOOSE_ENDS_ANALYTICS_URL || HOST, {
+    void fetch(ctx.env.CLIPPED_ANALYTICS_URL || HOST, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,

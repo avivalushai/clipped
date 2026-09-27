@@ -31,22 +31,35 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 
 // cli/src/context.ts
+function adoptLegacyHome(ctx, dir) {
+  const old = ctx.env.CLIPPED_LEGACY_HOME ?? (ctx.env.CLIPPED_HOME ? "" : import_node_path.default.join(import_node_os.default.homedir(), ".loose-ends"));
+  if (!old || old === dir) return;
+  try {
+    if (import_node_fs.default.existsSync(old)) import_node_fs.default.renameSync(old, dir);
+  } catch {
+  }
+}
 function actor(ctx, flag2) {
-  const v = flag2 ?? ctx.env.LOOSE_ENDS_BY ?? (ctx.env.CLAUDECODE ? "claude" : "user");
+  const v = flag2 ?? ctx.env.CLIPPED_BY ?? (ctx.env.CLAUDECODE ? "claude" : "user");
   if (v !== "claude" && v !== "user") throw new UserError(`--by must be claude or user (got "${v}")`);
   return v;
 }
-var import_node_os, import_node_path, UserError, homeDir, nowIso;
+var import_node_fs, import_node_os, import_node_path, UserError, homeDir, nowIso;
 var init_context = __esm({
   "cli/src/context.ts"() {
     "use strict";
+    import_node_fs = __toESM(require("node:fs"), 1);
     import_node_os = __toESM(require("node:os"), 1);
     import_node_path = __toESM(require("node:path"), 1);
     UserError = class extends Error {
     };
-    homeDir = (ctx) => ctx.env.LOOSE_ENDS_HOME || import_node_path.default.join(import_node_os.default.homedir(), ".loose-ends");
+    homeDir = (ctx) => {
+      const dir = ctx.env.CLIPPED_HOME || import_node_path.default.join(import_node_os.default.homedir(), ".clipped");
+      if (!import_node_fs.default.existsSync(dir)) adoptLegacyHome(ctx, dir);
+      return dir;
+    };
     nowIso = (ctx) => {
-      const pinned = ctx.env.LOOSE_ENDS_NOW;
+      const pinned = ctx.env.CLIPPED_NOW;
       return (pinned ? new Date(pinned) : /* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/, "Z");
     };
   }
@@ -54,26 +67,26 @@ var init_context = __esm({
 
 // cli/src/fsutil.ts
 function writeFileAtomic(file, data) {
-  import_node_fs.default.mkdirSync(import_node_path2.default.dirname(file), { recursive: true });
+  import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  import_node_fs.default.writeFileSync(tmp, data);
-  import_node_fs.default.renameSync(tmp, file);
+  import_node_fs2.default.writeFileSync(tmp, data);
+  import_node_fs2.default.renameSync(tmp, file);
 }
 function writeJsonAtomic(file, value) {
   writeFileAtomic(file, JSON.stringify(value, null, 2) + "\n");
 }
 function withLock(lockPath, fn, { timeoutMs = 3e3, staleMs = 1e4 } = {}) {
   const start = Date.now();
-  import_node_fs.default.mkdirSync(import_node_path2.default.dirname(lockPath), { recursive: true });
+  import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(lockPath), { recursive: true });
   for (; ; ) {
     try {
-      import_node_fs.default.mkdirSync(lockPath);
+      import_node_fs2.default.mkdirSync(lockPath);
       break;
     } catch (e) {
       if (e.code !== "EEXIST") throw e;
       try {
-        if (Date.now() - import_node_fs.default.statSync(lockPath).mtimeMs > staleMs) {
-          import_node_fs.default.rmSync(lockPath, { recursive: true, force: true });
+        if (Date.now() - import_node_fs2.default.statSync(lockPath).mtimeMs > staleMs) {
+          import_node_fs2.default.rmSync(lockPath, { recursive: true, force: true });
           continue;
         }
       } catch {
@@ -86,14 +99,14 @@ function withLock(lockPath, fn, { timeoutMs = 3e3, staleMs = 1e4 } = {}) {
   try {
     return fn();
   } finally {
-    import_node_fs.default.rmSync(lockPath, { recursive: true, force: true });
+    import_node_fs2.default.rmSync(lockPath, { recursive: true, force: true });
   }
 }
-var import_node_fs, import_node_path2, sleep;
+var import_node_fs2, import_node_path2, sleep;
 var init_fsutil = __esm({
   "cli/src/fsutil.ts"() {
     "use strict";
-    import_node_fs = __toESM(require("node:fs"), 1);
+    import_node_fs2 = __toESM(require("node:fs"), 1);
     import_node_path2 = __toESM(require("node:path"), 1);
     sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
   }
@@ -102,7 +115,7 @@ var init_fsutil = __esm({
 // cli/src/account.ts
 function readJson(file) {
   try {
-    const v = JSON.parse(import_node_fs2.default.readFileSync(file, "utf8"));
+    const v = JSON.parse(import_node_fs3.default.readFileSync(file, "utf8"));
     return v && typeof v === "object" ? v : {};
   } catch {
     return {};
@@ -124,29 +137,29 @@ function writeSettings(ctx, settings) {
 function writeAuth(ctx, auth) {
   writeJsonAtomic(authFile(ctx), { ...auth, savedAt: nowIso(ctx) });
   try {
-    import_node_fs2.default.chmodSync(authFile(ctx), 384);
+    import_node_fs3.default.chmodSync(authFile(ctx), 384);
   } catch {
   }
 }
 function clearAuth(ctx) {
   try {
-    import_node_fs2.default.rmSync(authFile(ctx));
+    import_node_fs3.default.rmSync(authFile(ctx));
     return true;
   } catch {
     return false;
   }
 }
-var import_node_crypto, import_node_fs2, import_node_path3, SITE_URL, siteUrl, settingsFile, authFile, readAuth;
+var import_node_crypto, import_node_fs3, import_node_path3, SITE_URL, siteUrl, settingsFile, authFile, readAuth;
 var init_account = __esm({
   "cli/src/account.ts"() {
     "use strict";
     import_node_crypto = __toESM(require("node:crypto"), 1);
-    import_node_fs2 = __toESM(require("node:fs"), 1);
+    import_node_fs3 = __toESM(require("node:fs"), 1);
     import_node_path3 = __toESM(require("node:path"), 1);
     init_context();
     init_fsutil();
-    SITE_URL = "https://looseends.dev";
-    siteUrl = (ctx) => (ctx.env.LOOSE_ENDS_SITE || SITE_URL).replace(/\/$/, "");
+    SITE_URL = "https://clipped.dev";
+    siteUrl = (ctx) => (ctx.env.CLIPPED_SITE || SITE_URL).replace(/\/$/, "");
     settingsFile = (ctx) => import_node_path3.default.join(homeDir(ctx), "settings.json");
     authFile = (ctx) => import_node_path3.default.join(homeDir(ctx), "auth.json");
     readAuth = (ctx) => {
@@ -170,19 +183,19 @@ function track(ctx, event, props = {}) {
   try {
     const settings = readSettings(ctx);
     if (!settings.telemetry) return;
-    const key = ctx.env.LOOSE_ENDS_POSTHOG_KEY;
+    const key = ctx.env.CLIPPED_POSTHOG_KEY;
     if (!key) return;
     const auth = readAuth(ctx);
     const body = JSON.stringify({
       api_key: key,
       event,
       distinct_id: auth?.userId ?? settings.installId,
-      properties: { ...safeProps(props), $lib: "loose-ends-cli" },
+      properties: { ...safeProps(props), $lib: "clipped-cli" },
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2e3);
-    void fetch(ctx.env.LOOSE_ENDS_ANALYTICS_URL || HOST, {
+    void fetch(ctx.env.CLIPPED_ANALYTICS_URL || HOST, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
@@ -231,8 +244,8 @@ function setStatus(ctx, f, to, by, note3) {
 function progress(f) {
   return { done: f.steps.filter((s2) => s2.done).length, total: f.steps.length };
 }
-function sortFeatures(fs10) {
-  return [...fs10].sort(
+function sortFeatures(fs11) {
+  return [...fs11].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || b.updatedAt.localeCompare(a.updatedAt)
   );
 }
@@ -288,9 +301,9 @@ var init_features = __esm({
 // cli/src/registry.ts
 function readRegistry(ctx) {
   const file = registryFile(ctx);
-  if (!import_node_fs3.default.existsSync(file)) return [];
+  if (!import_node_fs4.default.existsSync(file)) return [];
   try {
-    const data = JSON.parse(import_node_fs3.default.readFileSync(file, "utf8"));
+    const data = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
     if (!Array.isArray(data)) return [];
     return data.filter(
       (e) => e && typeof e.path === "string" && typeof e.name === "string" && typeof e.key === "string"
@@ -314,11 +327,11 @@ function registerProject(ctx, entry) {
     return !existing;
   });
 }
-var import_node_fs3, import_node_path4, registryFile;
+var import_node_fs4, import_node_path4, registryFile;
 var init_registry = __esm({
   "cli/src/registry.ts"() {
     "use strict";
-    import_node_fs3 = __toESM(require("node:fs"), 1);
+    import_node_fs4 = __toESM(require("node:fs"), 1);
     import_node_path4 = __toESM(require("node:path"), 1);
     init_context();
     init_fsutil();
@@ -499,7 +512,7 @@ function migrate(raw, migrations = MIGRATIONS, target = SCHEMA_VERSION) {
     throw new MigrationError("board.json has no valid schemaVersion");
   if (from > target)
     throw new MigrationError(
-      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Loose Ends plugin.`
+      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin.`
     );
   let v = from;
   while (v < target) {
@@ -529,7 +542,7 @@ function findBoard(start) {
   let dir = import_node_path5.default.resolve(start);
   for (; ; ) {
     const file = boardFileFor(dir);
-    if (import_node_fs4.default.existsSync(file)) return { root: dir, file };
+    if (import_node_fs5.default.existsSync(file)) return { root: dir, file };
     const parent = import_node_path5.default.dirname(dir);
     if (parent === dir) return null;
     dir = parent;
@@ -543,7 +556,7 @@ function requireBoard(ctx) {
 function readBoard(file) {
   let raw;
   try {
-    raw = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
+    raw = JSON.parse(import_node_fs5.default.readFileSync(file, "utf8"));
   } catch (e) {
     throw new UserError(`can't read ${file}: ${e.message}`);
   }
@@ -558,7 +571,7 @@ function readBoard(file) {
   if (errs.length) throw new UserError(`${file} is invalid:
   ${errs.slice(0, 10).join("\n  ")}`);
   if (res.migrated) {
-    import_node_fs4.default.copyFileSync(file, `${file}.v${res.from}.bak`);
+    import_node_fs5.default.copyFileSync(file, `${file}.v${res.from}.bak`);
     writeJsonAtomic(file, res.board);
   }
   return res.board;
@@ -577,11 +590,11 @@ function mutateBoard(loc, fn) {
     return result;
   });
 }
-var import_node_fs4, import_node_path5, BOARD_DIR, BOARD_FILE, boardFileFor;
+var import_node_fs5, import_node_path5, BOARD_DIR, BOARD_FILE, boardFileFor;
 var init_store = __esm({
   "cli/src/store.ts"() {
     "use strict";
-    import_node_fs4 = __toESM(require("node:fs"), 1);
+    import_node_fs5 = __toESM(require("node:fs"), 1);
     import_node_path5 = __toESM(require("node:path"), 1);
     init_context();
     init_fsutil();
@@ -597,10 +610,10 @@ var init_store = __esm({
 function cwdFromSession(file) {
   let text;
   try {
-    const fd = import_node_fs5.default.openSync(file, "r");
+    const fd = import_node_fs6.default.openSync(file, "r");
     const buf = Buffer.alloc(64 * 1024);
-    const read = import_node_fs5.default.readSync(fd, buf, 0, buf.length, 0);
-    import_node_fs5.default.closeSync(fd);
+    const read = import_node_fs6.default.readSync(fd, buf, 0, buf.length, 0);
+    import_node_fs6.default.closeSync(fd);
     text = buf.subarray(0, read).toString("utf8");
   } catch {
     return null;
@@ -626,46 +639,46 @@ function looksLikeAProject(ctx, dir) {
 }
 function discoverProjects(ctx) {
   const dir = import_node_path6.default.join(claudeHome(ctx), "projects");
-  if (!import_node_fs5.default.existsSync(dir)) return [];
+  if (!import_node_fs6.default.existsSync(dir)) return [];
   const registered = new Set(readRegistry(ctx).map((e) => e.path));
   const found = /* @__PURE__ */ new Map();
-  for (const entry of import_node_fs5.default.readdirSync(dir)) {
+  for (const entry of import_node_fs6.default.readdirSync(dir)) {
     const projectDir = import_node_path6.default.join(dir, entry);
     let sessions;
     try {
-      if (!import_node_fs5.default.statSync(projectDir).isDirectory()) continue;
-      sessions = import_node_fs5.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
+      if (!import_node_fs6.default.statSync(projectDir).isDirectory()) continue;
+      sessions = import_node_fs6.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
     } catch {
       continue;
     }
     if (!sessions.length) continue;
-    const newest = sessions.map((f) => import_node_path6.default.join(projectDir, f)).sort((a, b) => import_node_fs5.default.statSync(b).mtimeMs - import_node_fs5.default.statSync(a).mtimeMs)[0];
+    const newest = sessions.map((f) => import_node_path6.default.join(projectDir, f)).sort((a, b) => import_node_fs6.default.statSync(b).mtimeMs - import_node_fs6.default.statSync(a).mtimeMs)[0];
     const cwd = cwdFromSession(newest);
     if (!cwd || registered.has(cwd) || found.has(cwd)) continue;
-    if (!import_node_fs5.default.existsSync(cwd) || import_node_fs5.default.existsSync(boardFileFor(cwd))) continue;
+    if (!import_node_fs6.default.existsSync(cwd) || import_node_fs6.default.existsSync(boardFileFor(cwd))) continue;
     if (!looksLikeAProject(ctx, cwd)) continue;
-    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs5.default.statSync(newest).mtimeMs).toISOString() });
+    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs6.default.statSync(newest).mtimeMs).toISOString() });
   }
   return [...found.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
 }
-var import_node_fs5, import_node_os2, import_node_path6, claudeHome, isKnownProject;
+var import_node_fs6, import_node_os2, import_node_path6, claudeHome, isKnownProject;
 var init_discover = __esm({
   "server/src/discover.ts"() {
     "use strict";
-    import_node_fs5 = __toESM(require("node:fs"), 1);
+    import_node_fs6 = __toESM(require("node:fs"), 1);
     import_node_os2 = __toESM(require("node:os"), 1);
     import_node_path6 = __toESM(require("node:path"), 1);
     init_commands();
     init_registry();
     init_store();
-    claudeHome = (ctx) => ctx.env.LOOSE_ENDS_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || import_node_path6.default.join(import_node_os2.default.homedir(), ".claude");
+    claudeHome = (ctx) => ctx.env.CLIPPED_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || import_node_path6.default.join(import_node_os2.default.homedir(), ".claude");
     isKnownProject = (ctx, candidate) => discoverProjects(ctx).some((c) => c.path === import_node_path6.default.resolve(candidate));
   }
 });
 
 // server/src/projects.ts
 function listProjects(ctx) {
-  return readRegistry(ctx).filter((e) => import_node_fs6.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
+  return readRegistry(ctx).filter((e) => import_node_fs7.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
 }
 function findProject(ctx, id) {
   return listProjects(ctx).find((p) => p.id === id);
@@ -692,12 +705,12 @@ function summarize(project2) {
     percentComplete: total ? Math.round(100 * base.counts.done / total) : 0
   };
 }
-var import_node_crypto2, import_node_fs6, projectId;
+var import_node_crypto2, import_node_fs7, projectId;
 var init_projects = __esm({
   "server/src/projects.ts"() {
     "use strict";
     import_node_crypto2 = __toESM(require("node:crypto"), 1);
-    import_node_fs6 = __toESM(require("node:fs"), 1);
+    import_node_fs7 = __toESM(require("node:fs"), 1);
     init_registry();
     init_schema();
     init_store();
@@ -711,7 +724,7 @@ function board(ctx, project2, argv) {
   const err = [];
   const code = run([...argv, "--json"], {
     cwd: project2.path,
-    env: { ...ctx.env, LOOSE_ENDS_BY: "user" },
+    env: { ...ctx.env, CLIPPED_BY: "user" },
     // the UI is the user typing
     out: (l) => out.push(l),
     err: (l) => err.push(l)
@@ -859,7 +872,7 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
   };
   const watch = (target, handler) => {
     try {
-      const w = import_node_fs7.default.watch(target, { persistent: false }, handler);
+      const w = import_node_fs8.default.watch(target, { persistent: false }, handler);
       w.on("error", () => {
       });
       watchers.push(w);
@@ -878,7 +891,7 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
     for (const p of listProjects(ctx)) watch(import_node_path7.default.join(p.path, BOARD_DIR), () => fire(p.id));
   };
   try {
-    import_node_fs7.default.mkdirSync(import_node_path7.default.dirname(registryFile(ctx)), { recursive: true });
+    import_node_fs8.default.mkdirSync(import_node_path7.default.dirname(registryFile(ctx)), { recursive: true });
   } catch {
   }
   rebuild();
@@ -891,11 +904,11 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
     rebuild
   };
 }
-var import_node_fs7, import_node_path7;
+var import_node_fs8, import_node_path7;
 var init_watch = __esm({
   "server/src/watch.ts"() {
     "use strict";
-    import_node_fs7 = __toESM(require("node:fs"), 1);
+    import_node_fs8 = __toESM(require("node:fs"), 1);
     import_node_path7 = __toESM(require("node:path"), 1);
     init_registry();
     init_store();
@@ -913,7 +926,7 @@ __export(server_exports, {
 function defaultUiDir() {
   const here = typeof __dirname === "string" ? __dirname : import_node_path8.default.dirname((0, import_node_url.fileURLToPath)(__filename));
   const candidates = [import_node_path8.default.resolve(here, "../../ui"), import_node_path8.default.resolve(here, "../ui")];
-  return candidates.find((d) => import_node_fs8.default.existsSync(import_node_path8.default.join(d, "index.html"))) ?? candidates[0];
+  return candidates.find((d) => import_node_fs9.default.existsSync(import_node_path8.default.join(d, "index.html"))) ?? candidates[0];
 }
 function cors(req, res) {
   const origin = req.headers.origin;
@@ -946,12 +959,12 @@ async function readBody(req) {
 function serveStatic(res, urlPath, uiDir) {
   const rel = urlPath === "/" || urlPath === "/app" ? "index.html" : urlPath.replace(/^\/+/, "");
   const file = import_node_path8.default.join(uiDir, rel);
-  if (!file.startsWith(uiDir + import_node_path8.default.sep) || !import_node_fs8.default.existsSync(file) || !import_node_fs8.default.statSync(file).isFile()) {
+  if (!file.startsWith(uiDir + import_node_path8.default.sep) || !import_node_fs9.default.existsSync(file) || !import_node_fs9.default.statSync(file).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain" });
     return void res.end("Not found");
   }
   res.writeHead(200, { "Content-Type": MIME[import_node_path8.default.extname(file)] ?? "application/octet-stream", "Cache-Control": "no-cache" });
-  import_node_fs8.default.createReadStream(file).pipe(res);
+  import_node_fs9.default.createReadStream(file).pipe(res);
 }
 function createServer(ctx, options = {}) {
   const uiDir = options.uiDir ?? defaultUiDir();
@@ -1026,18 +1039,18 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs8, import_node_http, import_node_path8, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
+var import_node_fs9, import_node_http, import_node_path8, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
-    import_node_fs8 = __toESM(require("node:fs"), 1);
+    import_node_fs9 = __toESM(require("node:fs"), 1);
     import_node_http = __toESM(require("node:http"), 1);
     import_node_path8 = __toESM(require("node:path"), 1);
     import_node_url = require("node:url");
     init_api();
     init_watch();
     DEFAULT_PORT = 4747;
-    ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?looseends\.dev$/;
+    ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?clipped\.dev$/;
     ALLOWED_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
     MIME = {
       ".html": "text/html; charset=utf-8",
@@ -1090,7 +1103,7 @@ function init(ctx, { opts }) {
   const file = boardFileFor(root);
   let board2;
   let created = false;
-  if (import_node_fs9.default.existsSync(file)) {
+  if (import_node_fs10.default.existsSync(file)) {
     board2 = readBoard(file);
     if (opts.name || opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 rename with the UI or edit settings later`);
   } else {
@@ -1112,16 +1125,16 @@ function listCmd(ctx, { opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const statuses = str2(opts, "status")?.split(",").map((s2) => parseStatus(s2.trim()));
   const type = parseType(str2(opts, "type"));
-  let fs10 = board2.features;
-  if (statuses) fs10 = fs10.filter((f) => statuses.includes(f.status));
-  else if (!opts.all) fs10 = fs10.filter((f) => f.status !== "done");
-  if (type) fs10 = fs10.filter((f) => f.type === type);
-  fs10 = sortFeatures(fs10);
-  const w = Math.max(0, ...fs10.map((f) => f.key.length));
+  let fs11 = board2.features;
+  if (statuses) fs11 = fs11.filter((f) => statuses.includes(f.status));
+  else if (!opts.all) fs11 = fs11.filter((f) => f.status !== "done");
+  if (type) fs11 = fs11.filter((f) => f.type === type);
+  fs11 = sortFeatures(fs11);
+  const w = Math.max(0, ...fs11.map((f) => f.key.length));
   const hidden = !statuses && !opts.all ? board2.features.filter((f) => f.status === "done").length : 0;
-  const lines = fs10.length ? fs10.map((f) => formatLine(f, w)) : ["No cards."];
+  const lines = fs11.length ? fs11.map((f) => formatLine(f, w)) : ["No cards."];
   if (hidden) lines.push(`(+${hidden} done \u2014 use --all)`);
-  emit(ctx, opts, fs10, lines);
+  emit(ctx, opts, fs11, lines);
 }
 function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
@@ -1131,7 +1144,7 @@ function show(ctx, { pos, opts }) {
 function context(ctx, { opts }) {
   const loc = findBoard(ctx.cwd);
   if (!loc) {
-    return emit(ctx, opts, { board: null }, "Loose Ends: no board in this project yet. Offer to create one with `board init`.");
+    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet. Offer to create one with `board init`.");
   }
   const b = readBoard(loc.file);
   const work = b.features.filter((f) => f.type !== "question");
@@ -1159,11 +1172,11 @@ function context(ctx, { opts }) {
       )
     );
   const summary = STATUSES.filter((s2) => counts[s2]).map((s2) => `${counts[s2]} ${s2}`).join(", ") || "empty";
-  const lines = [`Loose Ends board: ${b.project.name} (${b.project.key}) \u2014 ${summary}`];
-  const section = (title, fs10, extra) => {
-    if (!fs10.length) return;
+  const lines = [`Clipped board: ${b.project.name} (${b.project.key}) \u2014 ${summary}`];
+  const section = (title, fs11, extra) => {
+    if (!fs11.length) return;
     lines.push(`${title}:`);
-    for (const f of fs10) {
+    for (const f of fs11) {
       const { done: done2, total } = progress(f);
       const bits = [`  ${f.key} ${f.title}`];
       if (total) bits.push(`(${done2}/${total})`);
@@ -1384,7 +1397,7 @@ function ui(ctx, { opts }) {
   if (port !== void 0 && (!Number.isInteger(port) || port < 1 || port > 65535)) throw new UserError("--port must be a port number");
   void Promise.resolve().then(() => (init_server(), server_exports)).then(({ listen: listen2, DEFAULT_PORT: DEFAULT_PORT2 }) => listen2(ctx, port ?? DEFAULT_PORT2)).then(({ url }) => {
     const projects = readRegistry(ctx).length;
-    ctx.out(`Loose Ends \u2192 ${url}`);
+    ctx.out(`Clipped \u2192 ${url}`);
     ctx.out(`${projects} project${projects === 1 ? "" : "s"} \xB7 board data stays on this machine \xB7 Ctrl-C to stop`);
     if (!opts["no-open"]) openBrowser(url);
   }).catch((e) => {
@@ -1607,12 +1620,12 @@ function telemetry(ctx, { pos, opts }) {
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous)."
   ]);
 }
-var import_node_child_process, import_node_fs9, import_node_path9, str2, list, park, review, done, wait;
+var import_node_child_process, import_node_fs10, import_node_path9, str2, list, park, review, done, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
     import_node_child_process = require("node:child_process");
-    import_node_fs9 = __toESM(require("node:fs"), 1);
+    import_node_fs10 = __toESM(require("node:fs"), 1);
     import_node_path9 = __toESM(require("node:path"), 1);
     init_account();
     init_analytics();
@@ -1635,7 +1648,7 @@ var init_commands = __esm({
 // cli/src/cli.ts
 function helpText() {
   return [
-    "board \u2014 the Loose Ends feature board",
+    "board \u2014 the Clipped feature board",
     "",
     "Usage:",
     ...Object.values(COMMANDS).map((c) => `  board ${c.usage}`),
@@ -1651,7 +1664,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.2.1");
+    ctx.out("0.3.0");
     return 0;
   }
   const command = COMMANDS[name];

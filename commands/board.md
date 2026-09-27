@@ -1,5 +1,5 @@
 ---
-description: Open the Loose Ends board, or show its status
+description: Open the Clipped board, or show its status
 argument-hint: "[status]"
 allowed-tools: Bash(board:*)
 ---

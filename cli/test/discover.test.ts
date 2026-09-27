@@ -6,7 +6,7 @@ import { type Sandbox, sandbox, withBoard } from "./helpers.js";
 
 /** Write a fake Claude Code session file for a folder, the way Claude Code does. */
 function claudeSession(sb: Sandbox, projectPath: string, { encodedAs = "", cwdLine = true } = {}) {
-  const dir = path.join(sb.env.LOOSE_ENDS_CLAUDE_HOME!, "projects", encodedAs || projectPath.replace(/\//g, "-"));
+  const dir = path.join(sb.env.CLIPPED_CLAUDE_HOME!, "projects", encodedAs || projectPath.replace(/\//g, "-"));
   fs.mkdirSync(dir, { recursive: true });
   const lines = [
     JSON.stringify({ type: "summary", summary: "a session" }),
@@ -18,14 +18,14 @@ function claudeSession(sb: Sandbox, projectPath: string, { encodedAs = "", cwdLi
 
 const withClaude = () => {
   const sb = sandbox();
-  sb.env.LOOSE_ENDS_CLAUDE_HOME = path.join(sb.home, "claude");
+  sb.env.CLIPPED_CLAUDE_HOME = path.join(sb.home, "claude");
   return sb;
 };
 
 describe("finding projects that have no board", () => {
   it("reads the real path from the session file, not the folder name", () => {
     const sb = withClaude();
-    // the encoded name is lossy — "loose-ends" and "loose/ends" encode the same
+    // the encoded name is lossy — "my-app" and "my/app" encode the same
     claudeSession(sb, sb.root, { encodedAs: "-tmp-my-app-with-dashes" });
     const found = discoverProjects({ cwd: sb.root, env: sb.env, out: () => {}, err: () => {} });
     expect(found).toHaveLength(1);
@@ -39,7 +39,7 @@ describe("finding projects that have no board", () => {
     const ctx = { cwd: sb.root, env: sb.env, out: () => {}, err: () => {} };
 
     const withB = withBoard(); // has a board and is in the registry
-    withB.env.LOOSE_ENDS_CLAUDE_HOME = sb.env.LOOSE_ENDS_CLAUDE_HOME;
+    withB.env.CLIPPED_CLAUDE_HOME = sb.env.CLIPPED_CLAUDE_HOME;
     claudeSession(sb, withB.root);
     claudeSession(sb, path.join(sb.home, "deleted-project"));
     expect(discoverProjects(ctx)).toEqual([]);
@@ -55,7 +55,7 @@ describe("finding projects that have no board", () => {
     expect(discoverProjects(ctx)).toEqual([]); // no ~/.claude/projects at all
 
     claudeSession(sb, sb.root, { cwdLine: false });
-    fs.mkdirSync(path.join(sb.env.LOOSE_ENDS_CLAUDE_HOME!, "projects", "-empty-one"), { recursive: true });
+    fs.mkdirSync(path.join(sb.env.CLIPPED_CLAUDE_HOME!, "projects", "-empty-one"), { recursive: true });
     expect(discoverProjects(ctx)).toEqual([]);
   });
 
@@ -92,7 +92,7 @@ describe("what counts as a project", () => {
     for (const junk of [
       home, // $HOME itself
       path.join(home, ".claude"), // a dotfolder
-      path.join(sb.env.LOOSE_ENDS_CLAUDE_HOME!, "something"), // inside the config dir
+      path.join(sb.env.CLIPPED_CLAUDE_HOME!, "something"), // inside the config dir
       path.join(home, "Library/Application Support/Claude/scratch-workspaces/abc/def"),
       "/",
     ])
