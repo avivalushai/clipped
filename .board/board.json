@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 18,
+  "nextNum": 19,
   "features": [
     {
       "key": "LE-1",
@@ -671,6 +671,28 @@
       "log": [
         {
           "at": "2026-09-24T14:42:40Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-18",
+      "title": "Notes and questions get their own panel",
+      "type": "feature",
+      "status": "review",
+      "note": "Open a brainstorm, plan or reference from its row — each shows what it produced; a question drops the progress bar and empty file list. Check LE-N1 and LE-N2 in the UI",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "createdAt": "2026-09-24T15:01:21Z",
+      "updatedAt": "2026-09-24T15:01:21Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-24T15:01:21Z",
           "by": "claude",
           "text": "Created — review"
         }

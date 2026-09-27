@@ -56,6 +56,29 @@ describe("the bundled UI", () => {
     expect(script).toContain("if(editingNote){");
   });
 
+  it("gives a note its own panel instead of the card one", () => {
+    // A note has no status, no steps and no progress: the card drawer's fields
+    // would all be empty, which is why notes had no panel at all before.
+    expect(script).toContain("function renderNoteDrawer(){");
+    expect(script).toContain("if(openNote) return renderNoteDrawer();");
+    expect(script).toContain("data-nopen=");
+    for (const field of ["What was decided", "What it produced", "Where it came from"])
+      expect(script).toContain(field);
+    // both directions: a note lists the cards it produced, a card names its source
+    expect(script).toContain("const noteCards=n=>n.cards.map(");
+    expect(script).toContain("function sourceNotes(f){");
+    expect(script).toContain("data-gocard=");
+  });
+
+  it("stops asking a question the things it only asks a feature", () => {
+    expect(script).toContain("const isQ=f.type==='question'");
+    // no progress bar and no empty file list on a question
+    expect(script).toContain("${isQ?'':progBar(f)}");
+    expect(script).toContain("${isQ&&!f.files.length?'':`<div class=\"field\"><span class=\"lbl\">Files touched");
+    // and it records an answer rather than deciding
+    expect(script).toContain("that marks it Answered, not Decided");
+  });
+
   it("tells the user how to add a project instead of faking one", () => {
     expect(script).toContain("board init");
     expect(script).not.toContain("S.projects.push(");

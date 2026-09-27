@@ -276,6 +276,10 @@ The prototype (`prototype/loose-ends.html`) is the reference; this section descr
 
 **Timeline** — last 14 days; bar from created → last update (active → now), colored by status; parked get a dashed amber "idle Nd" line to today; ideas are hollow dots; "now" line; legend.
 
-**Card drawer** — key + project, editable title, progress; status buttons; note (label by status, amber when parked); steps checklist + add; "Continue with Claude" (hand-off prompt in a dialog with Copy); files; activity log; Delete / Save; Esc closes.
+**Card drawer** — key + project, editable title, progress; status buttons; note (label by status, amber when parked); steps checklist + add; "Continue with Claude" (hand-off prompt in a dialog with Copy); files; "Where it came from" (the notes linking to this card); activity log; Delete / Save; Esc closes.
+
+A **question** drops what it doesn't have: no progress bar, no file list unless files were actually recorded, "What to check" instead of Steps with no 0/0 on an empty list, and a hand-off that says to record the answer with `board answer` — Answered, not Decided.
+
+**Note drawer** — a note has no status, no steps and no progress, so the panel answers different questions: id + project, editable title, kind and when it was last touched; the kind's own field (brainstorm → **what was decided**, given room as a textarea; plan → the document path; reference → the link, with an "Open host" line); **What it produced** — the cards it links to, each with its status, under a tally ("3 cards · 1 done"); Delete / Save; Esc closes. A plan with a document also offers **Bring it to the board again**: a prompt telling Claude to re-read it, naming the cards it already produced so nothing doubles. Card rows jump to the card and open it; the card drawer jumps back.
 
 **Status colors** — idea `#8391A7`, active `#0B93B5`, parked `#D2780A`, review `#7B5CE0`, done `#1E9E68`. Parked > 3 days shows age in amber.

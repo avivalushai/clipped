@@ -237,6 +237,12 @@ tr.grp:hover td{background:var(--ground)}
 .log .when{font-family:var(--mono);font-size:11px;color:var(--faint)}
 .handoff{border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 7%,var(--surface));border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
 .handoff p{margin:0;font-size:13px;color:var(--muted)}
+.field input.fin{border:1px solid var(--line);background:var(--ground);border-radius:8px;padding:8px 10px;width:100%}
+.nlinks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nlink{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;padding:5px 8px;border-radius:6px;color:var(--ink);font-size:13px}
+.nlink:hover{background:var(--sunk)}
+.nlink .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.nlink .st{font-size:11px;color:var(--muted);flex:none}
 .drawer-f{display:flex;justify-content:space-between;gap:8px}
 
 dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:0;width:min(640px,calc(100% - 32px));box-shadow:var(--shadow)}
@@ -252,8 +258,8 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 .grid th:last-child,.grid td:last-child{border-right:0}
 .grid td{padding:6px 10px;height:44px}
 .grid tbody tr{cursor:default}
-.grid tbody tr[data-row]:hover td{background:color-mix(in srgb,var(--sunk) 70%,var(--surface))}
-.grid tbody tr[data-row]{cursor:pointer}
+.grid tbody tr[data-row]:hover td,.grid tbody tr[data-nrow]:hover td{background:color-mix(in srgb,var(--sunk) 70%,var(--surface))}
+.grid tbody tr[data-row],.grid tbody tr[data-nrow]{cursor:pointer}
 .grid td.notecell{color:var(--muted);max-width:0}
 .grid td.notecell .txt{display:inline-block;max-width:calc(100% - 22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .grid td.notecell .pencil{opacity:0;background:none;border:0;padding:2px 4px;margin-left:4px;color:var(--muted);cursor:pointer;vertical-align:middle;border-radius:4px}
@@ -262,7 +268,7 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 .grid td.notecell .pencil:focus-visible{opacity:1;outline:2px solid var(--accent);outline-offset:1px}
 .grid td.notecell.parked{color:var(--s-parked)}
 .grid td.notecell .ph{opacity:.45}
-.grid tbody tr[data-row]:hover td{background:var(--hover,rgba(47,91,255,.04))}
+.grid tbody tr[data-row]:hover td,.grid tbody tr[data-nrow]:hover td{background:var(--hover,rgba(47,91,255,.04))}
 .grid tr.is-parked td:first-child{box-shadow:inset 3px 0 0 var(--s-parked)}
 .grid tr.is-done .cell-in.title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
 .grid tr.is-idea .prog,.grid tr.is-idea .steps{opacity:.3}
@@ -404,6 +410,12 @@ const NOTE_HINT={
   brainstorm:'A brainstorm is the thinking, not the work — what it decided lives on the cards it links to.',
   plan:'Plans hold the reasoning; the board holds the state. Editing a card never edits the document.',
   reference:'Links you would otherwise have to scroll back through the chat to find.'};
+const KINDL={brainstorm:'Brainstorm',plan:'Plan',reference:'Reference'};
+/* The drawer asks a different thing of each kind than the table column does. */
+const NOTEBODY={
+  brainstorm:{label:'What was decided',ph:'The decision the conversation reached \u2014 not everything that was said'},
+  plan:{label:'Notes',ph:'Anything worth knowing that isn\u2019t in the document'},
+  reference:{label:'Why it\u2019s here',ph:'What this answered, in one line'}};
 const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decided'},
   plan:{k:'file',label:'Document',ph:'docs/plan.md'},
   reference:{k:'url',label:'Link',ph:'https://…'}};
@@ -524,6 +536,8 @@ let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files
 try{Object.assign(P,JSON.parse(localStorage.getItem(KEY+'.prefs'))||{})}catch(e){}
 const savePrefs=()=>{try{localStorage.setItem(KEY+'.prefs',JSON.stringify(P))}catch(e){}};
 let view='home', query='', openId=null, sort={k:'updated',dir:1}, filter='all', addingProject=false, editingNote=null;
+/* A note opens its own drawer: same shell, different questions answered. */
+let openNote=null;
 let comp={project:null,status:'idea'};
 const $=id=>document.getElementById(id);
 
@@ -688,7 +702,7 @@ const cardLink=(pid,key)=>`<button class="clink" data-card="${pid+':'+key}">${es
 function noteCell(c,n,isHome){
   const f=NOTEFIELD[n.kind];
   switch(c.id){
-    case 'id': return `<td class="key">${esc(n.nid)}</td>`;
+    case 'id': return `<td><button class="keybtn" data-nopen="${n.id}" title="Open note">${esc(n.nid)}</button></td>`;
     case 'project': return `<td>${pbadge(proj(n.project),true)} <span class="pname">${esc(proj(n.project).name)}</span></td>`;
     case 'title': return `<td><input class="cell-in" data-nedit="title" data-id="${n.id}" value="${esc(n.title)}" aria-label="Title"></td>`;
     case 'target': return `<td>${n.kind==='reference'&&n.url?`<a class="ext" href="${esc(n.url)}" target="_blank" rel="noreferrer noopener" title="${esc(n.url)}">${esc(n.url)}</a>`
@@ -724,7 +738,7 @@ function renderNotesPage(isHome){
   const minW=cols.reduce((a,c)=>a+c.w,0);
   return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
     <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="hint">${esc(NOTE_HINT[TAB().note])}</p>`;
+  <p class="hint">Click a row to open it. ${esc(NOTE_HINT[TAB().note])}</p>`;
 }
 
 /* ---------- table ---------- */
@@ -894,12 +908,16 @@ function bindNotes(p,isHome){
     const f=S.features.find(x=>x.id===b.dataset.card); if(!f) return;
     P.tab=f.type==='question'?'questions':'features'; filter='all'; savePrefs(); openId=f.id; render();
   });
+  document.querySelectorAll('tr[data-nrow]').forEach(tr=>tr.addEventListener('click',e=>{
+    if(e.target.closest('input,select,button,textarea,label,a')) return;   // editing, not opening
+    openNote=tr.dataset.nrow; renderDrawer();
+  }));
 }
 
 function bindTabs(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
     if(P.tab===b.dataset.tab) return;
-    P.tab=b.dataset.tab; filter='all'; openId=null; sort={k:'updated',dir:1}; savePrefs(); render();
+    P.tab=b.dataset.tab; filter='all'; openId=null; openNote=null; sort={k:'updated',dir:1}; savePrefs(); render();
   });
 }
 
@@ -975,6 +993,10 @@ function bindPage(){
 
 function handoffPrompt(f){
   const p=proj(f.project), left=f.steps.filter(s=>!s.done);
+  if(f.type==='question') return [`Find out: "${f.title}" (${fkey(f)}) in ${p.path}.`,
+    f.note?`${noteLabel(f)}: ${f.note}`:'',
+    left.length?`Still to check:\n${left.map(s=>'- '+s.text).join('\n')}`:'',
+    `Move it to Looking into while you work. When you have the answer, record it with \`board answer ${fkey(f)} "..."\` \u2014 that marks it Answered, not Decided. The decision is mine.`].filter(Boolean).join('\n\n');
   return [`Continue ${fkey(f)} "${f.title}" in ${p.path}.`,
     `Status: ${sl(f.status)}.`,
     f.note?`${noteLabel(f)}: ${f.note}`:'',
@@ -985,24 +1007,26 @@ function handoffPrompt(f){
 
 /* ---------- drawer ---------- */
 function renderDrawer(){
+  if(openNote) return renderNoteDrawer();
   const f=S.features.find(x=>x.id===openId);
   if(!f){$('drawerRoot').innerHTML='';return}
-  const noteLbl=noteLabel(f);
+  const isQ=f.type==='question', noteLbl=noteLabel(f);
   const done=f.steps.filter(s=>s.done).length;
   $('drawerRoot').innerHTML=`<div class="scrim" id="scrim"></div>
   <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(f.title)}">
     <div class="drawer-h"><div class="row"><span class="mono">${fkey(f)} · ${esc(proj(f.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
-      <input class="title-in" id="titleIn" value="${esc(f.title)}" aria-label="Feature title">${progBar(f)}</div>
+      <input class="title-in" id="titleIn" value="${esc(f.title)}" aria-label="${isQ?'Question':'Feature title'}">${isQ?'':progBar(f)}</div>
     <div class="drawer-b">
       <div class="field"><span class="lbl">Status</span><div class="seg">${STATUSES.map(s=>`<button data-st="${s.id}" aria-pressed="${f.status===s.id}"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}</button>`).join('')}</div></div>
       <div class="field"><label class="lbl" for="noteIn">${noteLbl}</label><textarea id="noteIn" class="${f.status==='parked'?'stopnote':''}" placeholder="${f.status==='parked'?'What was left undone, and why you switched away':'Context for the next session'}">${esc(f.note)}</textarea></div>
-      <div class="field"><span class="lbl"><span>Steps</span><span class="mono">${done}/${f.steps.length}</span></span>
+      <div class="field"><span class="lbl"><span>${isQ?'What to check':'Steps'}</span>${f.steps.length?`<span class="mono">${done}/${f.steps.length}</span>`:''}</span>
         <ul class="checklist">${f.steps.map((s,i)=>`<li><label class="${s.done?'done':''}"><input type="checkbox" data-step="${i}" ${s.done?'checked':''}><span>${esc(s.text)}</span></label></li>`).join('')}</ul>
-        <form class="addstep" id="stepForm"><input id="stepIn" placeholder="Add a step" aria-label="New step"><button class="btn sm">Add</button></form></div>
-      ${f.status!=='done'?`<div class="handoff"><b>Continue with Claude</b><p>Gives Claude everything it needs to pick this up: where you stopped, the remaining steps and the files involved.</p><div><button class="btn primary sm" id="handoffBtn">Get the prompt</button></div></div>`:''}
-      <div class="field"><span class="lbl">Files touched</span>${f.files.length?`<ul class="files">${f.files.map(x=>`<li class="mono">${esc(x)}</li>`).join('')}</ul>`:'<span class="hint">None yet. Claude records files as it edits them.</span>'}</div>
+        <form class="addstep" id="stepForm"><input id="stepIn" placeholder="${isQ?'Add something to check':'Add a step'}" aria-label="New step"><button class="btn sm">Add</button></form></div>
+      ${f.status!=='done'?`<div class="handoff"><b>${isQ?'Find this out with Claude':'Continue with Claude'}</b><p>${isQ?'Hands Claude the question and what you\u2019re checking. It records what it finds as the answer \u2014 deciding stays yours.':'Gives Claude everything it needs to pick this up: where you stopped, the remaining steps and the files involved.'}</p><div><button class="btn primary sm" id="handoffBtn">Get the prompt</button></div></div>`:''}
+      ${isQ&&!f.files.length?'':`<div class="field"><span class="lbl">Files touched</span>${f.files.length?`<ul class="files">${f.files.map(x=>`<li class="mono">${esc(x)}</li>`).join('')}</ul>`:'<span class="hint">None yet. Claude records files as it edits them.</span>'}</div>`}
+      ${sourceNotes(f)}
       <div class="field"><span class="lbl">Activity</span><ul class="log">${[...f.log].reverse().map(l=>`<li>${who(l.by)}<span>${esc(l.text)}<div class="when">${ago(l.at)} ago</div></span></li>`).join('')}</ul></div>
-      <div class="drawer-f"><button class="btn danger ghost" id="dDel">Delete feature</button><button class="btn primary" id="dSave">Save</button></div>
+      <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete feature'}</button><button class="btn primary" id="dSave">Save</button></div>
     </div></aside>`;
   const close=()=>commit().then(()=>{openId=null;pendingPark=null;render()});
   $('scrim').onclick=close; $('dClose').onclick=close;
@@ -1014,6 +1038,7 @@ function renderDrawer(){
     commit().then(()=>saveCard(f,{steps:[...f.steps.map(s=>({text:s.text,done:s.done})),{text:t,done:false}]}))
       .then(()=>$('stepIn')?.focus())};
   if($('handoffBtn')) $('handoffBtn').onclick=()=>commit().then(()=>openDialog('Paste this into Claude',handoffPrompt(f)));
+  document.querySelectorAll('[data-nopen]').forEach(b=>b.onclick=()=>commit().then(()=>openTheNote(b.dataset.nopen)));
   $('dSave').onclick=()=>commit().then(ok=>{if(ok===false)return;openId=null;pendingPark=null;render();toast('Saved')});
   $('dDel').onclick=()=>{ if(!confirm('Delete '+fkey(f)+' "'+f.title+'"? Merging it into another card keeps the history.')) return;
     deleteCard(f).then(ok=>{if(ok){openId=null;render();toast('Deleted')}})};
@@ -1029,9 +1054,102 @@ function renderDrawer(){
   }
 }
 
+
+/* ---------- note drawer ---------- */
+/* A note has no status and no progress, so this panel answers different
+   questions than a card's: what was decided, where the document is, and what
+   came of it. */
+const NOTE_UNLINKED={
+  brainstorm:'No cards yet. Claude links the ones a decision produced.',
+  plan:'No cards from this document yet \u2014 /loose-ends:plan turns it into some.',
+  reference:'Not linked to a card yet.'};
+const hostOf=u=>{try{return new URL(u).host}catch(e){return u}};
+const noteCards=n=>n.cards.map(k=>S.features.find(f=>f.project===n.project&&f.key===k)).filter(Boolean);
+/* "6 cards · 2 done · 1 parked" — the line that says whether a plan happened. */
+const stLabel=f=>(f.type==='question'?QSL:SL)[f.status];
+function cardTally(cards){
+  if(!cards.length) return '';
+  const bits=[`${cards.length} card${cards.length===1?'':'s'}`];
+  // Only the states that mean something; the rest is arithmetic the eye can do.
+  for(const st of ['done','parked','review']){
+    const k=cards.filter(f=>f.status===st).length;
+    if(k) bits.push(`${k} ${SL[st].toLowerCase()}`);
+  }
+  return bits.join(' \u00b7 ');
+}
+/* The other direction: notes pointing at this card — the plan it came from,
+   the brainstorm that settled it, the page that answered it. */
+function sourceNotes(f){
+  const ns=S.notes.filter(n=>n.project===f.project&&n.cards.includes(f.key));
+  if(!ns.length) return '';
+  return `<div class="field"><span class="lbl">Where it came from</span><ul class="nlinks">${ns.map(n=>
+    `<li><button class="nlink" data-nopen="${n.id}"><span class="mono st">${esc(n.nid)}</span><span class="t">${esc(n.title)}</span><span class="st">${esc(KINDL[n.kind])}</span></button></li>`).join('')}</ul></div>`;
+}
+function openTheNote(id){
+  const n=S.notes.find(x=>x.id===id); if(!n) return;
+  openId=null; openNote=n.id; P.tab=n.kind+'s'; filter='all'; savePrefs(); render();
+}
+function planPrompt(n){
+  const p=proj(n.project), cards=noteCards(n);
+  return [`Re-read ${n.file} in ${p.path} and put anything new on the board.`,
+    cards.length?`${n.nid} already produced: ${cards.map(f=>f.key+' '+f.title).join(', ')}. Skip those, and anything else already on the board that means the same thing.`
+      :`${n.nid} hasn't produced any cards yet.`,
+    `An unticked checkbox is work too: something to find out is a question, something to do is a chore. Show me the list before you add anything.`].join('\n\n');
+}
+
+function renderNoteDrawer(){
+  const n=S.notes.find(x=>x.id===openNote);
+  if(!n){openNote=null;$('drawerRoot').innerHTML='';return}
+  const fld=NOTEBODY[n.kind], cards=noteCards(n);
+  const target=n.kind==='reference'
+    ? `<div class="field"><label class="lbl" for="nUrl">Link</label><input id="nUrl" class="fin mono" value="${esc(n.url)}" placeholder="https://\u2026" aria-label="Link">${n.url?`<a class="ext" href="${esc(n.url)}" target="_blank" rel="noreferrer noopener">Open ${esc(hostOf(n.url))}</a>`:''}</div>`
+    : n.kind==='plan'
+    ? `<div class="field"><label class="lbl" for="nFile">Document</label><input id="nFile" class="fin mono" value="${esc(n.file)}" placeholder="docs/plan.md" aria-label="Document"><span class="hint">The document holds the reasoning; the board holds what came of it. Editing a card never edits the document.</span></div>`
+    : '';
+
+  $('drawerRoot').innerHTML=`<div class="scrim" id="scrim"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(n.title)}">
+    <div class="drawer-h"><div class="row"><span class="mono">${esc(n.nid)} \u00b7 ${esc(proj(n.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
+      <input class="title-in" id="nTitleIn" value="${esc(n.title)}" aria-label="${esc(KINDL[n.kind])} title">
+      <div class="row"><span class="kindtag">${esc(KINDL[n.kind])}</span><span>updated ${ago(n.updatedAt)} ago by ${n.by==='claude'?'Claude':'you'}</span></div></div>
+    <div class="drawer-b">
+      ${target}
+      <div class="field"><label class="lbl" for="nBody">${esc(fld.label)}</label><textarea id="nBody" placeholder="${esc(fld.ph)}">${esc(n.body)}</textarea></div>
+      <div class="field"><span class="lbl"><span>${n.kind==='reference'?'Where it was used':'What it produced'}</span>${cards.length?`<span class="mono">${esc(cardTally(cards))}</span>`:''}</span>
+        ${cards.length?`<ul class="nlinks">${cards.map(f=>`<li><button class="nlink" data-gocard="${f.id}"><span class="dot" style="background:${color(f.status)}"></span><span class="mono st">${esc(f.key)}</span><span class="t">${esc(f.title)}</span><span class="st">${esc(stLabel(f))}</span></button></li>`).join('')}</ul>`
+          :`<span class="hint">${esc(NOTE_UNLINKED[n.kind])}</span>`}</div>
+      ${n.kind==='plan'&&n.file?`<div class="handoff"><b>Bring it to the board again</b><p>Plans get edited. This asks Claude to re-read the document and add only what isn\u2019t on the board yet.</p><div><button class="btn primary sm" id="nHandoff">Get the prompt</button></div></div>`:''}
+      <div class="drawer-f"><button class="btn danger ghost" id="nDel">Delete ${esc(KINDL[n.kind].toLowerCase())}</button><button class="btn primary" id="nSave">Save</button></div>
+    </div></aside>`;
+
+  const close=()=>commitNote().then(()=>{openNote=null;render()});
+  $('scrim').onclick=close; $('dClose').onclick=close;
+  $('nSave').onclick=()=>commitNote().then(ok=>{if(ok===false)return;openNote=null;render();toast('Saved')});
+  $('nDel').onclick=()=>{ if(!confirm('Delete '+n.nid+' \u201c'+n.title+'\u201d? The cards it produced stay.')) return;
+    deleteNote(n).then(ok=>{if(ok){openNote=null;render();toast(n.nid+' deleted')}})};
+  if($('nHandoff')) $('nHandoff').onclick=()=>commitNote().then(()=>openDialog('Paste this into Claude',planPrompt(n)));
+  document.querySelectorAll('[data-gocard]').forEach(b=>b.onclick=()=>commitNote().then(()=>{
+    const f=S.features.find(x=>x.id===b.dataset.gocard); if(!f) return;
+    openNote=null; openId=f.id; P.tab=f.type==='question'?'questions':'features'; filter='all'; savePrefs(); render();
+  }));
+
+  /* Write the open fields back. Returns false if the server refused. */
+  async function commitNote(){
+    const ti=$('nTitleIn'); if(!ti) return true;
+    const patch={};
+    const title=ti.value.trim()||n.title; if(title!==n.title) patch.title=title;
+    const body=$('nBody').value.trim(); if(body!==n.body) patch.body=body;
+    if($('nUrl')&&$('nUrl').value.trim()!==n.url) patch.url=$('nUrl').value.trim();
+    if($('nFile')&&$('nFile').value.trim()!==n.file) patch.file=$('nFile').value.trim();
+    if(!Object.keys(patch).length) return true;
+    return saveNote(n,patch);
+  }
+}
+
 document.addEventListener('click',e=>{
-  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;comp.project=null;render();window.scrollTo(0,0);return}
-  const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openId=o.dataset.open;renderDrawer();return}
+  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;render();window.scrollTo(0,0);return}
+  const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
+  const no=e.target.closest('[data-nopen]'); if(no&&!e.target.closest('.drawer')){openTheNote(no.dataset.nopen);return}
   const d=document.querySelector('details.cols[open]'); if(d&&!e.target.closest('details.cols')) d.removeAttribute('open');
 });
 /* Leaving the note field — by blur, Escape or clicking away — puts it back to text. */
@@ -1044,7 +1162,7 @@ document.addEventListener('mousedown',e=>{
 },true);
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&editingNote){editingNote=null;render();return}
-  if(e.key==='Escape'&&openId&&!$('dlg').open){openId=null;render()}
+  if(e.key==='Escape'&&(openId||openNote)&&!$('dlg').open){openId=null;openNote=null;render()}
 });
 $('dlgClose').onclick=()=>$('dlg').close();
 $('dlgCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('dlgPre').textContent);toast('Copied')}catch(e){const r=document.createRange();r.selectNodeContents($('dlgPre'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Selected — press ⌘C to copy')}};
