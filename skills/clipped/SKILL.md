@@ -229,6 +229,15 @@ one line, and name them in the user's own words:
   done-when: an idea is a title until someone picks it up.
 - No, or no answer → drop it and don't ask again this session.
 
+**Picked from a list.** When you laid out a list of options — a review, a set of
+suggestions, a numbered menu — and the user chose some of them to do now, the
+rest are "not now", not "no". Build what they picked, and add every item they
+didn't pick as an `idea`, without asking. Then add one brainstorm note that links
+the ideas and the card for the work they chose, so the list stays in one place.
+Name the ideas in the footer. Two exceptions: anything they explicitly turned
+down ("skip the phone stuff") is dropped, and if they only asked questions about
+the list without choosing anything, it's still thinking aloud — record nothing.
+
 Only offer for things the user actually settled on. "Maybe we could do voice
 input" is thinking aloud; "right, voice input's in" is a decision. If you can't
 tell which it was, leave it out of the list — a missing idea costs one sentence

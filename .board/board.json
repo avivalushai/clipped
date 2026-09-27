@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 31,
+  "nextNum": 44,
   "features": [
     {
       "key": "LE-1",
@@ -1382,9 +1382,282 @@
         }
       ],
       "links": []
+    },
+    {
+      "key": "LE-31",
+      "title": "Review queue: one Your-turn card at a time, with Done / Needs work / Skip",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-32",
+      "title": "Show how long each card has waited on you",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-33",
+      "title": "Questions show age and Open → Answered → Decided, not progress",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-34",
+      "title": "Home leads with what's waiting on you",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-35",
+      "title": "Sidebar badges count cards waiting on you, not parked ones",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-36",
+      "title": "Parked cards show idle time, and old ones stand out",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-37",
+      "title": "A simple priority: mark cards \"next up\"",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-38",
+      "title": "Last 7 days view: what was decided, shipped, answered and parked",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-39",
+      "title": "Copy a weekly update as markdown",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:40Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-40",
+      "title": "Keyboard: j/k to move, Enter to open, d for Done, / to search",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:41Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-41",
+      "title": "Open touched files in your editor",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:41Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-42",
+      "title": "The board fits a phone screen",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:41Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-43",
+      "title": "A phone view of what's waiting on you",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:29:41Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
     }
   ],
-  "nextNoteNum": 3,
+  "nextNoteNum": 4,
   "notes": [
     {
       "id": "LE-N1",
@@ -1415,6 +1688,34 @@
       "updatedAt": "2026-09-24T14:08:03Z",
       "updatedBy": "claude",
       "considered": ""
+    },
+    {
+      "id": "LE-N3",
+      "kind": "brainstorm",
+      "title": "Board UI review: builder and PM walkthrough",
+      "body": "Built first (LE-30): Done / Needs work, autosave, proof links, undo, honest progress, new-since-you-looked dots, what was considered, linked notes, copy prompt, bulk actions, one word everywhere, a timeline that shows waiting, ~ paths. The rest stay as ideas.",
+      "considered": "28 suggestions from a builder and a PM walkthrough. You picked 15 to build first (LE-30); the other 13 wait here as ideas, LE-31 to LE-43.",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-31",
+        "LE-32",
+        "LE-33",
+        "LE-34",
+        "LE-35",
+        "LE-36",
+        "LE-37",
+        "LE-38",
+        "LE-39",
+        "LE-40",
+        "LE-41",
+        "LE-42",
+        "LE-43",
+        "LE-30"
+      ],
+      "createdAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-27T17:29:49Z",
+      "updatedBy": "claude"
     }
   ]
 }
