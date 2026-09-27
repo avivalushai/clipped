@@ -471,14 +471,16 @@ const NOTE_HINT={
   plan:'Plans hold the reasoning; the board holds the state. Editing a card never edits the document.',
   reference:'Links you would otherwise have to scroll back through the chat to find.'};
 const KINDL={brainstorm:'Brainstorm',plan:'Plan',reference:'Reference'};
+/* What the new-note row asks for first, in the words you'd use. */
+const NOTE_TITLE_PH={brainstorm:'What was the conversation about? Then Enter',plan:'Name the plan, then Enter',reference:'What is it? Then Enter'};
 /* The drawer asks a different thing of each kind than the table column does. */
 const NOTEBODY={
   brainstorm:{label:'What was decided',ph:'The decision the conversation reached \u2014 not everything that was said'},
   plan:{label:'Notes',ph:'Anything worth knowing that isn\u2019t in the document'},
   reference:{label:'Why it\u2019s here',ph:'What this answered, in one line'}};
-const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decided'},
-  plan:{k:'file',label:'Document',ph:'docs/plan.md'},
-  reference:{k:'url',label:'Link',ph:'https://…'}};
+const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decided (optional)'},
+  plan:{k:'file',label:'Document',ph:'docs/plan.md (optional)'},
+  reference:{k:'url',label:'Link',ph:'https://… (optional)'}};
 const GORDER={parked:0,active:1,review:2,idea:3,done:4};
 const KEY='clipped.v2';
 const NOW=Date.now(), M=60000, H=60*M, D=24*H;
@@ -818,9 +820,9 @@ function noteComposer(cols,isHome){
   let out='';
   for(const c of cols){
     if(c.id==='id') out+=`<td class="key">+ New</td>`;
-    else if(c.id==='project') out+=`<td><select id="nProj" aria-label="Project">${S.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></td>`;
-    else if(c.id==='title') out+=`<td><input id="nTitle" placeholder="${esc(TAB().note==='reference'?'What is it?':'Title')}" aria-label="New title"></td>`;
-    else if(c.id==='target') out+=`<td><input id="nTarget" class="${TAB().note==='plan'?'mono':''}" placeholder="${esc(f.ph)}" aria-label="${esc(f.label)}"></td>`;
+    else if(c.id==='project') out+=`<td><span class="sel"><select id="nProj" aria-label="Project">${S.projects.map(p=>`<option value="${p.id}" ${p.id===view?'selected':''}>${esc(p.name)}</option>`).join('')}</select></span></td>`;
+    else if(c.id==='title') out+=`<td><input id="nTitle" class="cell-in title" placeholder="${esc(NOTE_TITLE_PH[TAB().note])}" aria-label="New ${esc(TAB().note)} title"></td>`;
+    else if(c.id==='target') out+=`<td><input id="nTarget" class="cell-in ${TAB().note==='plan'||TAB().note==='reference'?'mono':'note'}" placeholder="${esc(f.ph)}" aria-label="${esc(f.label)}"></td>`;
     else if(c.id==='cards'){ out+=`<td colspan="${cols.length-cols.indexOf(c)}"><button class="btn sm primary" id="nAdd">Add ${esc(TAB().note)}</button></td>`; break }
     else out+='<td></td>';
   }
@@ -1184,6 +1186,18 @@ function handoffPrompt(f){
 
 /* ---------- drawer ---------- */
 /* A drawer's long text shows whole: the box grows with it instead of scrolling. */
+/* The scrim covers the table while a drawer is open. A click on it that lands over
+   another row means "show me that one" — switch straight to it, one click. */
+function underScrim(e){
+  const scrim=$('scrim'); if(!scrim) return null;
+  scrim.style.pointerEvents='none';
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  scrim.style.pointerEvents='';
+  const row=el&&el.closest('tr[data-row],tr[data-nrow],.card[data-open],.tl-lbl[data-open],.tl-row[data-open]');
+  if(!row) return null;
+  return row.dataset.row?{card:row.dataset.row}:row.dataset.nrow?{note:row.dataset.nrow}:{card:row.dataset.open};
+}
+function openTarget(t){ if(!t) return; if(t.card){openNote=null;openId=t.card}else{openId=null;openNote=t.note} renderDrawer() }
 function fitText(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px'}
 function fitDrawerText(){document.querySelectorAll('#drawerRoot textarea').forEach(t=>{fitText(t);t.addEventListener('input',()=>fitText(t))})}
 /* Proof: a commit hash becomes a link into the repo; a URL shows its host. */
@@ -1234,7 +1248,8 @@ function renderDrawer(){
     </div></aside>`;
   fitDrawerText();
   const close=()=>commit().then(()=>{openId=null;pendingPark=null;render()});
-  $('scrim').onclick=close; $('dClose').onclick=close;
+  $('scrim').onclick=e=>{const t=underScrim(e); commit().then(()=>{openId=null;pendingPark=null;render();openTarget(t)})};
+  $('dClose').onclick=close;
   document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>commit().then(()=>setStatus(f.id,b.dataset.st)));
   document.querySelectorAll('[data-step]').forEach(c=>c.onchange=()=>{
     const steps=f.steps.map((s,i)=>({text:s.text,done:i===+c.dataset.step?c.checked:s.done}));
@@ -1354,7 +1369,8 @@ function renderNoteDrawer(){
 
   fitDrawerText();
   const close=()=>commitNote().then(()=>{openNote=null;render()});
-  $('scrim').onclick=close; $('dClose').onclick=close;
+  $('scrim').onclick=e=>{const t=underScrim(e); commitNote().then(()=>{openNote=null;render();openTarget(t)})};
+  $('dClose').onclick=close;
   ['nTitleIn','nBody','nConsidered','nUrl','nFile'].forEach(id=>{const el=$(id); if(!el) return;
     el.addEventListener('blur',()=>commitNote().then(ok=>{const t=$('savedTag');if(t&&ok&&ok!=='same'){t.textContent='Saved';t.classList.add('on')}}));
     el.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey||el.tagName==='INPUT')){e.preventDefault();el.blur()}});

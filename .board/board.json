@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "project": {
     "name": "Clipped",
     "key": "LE"
@@ -100,7 +100,8 @@
           "by": "claude",
           "text": "Moved to review — Run board list / add / park / context here and see if the output reads right"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-2",
@@ -193,7 +194,8 @@
           "by": "claude",
           "text": "Step done: Install on a real project"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-3",
@@ -270,7 +272,8 @@
           "by": "claude",
           "text": "Moved to review — Run board ui, then edit a card in the browser and watch it change in the terminal (and the other way round)"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-4",
@@ -388,7 +391,8 @@
           "by": "claude",
           "text": "Note: Two weeks of real sessions on Braille.AI and bud — I'll ask the DOGFOOD.md questions at the end"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-5",
@@ -452,7 +456,8 @@
           "by": "claude",
           "text": "Moved to review — Built and tested, but it needs your accounts: Clerk keys, Supabase project + schema.sql, Vercel, PostHog EU, and the domain. site/README.md has the table"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-9",
@@ -482,7 +487,8 @@
           "by": "claude",
           "text": "Renamed from “Ideas don't count toward progress”"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-10",
@@ -502,7 +508,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-11",
@@ -532,7 +539,8 @@
           "by": "claude",
           "text": "Note: Site is live at https://useclipped.vercel.app — set it as the repo website (needs gh or the GitHub settings page)"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-12",
@@ -554,7 +562,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-14",
@@ -576,7 +585,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-15",
@@ -650,7 +660,8 @@
           "by": "claude",
           "text": "Step done: Skill rules, /ask command, SPEC and README"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-16",
@@ -672,7 +683,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-17",
@@ -694,7 +706,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-18",
@@ -716,7 +729,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-19",
@@ -882,7 +896,8 @@
           "by": "claude",
           "text": "Note: New 'So, what does Clipped actually do?' section with icons replaces How it works. Uncommitted"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-20",
@@ -905,7 +920,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-21",
@@ -930,7 +946,8 @@
           "by": "claude",
           "text": "Moved to review — board rename \"New name\" — CLI, API and an editable title in the UI. I used it here: the board is called Clipped now, and the key stayed LE"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-22",
@@ -979,7 +996,8 @@
           "by": "claude",
           "text": "Moved to review — Update the plugin to 0.3.1, then ask a research question in a Braille session: it should land in Questions → Answered on its own, and any 'do this first' should appear as an idea"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-23",
@@ -1009,7 +1027,8 @@
           "by": "claude",
           "text": "Moved to review — Refresh the board: click a row anywhere (title, note, empty space) and its panel opens; hover and click a pencil to edit the title or note in place; open BRL-7 and the answer shows whole"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-24",
@@ -1069,7 +1088,8 @@
           "by": "claude",
           "text": "Moved to review — Update the plugin to 0.3.2, open a new session in a folder with no board and ask 'top 3 mobile games per genre' — a board should appear with the answer under Questions → Answered; 'elaborate' should update that same card"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-25",
@@ -1101,7 +1121,8 @@
           "by": "claude",
           "text": "Moved to review — Open landing/install.html (python3 -m http.server --directory landing) and read it as your friend would: desktop route, the check table, troubleshooting. Then deploy with the landing page"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-26",
@@ -1121,7 +1142,8 @@
           "by": "user",
           "text": "Created"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-27",
@@ -1143,7 +1165,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-28",
@@ -1163,7 +1186,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-29",
@@ -1185,14 +1209,15 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "links": []
     },
     {
       "key": "LE-30",
       "title": "Board UI review fixes: close the loop, honest numbers, faster builders",
       "type": "feature",
       "status": "review",
-      "note": "Update the plugin to 0.6.0 first (board format v3). Then open a Your turn card: Looks good / Needs work, proof links, undo toast, ticking rows for bulk Done, blue dots for Claude's changes, 'What was considered' on a brainstorm",
+      "note": "Plus: a click on another row while a card is open switches to it in one click, and the new-note row matches the card row. Then the checks above",
       "doneWhen": [],
       "steps": [
         {
@@ -1253,10 +1278,11 @@
         }
       ],
       "files": [
-        "cli/test/proof-considered.test.ts"
+        "cli/test/proof-considered.test.ts",
+        "ui/index.html"
       ],
       "createdAt": "2026-09-27T15:54:36Z",
-      "updatedAt": "2026-09-27T16:07:25Z",
+      "updatedAt": "2026-09-27T17:19:33Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -1338,8 +1364,19 @@
           "at": "2026-09-27T16:07:25Z",
           "by": "claude",
           "text": "Moved to review — Update the plugin to 0.6.0 first (board format v3). Then open a Your turn card: Looks good / Needs work, proof links, undo toast, ticking rows for bulk Done, blue dots for Claude's changes, 'What was considered' on a brainstorm"
+        },
+        {
+          "at": "2026-09-27T17:19:33Z",
+          "by": "claude",
+          "text": "Files: ui/index.html"
+        },
+        {
+          "at": "2026-09-27T17:19:33Z",
+          "by": "claude",
+          "text": "Note: Plus: a click on another row while a card is open switches to it in one click, and the new-note row matches the card row. Then the checks above"
         }
-      ]
+      ],
+      "links": []
     }
   ],
   "nextNoteNum": 3,
@@ -1356,7 +1393,8 @@
       ],
       "createdAt": "2026-09-24T14:08:03Z",
       "updatedAt": "2026-09-24T14:08:03Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "considered": ""
     },
     {
       "id": "LE-N2",
@@ -1370,7 +1408,8 @@
       ],
       "createdAt": "2026-09-24T14:08:03Z",
       "updatedAt": "2026-09-24T14:08:03Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "considered": ""
     }
   ]
 }
