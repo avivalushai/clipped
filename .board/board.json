@@ -723,7 +723,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "review",
-      "note": "Install options now two columns under the hero; hero top-aligned. Needs commit + redeploy",
+      "note": "Runs section: shared title, hooks table and terminal side by side, explanation full width underneath. Uncommitted",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -754,7 +754,7 @@
         "landing/style.css"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T11:25:13Z",
+      "updatedAt": "2026-09-27T11:48:43Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -841,6 +841,26 @@
           "at": "2026-09-27T11:25:13Z",
           "by": "claude",
           "text": "Note: Install options now two columns under the hero; hero top-aligned. Needs commit + redeploy"
+        },
+        {
+          "at": "2026-09-27T11:33:05Z",
+          "by": "claude",
+          "text": "Note: Hero tagline: typed code chip rotating features/plans/questions…, problem-first intro. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T11:38:24Z",
+          "by": "claude",
+          "text": "Note: Hero is text-only with a full-width headline; the terminal moved to 'What runs' as the SessionStart example. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T11:44:59Z",
+          "by": "claude",
+          "text": "Note: Runs section two columns (terminal right), smaller headline, one-line tagline in sans with mono typed word. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T11:48:43Z",
+          "by": "claude",
+          "text": "Note: Runs section: shared title, hooks table and terminal side by side, explanation full width underneath. Uncommitted"
         }
       ]
     },

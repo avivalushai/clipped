@@ -38,11 +38,13 @@
     <div>
       <p class="badge"><span class="live" aria-hidden="true"></span>Plugin for Claude Code<span class="sep">/</span>MIT<span class="sep">/</span>runs locally</p>
       <h1>What did you and Claude decide last week?</h1>
+      <p class="tagline">
+        Clipped keeps track of your <span class="rot" aria-hidden="true"><span class="rot-chip" style="--c: var(--active)"><span class="rot-txt">features</span><span class="rot-caret"></span></span></span><span class="sr-only">features, half-done work, questions, brainstorms, plans and decisions</span> <span class="tagline-2">so nothing gets lost while you work.</span>
+      </p>
       <p class="lede">
-        A lot happens in a project while you're busy building it: features left halfway, decisions, "let's come
-        back to this". It all lives in the chat, and a week later it's buried under endless scrolling with no
-        context. Clipped writes it down as you go, on a small board per project that Claude keeps up to date,
-        so you don't have to.
+        A session with Claude gets a lot done: a feature half built, a decision made, a "let's come back to this".
+        Then the chat scrolls on, and a week later none of it is anywhere you can find. Clipped writes it down as
+        you go, on a small board per project that Claude keeps up to date for you.
       </p>
       <div class="cta">
         <button class="btn" id="add-now" type="button" aria-expanded="false" aria-controls="quick-install">Add now</button>
@@ -50,35 +52,12 @@
       </div>
     </div>
 
-    <figure style="margin:0">
-      <div class="window term-win">
-        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/nimbus-crm</span></div>
-<pre class="term" aria-label="An example Claude Code session on a made-up CRM project: the Clipped brief listing parked work, then a vague request landing on the right card"><span class="d">~/code/nimbus-crm</span> <span class="p">❯</span> claude
-<span class="d">⎿  SessionStart hook · clipped</span>
-<span class="h">Clipped board: Nimbus CRM (CRM) — 1 active, 2 parked</span>
-Parked:
-  <span class="o">CRM-3</span> Import contacts from CSV <span class="d">(1/3)</span>
-         <span class="d">stopped:</span> mapping done, merge not written <span class="d">(idle 16d)</span>
-  <span class="o">CRM-7</span> Email sync drops long threads <span class="d">(0/2)</span>
-         <span class="d">stopped:</span> Gmail pagination, no retry yet <span class="d">(idle 9d)</span>
-Active:
-  <span class="a">CRM-8</span> Drag a deal between pipeline stages <span class="d">(2/4)</span>
-         <span class="d">next:</span> keep the new order after a reload
-
-<span class="p">›</span> the csv import thing — let's finish it
-<span class="g">●</span> <span class="d">Read(src/import/mapping.ts)</span>
-<span class="g">●</span> <span class="d">Update(src/import/DedupeStep.tsx)</span>
-<span class="foot">Board: CRM-3 Import contacts from CSV → in progress · 2/3 steps</span>
-<span class="p">›</span> <span class="cur" aria-hidden="true"></span></pre>
-      </div>
-      <figcaption class="caption">An example session on a made-up project: what you left parked, a half-remembered sentence, and the line Claude ends with.</figcaption>
-    </figure>
     <div class="quick" id="quick-install" hidden>
       <div class="options">
         <div class="option">
           <h2>Type two commands</h2>
           <p class="note">Inside Claude Code, not in your shell.</p>
-          <ol class="steps">
+          <ol class="steps" role="list">
             <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
             <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
             <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
@@ -87,8 +66,8 @@ Active:
         <div class="option">
           <h2>Or ask Claude to do it</h2>
           <p class="note">Paste this into Claude Code, in the desktop app, terminal or editor.</p>
-          <ol class="steps">
-            <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+          <ol class="steps" role="list">
+            <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
             <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
             <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
           </ol>
@@ -223,36 +202,64 @@ Active:
 
   <section id="runs">
     <p class="eyebrow">Under the hood</p>
-    <h2>What runs on your machine</h2>
-    <p class="sub">A plugin can run code at points in a Claude Code session. Clipped hooks into three of them, and each one is a short script you can read.</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Hook</th><th>What happens</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="ev">SessionStart</span><span class="when">a session starts</span></td>
-            <td>Reads the board and adds a short summary to Claude's context. This costs tokens: a few hundred for a small board, about 750 for this repo's 19 cards.</td>
-          </tr>
-          <tr>
-            <td><span class="ev">PostToolUse</span><span class="when">after Claude edits a file</span></td>
-            <td>Attaches the file path to the active card, but only when the file plausibly belongs there. No output and no extra tokens.</td>
-          </tr>
-          <tr>
-            <td><span class="ev">Stop</span><span class="when">Claude finishes a turn</span></td>
-            <td>If code changed but the board didn't, Claude is asked once to update it or say why not. This adds one short step to that turn at most, and never loops.</td>
-          </tr>
-          <tr>
-            <td><span class="ev">board ui</span><span class="when">only when you type it</span></td>
-            <td>Starts a local server on <code>localhost:4747</code> for the board page.</td>
-          </tr>
-        </tbody>
-      </table>
+    <h2>What runs on your machine, and what Claude sees</h2>
+    <p class="sub">Three short hooks you can read, and the brief they put in front of Claude every time a session starts.</p>
+    <div class="runs-grid">
+      <div class="table-wrap runs-table">
+        <table>
+          <thead><tr><th>Hook</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="ev">SessionStart</span><span class="when">a session starts</span></td>
+              <td>Reads the board and adds a short summary to Claude's context. This costs tokens: a few hundred for a small board, about 750 for this repo's 19 cards.</td>
+            </tr>
+            <tr>
+              <td><span class="ev">PostToolUse</span><span class="when">after Claude edits a file</span></td>
+              <td>Attaches the file path to the active card, but only when the file plausibly belongs there. No output and no extra tokens.</td>
+            </tr>
+            <tr>
+              <td><span class="ev">Stop</span><span class="when">Claude finishes a turn</span></td>
+              <td>If code changed but the board didn't, Claude is asked once to update it or say why not. This adds one short step to that turn at most, and never loops.</td>
+            </tr>
+            <tr>
+              <td><span class="ev">board ui</span><span class="when">only when you type it</span></td>
+              <td>Starts a local server on <code>localhost:4747</code> for the board page.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note runs-note">
+        There's also a skill: the written rules Claude follows about when to open, update, park or close a card.
+        Read <a href="https://github.com/avivalushai/clipped/blob/main/skills/clipped/SKILL.md">the skill</a>
+        and <a href="https://github.com/avivalushai/clipped/tree/main/hooks">the hooks</a>.
+      </p>
+      <div class="window term-win runs-win">
+          <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/nimbus-crm</span></div>
+  <pre class="term" aria-label="An example Claude Code session on a made-up CRM project: the Clipped brief listing parked work, then a vague request landing on the right card"><span class="d">~/code/nimbus-crm</span> <span class="p">❯</span> claude
+<span class="d">⎿  SessionStart hook · clipped</span>
+<span class="h">Clipped board: Nimbus CRM (CRM) — 1 active, 2 parked</span>
+Parked:
+  <span class="o">CRM-3</span> Import contacts from CSV <span class="d">(1/3)</span>
+         <span class="d">stopped:</span> mapping done, merge not written <span class="d">(idle 16d)</span>
+  <span class="o">CRM-7</span> Email sync drops long threads <span class="d">(0/2)</span>
+         <span class="d">stopped:</span> Gmail pagination, no retry yet <span class="d">(idle 9d)</span>
+Active:
+  <span class="a">CRM-8</span> Drag a deal between pipeline stages <span class="d">(2/4)</span>
+         <span class="d">next:</span> keep the new order after a reload
+
+<span class="p">›</span> the csv import thing — let's finish it
+<span class="g">●</span> <span class="d">Read(src/import/mapping.ts)</span>
+<span class="g">●</span> <span class="d">Update(src/import/DedupeStep.tsx)</span>
+<span class="foot">Board: CRM-3 Import contacts from CSV → in progress · 2/3 steps</span>
+<span class="p">›</span> <span class="cur" aria-hidden="true"></span></pre>
+        </div>
+      <p class="caption runs-cap">An example session on a made-up project.</p>
     </div>
-    <p class="note">
-      There's also a skill: the written rules Claude follows about when to open, update, park or close a card.
-      Read <a href="https://github.com/avivalushai/clipped/blob/main/skills/clipped/SKILL.md">the skill</a>
-      and <a href="https://github.com/avivalushai/clipped/tree/main/hooks">the hooks</a>.
-    </p>
+    <div class="runs-expl">
+      <h3>What Claude sees when a session starts</h3>
+        <p class="sub">The <code>SessionStart</code> hook puts a short brief in front of Claude before you type anything: what's parked and where it stopped, and what's in progress with its next step.</p>
+        <p class="sub">So when you say something vague like "the csv import thing", Claude knows which card you mean. It picks the work up there and ends its turn with one line saying what moved on the board.</p>
+    </div>
   </section>
 
   <section id="privacy">
@@ -330,7 +337,7 @@ Active:
       <div>
         <h3>Ask for it</h3>
         <ol class="steps">
-          <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
           <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
           <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and work as usual.</span></li>
         </ol>
@@ -385,6 +392,29 @@ Active:
 </footer>
 
 <script>
+// Type the word in the tagline, like a terminal. Visitors who ask for less motion keep the first one.
+(() => {
+  const chip = document.querySelector(".rot-chip"), txt = document.querySelector(".rot-txt");
+  if (!chip || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const words = [
+    ["features", "--active"], ["half-done work", "--parked"], ["questions", "--review"],
+    ["brainstorms", "--accent"], ["plans", "--done"], ["decisions", "--parked"],
+  ];
+  let w = 0, n = words[0][0].length, deleting = false;
+  const tick = () => {
+    const [word] = words[w];
+    if (!deleting && n === word.length) { deleting = true; return setTimeout(tick, 1700); }
+    if (deleting && n === 0) {
+      deleting = false; w = (w + 1) % words.length;
+      chip.style.setProperty("--c", "var(" + words[w][1] + ")");
+      return setTimeout(tick, 220);
+    }
+    n += deleting ? -1 : 1;
+    txt.textContent = words[w][0].slice(0, n);
+    setTimeout(tick, deleting ? 32 : 70);
+  };
+  setTimeout(tick, 1700);
+})();
 const themeBtn = document.getElementById("theme");
 const syncThemeLabel = () => themeBtn.setAttribute("aria-label", document.documentElement.dataset.theme === "light" ? "Switch to dark mode" : "Switch to light mode");
 syncThemeLabel();
