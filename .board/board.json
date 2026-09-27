@@ -509,12 +509,12 @@
       "title": "Set the GitHub repo website once the site is deployed",
       "type": "feature",
       "status": "idea",
-      "note": "Site is live at https://clipped-mocha.vercel.app — set it as the repo website (needs gh or the GitHub settings page)",
+      "note": "Site is live at https://useclipped.vercel.app — set it as the repo website (needs gh or the GitHub settings page)",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-27T11:13:31Z",
+      "updatedAt": "2026-09-27T11:16:49Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -526,6 +526,11 @@
           "at": "2026-09-27T11:13:31Z",
           "by": "claude",
           "text": "Note: Site is live at https://clipped-mocha.vercel.app — set it as the repo website (needs gh or the GitHub settings page)"
+        },
+        {
+          "at": "2026-09-27T11:16:49Z",
+          "by": "claude",
+          "text": "Note: Site is live at https://useclipped.vercel.app — set it as the repo website (needs gh or the GitHub settings page)"
         }
       ]
     },
@@ -718,7 +723,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "review",
-      "note": "Live at https://clipped-mocha.vercel.app (guide: /install.html). Redeploy: cd landing && npx vercel deploy --prod. Read it once as a friend would",
+      "note": "Install options now two columns under the hero; hero top-aligned. Needs commit + redeploy",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -745,10 +750,11 @@
         "landing/img/tabs.png",
         "landing/img/board-light.png",
         "landing/img/card-light.png",
-        "landing/img/tabs-light.png"
+        "landing/img/tabs-light.png",
+        "landing/style.css"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T11:13:31Z",
+      "updatedAt": "2026-09-27T11:25:13Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -815,6 +821,26 @@
           "at": "2026-09-27T11:13:31Z",
           "by": "claude",
           "text": "Moved to review — Live at https://clipped-mocha.vercel.app (guide: /install.html). Redeploy: cd landing && npx vercel deploy --prod. Read it once as a friend would"
+        },
+        {
+          "at": "2026-09-27T11:16:49Z",
+          "by": "claude",
+          "text": "Note: Live at https://useclipped.vercel.app (guide: /install.html; clipped-mocha redirects there). Redeploy: cd landing && npx vercel deploy --prod. Read it once as a friend would"
+        },
+        {
+          "at": "2026-09-27T11:22:18Z",
+          "by": "claude",
+          "text": "Files: landing/style.css"
+        },
+        {
+          "at": "2026-09-27T11:22:18Z",
+          "by": "claude",
+          "text": "Note: Readability + spacing pass in style.css (contrast, sizes, tighter sections). Needs a redeploy"
+        },
+        {
+          "at": "2026-09-27T11:25:13Z",
+          "by": "claude",
+          "text": "Note: Install options now two columns under the hero; hero top-aligned. Needs commit + redeploy"
         }
       ]
     },

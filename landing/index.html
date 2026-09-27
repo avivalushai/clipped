@@ -48,18 +48,6 @@
         <button class="btn" id="add-now" type="button" aria-expanded="false" aria-controls="quick-install">Add now</button>
         <a class="btn ghost" href="#runs">See what it installs</a>
       </div>
-      <div class="quick" id="quick-install" hidden>
-        <ol class="steps">
-          <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
-        </ol>
-        <p class="note">Type them inside Claude Code, not in your shell. Needs Node 20 or newer.</p>
-        <ul class="steps">
-          <li class="step"><span class="n">or</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-        </ul>
-        <p class="note">Say that instead and Claude runs both commands for you — the easy route in the desktop app. <a href="install.html">Step-by-step guide</a></p>
-      </div>
     </div>
 
     <figure style="margin:0">
@@ -85,6 +73,29 @@ Active:
       </div>
       <figcaption class="caption">An example session on a made-up project: what you left parked, a half-remembered sentence, and the line Claude ends with.</figcaption>
     </figure>
+    <div class="quick" id="quick-install" hidden>
+      <div class="options">
+        <div class="option">
+          <h2>Type two commands</h2>
+          <p class="note">Inside Claude Code, not in your shell.</p>
+          <ol class="steps">
+            <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+            <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+            <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
+          </ol>
+        </div>
+        <div class="option">
+          <h2>Or ask Claude to do it</h2>
+          <p class="note">Paste this into Claude Code, in the desktop app, terminal or editor.</p>
+          <ol class="steps">
+            <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+            <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
+            <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
+          </ol>
+        </div>
+      </div>
+      <p class="note">Either way, you need Node 20 or newer. <a href="install.html">Step-by-step guide</a></p>
+    </div>
   </div>
 
   <div class="facts">
