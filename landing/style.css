@@ -304,6 +304,14 @@ footer a { color: var(--ink); }
 .tagline { font-family: var(--sans); font-weight: 500; font-size: clamp(19px, 1.9vw, 27px); line-height: 1.45; letter-spacing: -0.01em; margin: 0 0 20px; color: var(--ink); }
 .tagline-2 { color: var(--muted); }
 .rot { display: inline-block; vertical-align: baseline; }
+/* The word types and deletes itself, and an empty span has no line box at all —
+   so the chip lost ~8px of height at the end of every cycle and the line jumped.
+   A zero-width space keeps the line box whatever the text is doing. */
+.rot-txt::after { content: "\200B"; }
+/* On a narrow screen the growing word rewraps the sentence after it, which
+   costs a whole line every cycle. Give the word and the rest their own lines
+   and the block stops moving. */
+@media (max-width: 560px) { .rot, .tagline-2 { display: block; } }
 .rot-chip { display: inline-flex; align-items: center; font-family: var(--mono); font-weight: 600; font-size: .9em; letter-spacing: -0.02em; color: var(--accent); white-space: pre; background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 6px; padding: .2em .45em; }
 .rot-caret { display: inline-block; width: .55ch; height: 1em; margin-left: .06em; align-self: center; background: currentColor; animation: blink 1.1s steps(1) infinite; }
 @media (prefers-reduced-motion: reduce) { .rot-caret { animation: none; } .rot-chip { transition: none; } }
