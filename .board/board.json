@@ -1130,27 +1130,6 @@
       "links": []
     },
     {
-      "key": "LE-26",
-      "title": "sdfasdf",
-      "type": "feature",
-      "status": "idea",
-      "note": "",
-      "doneWhen": [],
-      "steps": [],
-      "files": [],
-      "createdAt": "2026-09-27T12:11:13Z",
-      "updatedAt": "2026-09-27T12:11:13Z",
-      "updatedBy": "user",
-      "log": [
-        {
-          "at": "2026-09-27T12:11:13Z",
-          "by": "user",
-          "text": "Created"
-        }
-      ],
-      "links": []
-    },
-    {
       "key": "LE-27",
       "title": "The board says what is waiting on you",
       "type": "feature",
