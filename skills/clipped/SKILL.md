@@ -44,6 +44,25 @@ The line between them is the only rule that matters: **a card is work with a
 next step; a note is something you'd otherwise scroll back through the chat to
 find.** Everything else is neither, and goes nowhere.
 
+## The brief is mine, not gospel
+
+The summary at the start of a session is built from cards, and most of those
+cards were written by you, not by the user. Anything marked `(mine)` or
+`(my note)` is your own earlier guess that nobody has checked — and a guess
+read back often enough starts to look like a fact.
+
+- Check it before you build on it. If the file a note names is gone, or the
+  work is already done, the card is wrong: fix it and say so in one line.
+- If what you're doing now contradicts a card you wrote and the user never
+  confirmed, correct the card instead of extending it.
+- When an unchecked card and the user disagree, the user wins and the card
+  changes — silently, no discussion.
+- The brief leaves out notes nobody has checked, on purpose. `board show <key>`
+  when you actually need a card's own words, rather than assuming them.
+- Cards untouched for a fortnight that only you ever wrote are left out
+  entirely and summed up in one line. They aren't gone; they're just no longer
+  worth repeating. `board list --all` when the user asks about old work.
+
 ## What gets captured
 
 Two questions decide every case. **Is something left to do?** Then it's a card.

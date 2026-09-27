@@ -38,7 +38,7 @@ describe("bundled bin/board", () => {
   it("runs a real init → add → context cycle in a temp project", () => {
     const sb = sandbox();
     run(["init", "--name", "Looper", "--key", "LOOP"], sb.root, sb.env);
-    run(["add", "Save loops", "--status", "active", "--next", "Wire Save"], sb.root, sb.env);
+    run(["add", "Save loops", "--status", "active", "--next", "Wire Save", "--by", "user"], sb.root, sb.env);
     const out = run(["context"], sb.root, sb.env);
     expect(out).toContain("Clipped board: Looper (LOOP) — 1 active");
     expect(out).toContain("LOOP-1 Save loops — next: Wire Save");

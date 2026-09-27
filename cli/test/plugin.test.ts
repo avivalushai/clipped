@@ -158,7 +158,7 @@ describe("hooks.json", () => {
 describe("hook behaviour", () => {
   it("SessionStart injects the board summary as additionalContext", () => {
     const sb = withBoard();
-    sb.board("add", "Save loops", "--status", "active", "--next", "Wire Save");
+    sb.board("add", "Save loops", "--status", "active", "--next", "Wire Save", "--by", "user");
     sb.board("add", "Mobile layout", "--status", "parked", "--note", "Header overlaps");
 
     const { json } = runHook("session-start.mjs", { hook_event_name: "SessionStart", session_id: "s1", cwd: sb.root });
@@ -166,7 +166,7 @@ describe("hook behaviour", () => {
     const ctx = json.hookSpecificOutput.additionalContext;
     expect(ctx).toContain("Clipped board: My App (APP)");
     expect(ctx).toContain("APP-1 Save loops — next: Wire Save");
-    expect(ctx).toContain("APP-2 Mobile layout — stopped: Header overlaps");
+    expect(ctx).toContain("APP-2 Mobile layout (mine) — stopped (my note): Header overlaps");
     expect(ctx).toContain("clipped skill");
   });
 

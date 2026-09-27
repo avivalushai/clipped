@@ -168,6 +168,9 @@ export function show(ctx: Ctx, { pos, opts }: Args) {
   emit(ctx, opts, f, formatDetail(ctx, f));
 }
 
+/** After a fortnight, a card I opened and nobody checked has stopped being news. */
+const STALE_DAYS = 14;
+
 export function context(ctx: Ctx, { opts }: Args) {
   const loc = findBoard(ctx.cwd);
   if (!loc) {
@@ -203,23 +206,49 @@ export function context(ctx: Ctx, { opts }: Args) {
 
   const summary = STATUSES.filter((s) => counts[s]).map((s) => `${counts[s]} ${s}`).join(", ") || "empty";
   const lines = [`Clipped board: ${b.project.name} (${b.project.key}) — ${summary}`];
+
+  /* Everything in this brief is read back as project state, so a sentence I
+     wrote and nobody checked can harden into fact over a few sessions. Two
+     rules keep that from happening: prose only where it earns its place, and
+     an unchecked card is marked as mine and eventually stops being repeated. */
+  const unchecked = (f: Feature) => f.updatedBy === "claude" && (f.log ?? []).every((l) => l.by === "claude");
+  const open = work.filter((f) => f.status !== "done");
+  const allMine = open.length > 0 && open.every(unchecked);
+  const mark = (f: Feature) => !allMine && unchecked(f);
+  const stale: Feature[] = [];
+  const carry = (f: Feature) => {
+    if (unchecked(f) && ageDays(ctx, f.updatedAt) >= STALE_DAYS) {
+      stale.push(f);
+      return false;
+    }
+    return true;
+  };
+
   const section = (title: string, fs: Feature[], extra: (f: Feature) => string) => {
-    if (!fs.length) return;
+    const keep = fs.filter(carry);
+    if (!keep.length) return;
     lines.push(`${title}:`);
-    for (const f of fs) {
+    for (const f of keep) {
       const { done, total } = progress(f);
       const bits = [`  ${f.key} ${f.title}`];
       if (total) bits.push(`(${done}/${total})`);
+      if (mark(f)) bits.push("(mine)");
       const e = extra(f);
       if (e) bits.push(`— ${e}`);
       lines.push(bits.join(" "));
     }
   };
-  section("Active", by("active"), (f) => (f.note ? `next: ${f.note}` : ""));
-  section("Parked", by("parked"), (f) => `stopped: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`);
+
+  // Active: the next step is worth carrying once someone has checked the card.
+  section("Active", by("active"), (f) => (f.note && !unchecked(f) ? `next: ${f.note}` : ""));
+  // Parked: the note is the whole point of parking, so it always comes along.
+  section("Parked", by("parked"), (f) =>
+    `${unchecked(f) ? "stopped (my note)" : "stopped"}: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`,
+  );
+  // Your turn: a pile of my own summaries. The titles are enough to decide with.
   section("Your turn", by("review"), (f) => {
     const d = ageDays(ctx, f.updatedAt);
-    return [f.note && `check: ${f.note}`, d >= 2 && `waiting ${d}d — ask if it's done`].filter(Boolean).join("; ");
+    return d >= 2 ? `waiting ${d}d` : "";
   });
   const ideas = by("idea");
   if (ideas.length) {
@@ -228,11 +257,25 @@ export function context(ctx: Ctx, { opts }: Args) {
   }
   if (questions.length) {
     lines.push("Open questions:");
-    for (const q of questions)
-      lines.push(`  ${q.key} ${q.title}${q.status === "review" && q.note ? ` — answered: ${q.note}` : ""}`);
+    for (const q of questions) {
+      const answer = q.status === "review" && q.note ? ` — ${unchecked(q) ? "answered (my note)" : "answered"}: ${q.note}` : "";
+      lines.push(`  ${q.key} ${q.title}${mark(q) ? " (mine)" : ""}${answer}`);
+    }
+  }
+  if (stale.length) {
+    const byStatus = STATUSES.filter((s) => stale.some((f) => f.status === s))
+      .map((s) => `${stale.filter((f) => f.status === s).length} ${s}`)
+      .join(" · ");
+    lines.push(`Older and unchecked: ${byStatus} — left out of this brief, \`board list --all\` shows them.`);
   }
   const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map((k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}`);
   if (notes.length) lines.push(`Notes: ${notes.join(" · ")} — \`board note list\``);
+  if (allMine)
+    lines.push(
+      "Every card here is mine and none has been checked by you — treat them as my notes, not as facts. `board show <key>` for a card's own words.",
+    );
+  else if (lines.some((l) => l.includes("(mine)") || l.includes("(my note)")))
+    lines.push("(mine) = I wrote it and you never checked it — verify it against the repo before building on it.");
   ctx.out(lines.join("\n"));
 }
 

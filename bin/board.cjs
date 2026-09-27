@@ -1216,23 +1216,41 @@ function context(ctx, { opts }) {
     );
   const summary = STATUSES.filter((s2) => counts[s2]).map((s2) => `${counts[s2]} ${s2}`).join(", ") || "empty";
   const lines = [`Clipped board: ${b.project.name} (${b.project.key}) \u2014 ${summary}`];
+  const unchecked = (f) => f.updatedBy === "claude" && (f.log ?? []).every((l) => l.by === "claude");
+  const open = work.filter((f) => f.status !== "done");
+  const allMine = open.length > 0 && open.every(unchecked);
+  const mark = (f) => !allMine && unchecked(f);
+  const stale = [];
+  const carry = (f) => {
+    if (unchecked(f) && ageDays(ctx, f.updatedAt) >= STALE_DAYS) {
+      stale.push(f);
+      return false;
+    }
+    return true;
+  };
   const section = (title, fs12, extra) => {
-    if (!fs12.length) return;
+    const keep = fs12.filter(carry);
+    if (!keep.length) return;
     lines.push(`${title}:`);
-    for (const f of fs12) {
+    for (const f of keep) {
       const { done: done2, total } = progress(f);
       const bits = [`  ${f.key} ${f.title}`];
       if (total) bits.push(`(${done2}/${total})`);
+      if (mark(f)) bits.push("(mine)");
       const e = extra(f);
       if (e) bits.push(`\u2014 ${e}`);
       lines.push(bits.join(" "));
     }
   };
-  section("Active", by("active"), (f) => f.note ? `next: ${f.note}` : "");
-  section("Parked", by("parked"), (f) => `stopped: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`);
+  section("Active", by("active"), (f) => f.note && !unchecked(f) ? `next: ${f.note}` : "");
+  section(
+    "Parked",
+    by("parked"),
+    (f) => `${unchecked(f) ? "stopped (my note)" : "stopped"}: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`
+  );
   section("Your turn", by("review"), (f) => {
     const d = ageDays(ctx, f.updatedAt);
-    return [f.note && `check: ${f.note}`, d >= 2 && `waiting ${d}d \u2014 ask if it's done`].filter(Boolean).join("; ");
+    return d >= 2 ? `waiting ${d}d` : "";
   });
   const ideas = by("idea");
   if (ideas.length) {
@@ -1241,11 +1259,23 @@ function context(ctx, { opts }) {
   }
   if (questions.length) {
     lines.push("Open questions:");
-    for (const q of questions)
-      lines.push(`  ${q.key} ${q.title}${q.status === "review" && q.note ? ` \u2014 answered: ${q.note}` : ""}`);
+    for (const q of questions) {
+      const answer2 = q.status === "review" && q.note ? ` \u2014 ${unchecked(q) ? "answered (my note)" : "answered"}: ${q.note}` : "";
+      lines.push(`  ${q.key} ${q.title}${mark(q) ? " (mine)" : ""}${answer2}`);
+    }
+  }
+  if (stale.length) {
+    const byStatus = STATUSES.filter((s2) => stale.some((f) => f.status === s2)).map((s2) => `${stale.filter((f) => f.status === s2).length} ${s2}`).join(" \xB7 ");
+    lines.push(`Older and unchecked: ${byStatus} \u2014 left out of this brief, \`board list --all\` shows them.`);
   }
   const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map((k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}`);
   if (notes.length) lines.push(`Notes: ${notes.join(" \xB7 ")} \u2014 \`board note list\``);
+  if (allMine)
+    lines.push(
+      "Every card here is mine and none has been checked by you \u2014 treat them as my notes, not as facts. `board show <key>` for a card's own words."
+    );
+  else if (lines.some((l) => l.includes("(mine)") || l.includes("(my note)")))
+    lines.push("(mine) = I wrote it and you never checked it \u2014 verify it against the repo before building on it.");
   ctx.out(lines.join("\n"));
 }
 function add(ctx, { pos, opts }) {
@@ -1674,7 +1704,7 @@ function telemetry(ctx, { pos, opts }) {
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous)."
   ]);
 }
-var import_node_child_process, import_node_fs11, import_node_path10, str2, list, park, review, done, wait;
+var import_node_child_process, import_node_fs11, import_node_path10, str2, list, STALE_DAYS, park, review, done, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
@@ -1693,6 +1723,7 @@ var init_commands = __esm({
     init_store();
     str2 = (o, k) => typeof o[k] === "string" ? o[k] : void 0;
     list = (o, k) => Array.isArray(o[k]) ? o[k] : [];
+    STALE_DAYS = 14;
     park = statusCommand("parked");
     review = statusCommand("review");
     done = statusCommand("done");

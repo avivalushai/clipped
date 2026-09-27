@@ -66,6 +66,40 @@ describe("board touch", () => {
 });
 
 describe("board context", () => {
+  /* The brief is read back as project state, so a line I wrote and nobody
+     checked must not read like something the user said. */
+  it("carries a checked next step but keeps an unchecked one out of the brief", () => {
+    const sb = withBoard();
+    sb.board("add", "Save loops", "--status", "active", "--next", "Wire the Save button");
+
+    // Nothing on this board has been checked, so it says so once instead of per card.
+    const mine = sb.board("context").out;
+    expect(mine).not.toContain("Wire the Save button");
+    expect(mine).toContain("Every card here is mine");
+
+    // Once the user touches it, their next step is worth carrying — and the
+    // board is mixed, so the unchecked ones get marked one by one.
+    sb.board("update", "APP-1", "--next", "Wire the Save button", "--by", "user");
+    sb.board("add", "Export as WAV", "--status", "active", "--next", "Pick a sample rate");
+    const after = sb.board("context").out;
+    expect(after).toContain("next: Wire the Save button");
+    expect(after).toContain("APP-2 Export as WAV (mine)");
+    expect(after).not.toContain("Pick a sample rate");
+    expect(after).not.toContain("Every card here is mine");
+  });
+
+  it("stops repeating cards nobody has checked in a fortnight", () => {
+    const sb = withBoard();
+    sb.board("add", "Old guess", "--status", "review", "--note", "Probably wrong by now");
+    sb.board("add", "Checked one", "--status", "review", "--note", "Look at the header", "--by", "user");
+
+    sb.env.CLIPPED_NOW = "2026-10-06T10:00:00Z"; // 16 days later
+    const out = sb.board("context").out;
+    expect(out).not.toContain("Old guess");
+    expect(out).toContain("Older and unchecked: 1 review");
+    expect(out).toContain("Checked one"); // a card you touched is still carried
+  });
+
   it("summarizes open, parked and review work", () => {
     const sb = withBoard();
     sb.board("add", "Save loops", "--status", "active", "--next", "Wire the Save button", "--step", "Schema", "--step", "Button");
@@ -80,12 +114,13 @@ describe("board context", () => {
       [
         "Clipped board: My App (APP) — 1 idea, 1 active, 1 parked, 1 review, 1 done",
         "Active:",
-        "  APP-1 Save loops (1/2) — next: Wire the Save button",
+        "  APP-1 Save loops (1/2)",
         "Parked:",
-        "  APP-2 Mobile layout — stopped: Header overlaps the logo (idle 4d)",
+        "  APP-2 Mobile layout — stopped (my note): Header overlaps the logo (idle 4d)",
         "Your turn:",
-        "  APP-3 Fix drift — check: Play two loops; waiting 4d — ask if it's done",
+        "  APP-3 Fix drift — waiting 4d",
         "Ideas: APP-4 Bigger buttons",
+        "Every card here is mine and none has been checked by you — treat them as my notes, not as facts. `board show <key>` for a card's own words.",
       ].join("\n"),
     );
   });

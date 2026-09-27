@@ -155,6 +155,16 @@ Output is short and human-readable by default; `--json` for machines.
 | Event | Action |
 |---|---|
 | SessionStart | Run `board context`; inject open/parked/review cards, open questions and note counts so Claude knows the state. If no board: offer to create one (and seed from git history). |
+
+**What the brief may assert.** Everything injected here is read back as project
+state, so a sentence Claude wrote and nobody checked can harden into fact over a
+few sessions. Three rules keep that bounded: a card whose whole history is
+Claude's is marked `(mine)` (or `(my note)`), and said once for the whole board
+when it's true of everything; prose is carried only where it earns its place —
+always for parked cards, for an active card's next step once a human has touched
+it, never for the review pile; and a card that is Claude's alone and untouched
+for 14 days drops out of the brief into a one-line count. The skill's *The brief
+is mine, not gospel* section says what Claude does when one turns out to be wrong.
 | PostToolUse (Edit/Write) | `board touch <file>` — record files on the active card. |
 | Stop | If code changed this turn and the board wasn't updated → ask Claude to update it before finishing (block once, never loop). |
 
