@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipped — what did you and Claude decide last week?</title>
+<meta name="description" content="A Claude Code plugin that keeps a feature board for each project: what's in progress, what you left halfway, what's done. Local files, no account.">
+<script>try { const t = localStorage.getItem("clipped.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* One committed look: the board UI's own dark palette. */
+:root {
+  color-scheme: dark;
+  --bg: #060910;
+  --surface: #0c131f;
+  --surface-2: #111a29;
+  --line: #1a2436;
+  --line-2: #273349;
+  --ink: #e9eef7;
+  --muted: #95a2b8;
+  --faint: #7684a0;
+  --accent: #7d96ff;
+  --on-accent: #070b14;
+  --active: #2cc1e4;
+  --parked: #f3a64c;
+  --review: #a88bff;
+  --done: #3fd08f;
+  --no: #ff7b72;
+  --chrome: #0a111c;
+  --grid: rgb(255 255 255 / .045);
+  --header-bg: rgb(6 9 16 / .72);
+  --badge-bg: rgb(12 19 31 / .8);
+  --mark-bg: #17223a;
+  --btn-hover: #95a9ff;
+  --foot-bg: rgb(125 150 255 / .12);
+  --shadow: 0 24px 60px -24px rgb(0 0 0 / .7), 0 0 0 1px rgb(0 0 0 / .4);
+  --radius: 14px;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Bricolage Grotesque", var(--sans);
+}
+/* Light: the board UI's own light palette. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-2: #eef2f8;
+  --line: #dde4ee;
+  --line-2: #cbd4e2;
+  --ink: #0e1626;
+  --muted: #4d5b73;
+  --faint: #5f6d86;
+  --accent: #2f5bff;
+  --on-accent: #ffffff;
+  --active: #0b87a8;
+  --parked: #b3600a;
+  --review: #6a45d6;
+  --done: #13824f;
+  --no: #c4382f;
+  --chrome: #f6f8fc;
+  --grid: rgb(20 35 70 / .06);
+  --header-bg: rgb(243 246 251 / .78);
+  --badge-bg: rgb(255 255 255 / .85);
+  --mark-bg: #0b1220;
+  --btn-hover: #2249e0;
+  --foot-bg: rgb(47 91 255 / .1);
+  --shadow: 0 24px 60px -28px rgb(20 35 70 / .28), 0 0 0 1px rgb(20 35 70 / .04);
+}
+/* A terminal stays a terminal in either theme. */
+.term-win {
+  --surface: #0c131f; --line: #1a2436; --line-2: #273349; --ink: #e9eef7; --faint: #7684a0;
+  --accent: #7d96ff; --active: #2cc1e4; --parked: #f3a64c; --review: #a88bff; --done: #3fd08f; --chrome: #0a111c;
+  --foot-bg: rgb(125 150 255 / .12);
+  color-scheme: dark;
+}
+.only-light { display: none !important; }
+:root[data-theme="light"] .only-light { display: block !important; }
+:root[data-theme="light"] .only-dark { display: none !important; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+/* the board's blueprint grid, fading out below the hero */
+body::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 1100px; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent);
+          mask-image: linear-gradient(to bottom, #000 30%, transparent);
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+code { font-family: var(--mono); font-size: .86em; }
+p code, li code, td code, dd code, span code { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 7px; color: var(--ink); }
+::selection { background: rgb(125 150 255 / .35); }
+
+.wrap { max-width: 1400px; margin: 0 auto; padding: 0 clamp(16px, 2.5vw, 32px); }
+
+/* header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--header-bg);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+.mark { width: 22px; height: 22px; border-radius: 6px; background: var(--mark-bg); box-shadow: inset 0 0 0 1px var(--line-2); position: relative; flex: none; }
+.mark::after { content: ""; position: absolute; left: 5px; top: 5px; width: 12px; height: 12px; border: 2px solid var(--parked); border-radius: 3px; border-right-style: dashed; }
+.top nav { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--ink); }
+.top nav .gh { font-family: var(--mono); font-size: 13px; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 8px; color: var(--ink); }
+.top nav .gh:hover { border-color: var(--faint); }
+@media (max-width: 960px) { .top nav a:not(.gh) { display: none; } }
+
+/* type */
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(40px, 5vw, 72px); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 20px; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.1; letter-spacing: -0.025em; margin: 0 0 10px; text-wrap: balance; }
+h3 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+.lede { font-size: clamp(18px, 1.45vw, 20px); color: var(--muted); margin: 0; max-width: 60ch; }
+.sub { color: var(--muted); margin: 0 0 28px; font-size: 17px; }
+.eyebrow { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin: 0 0 14px; }
+.eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+.caption { font-family: var(--mono); font-size: 12.5px; color: var(--faint); margin: 12px 2px 0; }
+.note { font-size: 14px; color: var(--muted); margin: 12px 2px 0; }
+
+section { padding: 112px 0 0; }
+
+/* hero */
+.hero { display: grid; gap: 48px; padding-top: 72px; align-items: center; }
+@media (min-width: 1100px) { .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 64px; padding-top: 88px; } }
+.badge { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12.5px; color: var(--muted); padding: 6px 12px 6px 10px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--badge-bg); margin: 0 0 24px; }
+.badge .live { width: 7px; height: 7px; border-radius: 50%; background: var(--done); box-shadow: 0 0 0 3px rgb(63 208 143 / .18); }
+.badge .sep { color: var(--line-2); }
+
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-weight: 600; font-size: 15.5px; padding: 11px 20px; border-radius: 10px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; text-decoration: none; transition: background-color .15s ease, border-color .15s ease, color .15s ease; }
+.btn:hover { background: var(--btn-hover); border-color: var(--btn-hover); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); }
+.btn.ghost:hover { border-color: var(--faint); background: var(--surface); }
+.btn:focus-visible, .copy:focus-visible, .top nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn .k { font-family: var(--mono); font-size: 12px; font-weight: 500; opacity: .7; }
+.quick { margin-top: 16px; max-width: 640px; }
+
+/* terminal + window chrome */
+.window { background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.bar { display: flex; align-items: center; gap: 12px; height: 38px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--chrome); }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.bar .url { flex: 1; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--faint); margin-right: 42px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.window img { display: block; width: 100%; height: auto; }
+
+.term { margin: 0; padding: 20px 22px 22px; font-family: var(--mono); font-size: 13.5px; line-height: 1.75; color: #cfd8e8; overflow-x: auto; white-space: pre; }
+.term .d { color: var(--faint); }
+.term .p { color: var(--accent); font-weight: 600; }
+.term .h { color: var(--ink); font-weight: 600; }
+.term .a { color: var(--active); }
+.term .r { color: var(--review); }
+.term .o { color: var(--parked); }
+.term .g { color: var(--done); }
+.term .foot { display: inline-block; margin-top: 4px; padding: 3px 10px; border-radius: 6px; background: var(--foot-bg); color: var(--ink); }
+
+.theme-btn { display: grid; place-items: center; width: 36px; height: 34px; border-radius: 8px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); cursor: pointer; transition: color .15s ease, border-color .15s ease; }
+.theme-btn:hover { color: var(--ink); border-color: var(--faint); }
+.theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-btn svg { width: 17px; height: 17px; }
+.theme-btn .sun { display: none; }
+:root[data-theme="light"] .theme-btn .sun { display: block; }
+:root[data-theme="light"] .theme-btn .moon { display: none; }
+
+.cur { display: inline-block; width: 8px; height: 16px; vertical-align: -3px; background: var(--ink); animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cur { animation: none; } }
+
+/* facts */
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 72px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.facts div { padding: 22px 24px; border-left: 1px solid var(--line); }
+.facts div:first-child { border-left: 0; }
+.facts b { display: block; font-family: var(--mono); font-weight: 600; font-size: clamp(30px, 3vw, 40px); line-height: 1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.facts span { color: var(--muted); font-size: 14.5px; }
+@media (max-width: 820px) {
+  .facts { grid-template-columns: 1fr 1fr; }
+  .facts div:nth-child(3) { border-left: 0; }
+  .facts div:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+
+/* how it works */
+.flow { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: flow; }
+@media (max-width: 900px) { .flow { grid-template-columns: 1fr; } }
+.flow li { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; counter-increment: flow; }
+.flow li::before { content: "0" counter(flow); display: block; font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 14px; }
+@media (min-width: 901px) {
+  .flow li:not(:last-child)::after { content: "→"; position: absolute; right: -14px; top: 22px; width: 12px; font-family: var(--mono); color: var(--faint); text-align: center; }
+}
+.flow h3 { font-family: var(--display); font-size: 20px; letter-spacing: -0.01em; margin-bottom: 8px; }
+.flow p { margin: 0; color: var(--muted); font-size: 15px; }
+.flow .tag { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+
+/* faq */
+.faq { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+@media (max-width: 900px) { .faq { grid-template-columns: 1fr; } }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 20px; transition: border-color .15s ease; }
+.faq details[open] { border-color: var(--line-2); }
+.faq summary { list-style: none; cursor: pointer; padding: 18px 28px 18px 0; font-weight: 600; position: relative; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; position: absolute; right: 0; top: 16px; font-family: var(--mono); font-size: 18px; color: var(--faint); }
+.faq details[open] summary::after { content: "−"; }
+.faq summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.faq details p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+
+/* sound familiar */
+.familiar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+@media (max-width: 900px) { .familiar { grid-template-columns: 1fr; } }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 18px; transition: border-color .15s ease; }
+.q:hover { border-color: var(--line-2); }
+.q .ask { font-family: var(--display); font-weight: 600; font-size: 20px; line-height: 1.3; letter-spacing: -0.01em; margin: 0; }
+.q .ans { color: var(--muted); font-size: 15px; margin: auto 0 0; padding-top: 16px; border-top: 1px dashed var(--line-2); }
+.q .ans b { display: block; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+
+/* the board */
+.anatomy { display: grid; gap: 32px; margin-top: 72px; align-items: center; }
+@media (min-width: 900px) { .anatomy { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 64px; } }
+.h3big { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 2vw, 28px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 20px; text-wrap: balance; }
+.parts { margin: 0; display: grid; }
+.parts div { display: grid; grid-template-columns: 22px 1fr; column-gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); }
+.parts div:first-child { border-top: 0; padding-top: 0; }
+.parts dt { grid-column: 2; font-weight: 600; }
+.parts dd { grid-column: 2; margin: 2px 0 0; color: var(--muted); }
+.parts div::before { content: ""; grid-row: 1 / span 2; width: 10px; height: 10px; margin: 7px 0 0 4px; border-radius: 50%; background: var(--c, var(--accent)); }
+.tabs-title { margin-top: 88px; }
+.tab-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+@media (max-width: 1100px) { .tab-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .tab-list { grid-template-columns: 1fr; } }
+.tab-list div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.tab-list b { display: flex; align-items: center; justify-content: space-between; font-weight: 600; margin-bottom: 6px; }
+.tab-list b small { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+.tab-list span { color: var(--muted); font-size: 14.5px; }
+
+/* does / doesn't */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 24px 10px; }
+.panel h3 { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+.yes h3 { color: var(--done); }
+.no h3 { color: var(--no); }
+.panel ul { list-style: none; margin: 0; padding: 0; }
+.panel li { display: grid; grid-template-columns: 20px 1fr; column-gap: 10px; padding: 14px 0; border-top: 1px solid var(--line); }
+.panel li:first-child { border-top: 0; padding-top: 0; }
+.panel li::before { grid-row: 1 / span 2; font-family: var(--mono); font-weight: 600; line-height: 1.6; }
+.yes li::before { content: "+"; color: var(--done); }
+.no li::before { content: "−"; color: var(--no); }
+.panel li b { font-weight: 600; }
+.panel li span { grid-column: 2; color: var(--muted); font-size: 15px; }
+
+/* tables */
+.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); background: var(--chrome); }
+td { color: var(--muted); }
+td:first-child { white-space: nowrap; color: var(--ink); }
+td .ev { display: block; font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent); }
+td .when { font-size: 13.5px; color: var(--faint); }
+@media (max-width: 560px) { td:first-child { white-space: normal; } th, td { padding: 12px 14px; } }
+
+.callout { display: flex; align-items: center; gap: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; margin: 0 0 16px; }
+.callout .big { font-family: var(--mono); font-weight: 600; font-size: clamp(28px, 3vw, 40px); color: var(--done); letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
+.callout b { display: block; font-family: var(--display); font-size: 20px; letter-spacing: -0.01em; }
+.callout span { color: var(--muted); }
+
+/* rough edges */
+.rough { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 820px) { .rough { grid-template-columns: 1fr; } }
+.rough li { display: grid; grid-template-columns: 20px 1fr; column-gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.rough li::before { content: "!"; grid-row: 1 / span 2; font-family: var(--mono); font-weight: 600; color: var(--parked); }
+.rough li b { font-weight: 600; }
+.rough li span { grid-column: 2; color: var(--muted); font-size: 15px; }
+
+/* install */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.step { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 10px 10px 14px; }
+.step .n { flex: none; font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); }
+.step .n::after { content: " ›"; color: var(--faint); }
+.step code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 13.5px; color: var(--ink); }
+.step code.say { white-space: normal; overflow-x: visible; }
+.step .text { flex: 1; color: var(--muted); font-size: 15px; }
+.copy { flex: none; font-family: var(--mono); font-size: 12px; padding: 6px 10px; border-radius: 7px; border: 1px solid var(--line-2); background: var(--surface-2); color: var(--muted); cursor: pointer; transition: color .15s ease, border-color .15s ease; }
+.copy:hover { color: var(--ink); border-color: var(--faint); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+@media (max-width: 820px) { .cols { grid-template-columns: 1fr; gap: 12px; } }
+.cols h3 { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.cmds { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 40px 0 0; }
+.cmds div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.cmds dt code { font-size: 14px; color: var(--accent); font-weight: 600; }
+.cmds dd { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; }
+
+footer { margin-top: 112px; border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 28px 48px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+footer a { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><span class="mark" aria-hidden="true"></span>Clipped</a>
+    <nav aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#board">The board</a>
+      <a href="#does">What it does</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+      <a href="#install">Install</a>
+      <button class="theme-btn" id="theme" type="button" aria-label="Switch to light mode">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/avivalushai/clipped">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+  <div class="hero">
+    <div>
+      <p class="badge"><span class="live" aria-hidden="true"></span>Plugin for Claude Code<span class="sep">/</span>MIT<span class="sep">/</span>runs locally</p>
+      <h1>What did you and Claude decide last week?</h1>
+      <p class="lede">
+        A lot happens in a project while you're busy building it: features left halfway, decisions, "let's come
+        back to this". It all lives in the chat, and a week later it's buried under endless scrolling with no
+        context. Clipped writes it down as you go, on a small board per project that Claude keeps up to date,
+        so you don't have to.
+      </p>
+      <div class="cta">
+        <button class="btn" id="add-now" type="button" aria-expanded="false" aria-controls="quick-install">Add now</button>
+        <a class="btn ghost" href="#runs">See what it installs</a>
+      </div>
+      <div class="quick" id="quick-install" hidden>
+        <ol class="steps">
+          <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
+          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
+        </ol>
+        <p class="note">Paste it into Claude Code — desktop app, terminal or editor. Needs Node 20 or newer. <a href="#install">Rather type the commands yourself?</a></p>
+      </div>
+    </div>
+
+    <figure style="margin:0">
+      <div class="window term-win">
+        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/loopstation</span></div>
+<pre class="term" aria-label="An example Claude Code session on a made-up project, starting with the Clipped brief"><span class="d">~/code/loopstation</span> <span class="p">❯</span> claude
+<span class="d">⎿  SessionStart hook · clipped</span>
+<span class="h">Clipped board: Loopstation (LOOP) — 1 active, 1 parked, 1 review</span>
+Active:
+  <span class="a">LOOP-8</span> Drum row recording <span class="d">(2/4)</span>
+         <span class="d">next:</span> quantize hits to the grid when recording stops
+Parked:
+  <span class="o">LOOP-3</span> Save loops to library <span class="d">(1/3)</span>
+         <span class="d">stopped:</span> schema drafted, Save button not wired yet
+Review:
+  <span class="r">LOOP-6</span> Export to WAV <span class="d">— check: does a 4-bar loop export clean?</span>
+
+<span class="p">›</span> pick up the library thing from last week
+<span class="g">●</span> <span class="d">Read(src/storage/schema.ts)</span>
+<span class="g">●</span> <span class="d">Update(src/components/SaveButton.tsx)</span>
+<span class="foot">Board: LOOP-3 Save loops to library → in progress · 2/3 steps</span>
+<span class="p">›</span> <span class="cur" aria-hidden="true"></span></pre>
+      </div>
+      <figcaption class="caption">An example session on a made-up project: the brief Clipped gives Claude at the start, and the line Claude ends with.</figcaption>
+    </figure>
+  </div>
+
+  <div class="facts">
+    <div><b>3</b><span>hooks, each a short script you can read</span></div>
+    <div><b>1</b><span>file per project: <code>.board/board.json</code></span></div>
+    <div><b>0</b><span>bytes sent anywhere</span></div>
+    <div><b>5</b><span>slash commands, all optional</span></div>
+  </div>
+
+  <section id="familiar">
+    <p class="eyebrow">Sound familiar?</p>
+    <h2>Where did that go?</h2>
+    <div class="familiar">
+      <div class="q">
+        <p class="ask">You open a project after two weeks. What was half done?</p>
+        <p class="ans"><b>With Clipped</b>Every parked card has a note saying where you stopped and what's next.</p>
+      </div>
+      <div class="q">
+        <p class="ask">Why did you pick that approach? It's 400 messages up, in a chat you closed.</p>
+        <p class="ans"><b>With Clipped</b>Decisions, brainstorms and plans get their own tabs, linked to the work they led to.</p>
+      </div>
+      <div class="q">
+        <p class="ask">A new session starts and Claude remembers nothing about yesterday.</p>
+        <p class="ans"><b>With Clipped</b>Every session opens with a short brief: what's in progress, parked, and waiting for you.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <p class="eyebrow">How it works</p>
+    <h2>You build. Claude keeps the board.</h2>
+    <ol class="flow">
+      <li>
+        <h3>You work as usual</h3>
+        <p>Talk to Claude the way you already do. There's nothing new to learn and no board to fill in.</p>
+        <span class="tag">skill · rules Claude follows</span>
+      </li>
+      <li>
+        <h3>Claude writes it down</h3>
+        <p>It opens a card when real work starts, ticks off steps, and parks it with a note when you stop. If it forgets, it gets a nudge at the end of the turn.</p>
+        <span class="tag">PostToolUse + Stop hooks</span>
+      </li>
+      <li>
+        <h3>The next session picks up</h3>
+        <p>Before you type anything, Claude has a short brief of what's in progress, parked and waiting for you.</p>
+        <span class="tag">SessionStart hook</span>
+      </li>
+    </ol>
+  </section>
+
+  <section id="board">
+    <p class="eyebrow">The board</p>
+    <h2>One board per project, kept by Claude</h2>
+    <p class="sub">Type <code>board ui</code> and it opens in your browser. It updates live while Claude works.</p>
+    <figure style="margin:0">
+      <div class="window">
+        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">localhost:4747</span></div>
+        <img class="only-dark" src="img/board.png" width="1208" height="940" alt="The Clipped board for this project in Board view: columns for Idea, In progress, Parked, Review and Done, each card showing its next step, progress and that Claude made the last change.">
+        <img class="only-light" src="img/board-light.png" width="1208" height="940" loading="lazy" alt="The Clipped board for this project in Board view: columns for Idea, In progress, Parked, Review and Done, each card showing its next step, progress and that Claude made the last change.">
+      </div>
+      <figcaption class="caption">This project's own board (folder path shortened). "Claude" on a card means Claude made the last change, not me.</figcaption>
+    </figure>
+
+    <div class="anatomy">
+      <div class="window">
+        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">LE-4</span></div>
+        <img class="only-dark" src="img/card.png" width="480" height="685" alt="An open card: title, progress bar, status buttons, the next step, a checklist of steps with three of five done, and a Continue with Claude box.">
+        <img class="only-light" src="img/card-light.png" width="480" height="685" loading="lazy" alt="An open card: title, progress bar, status buttons, the next step, a checklist of steps with three of five done, and a Continue with Claude box.">
+      </div>
+      <div>
+        <h3 class="h3big">Open a card to see the whole piece of work</h3>
+        <dl class="parts">
+          <div style="--c: var(--active)"><dt>Status</dt><dd>Idea, In progress, Parked, Review or Done. Claude moves the card along as it works. Done waits for you.</dd></div>
+          <div style="--c: var(--parked)"><dt>Next step</dt><dd>What comes next. When a card is parked, this is where you stopped.</dd></div>
+          <div style="--c: var(--review)"><dt>Steps</dt><dd>A checklist Claude ticks off as it goes. The progress bar is counted from it.</dd></div>
+          <div style="--c: var(--accent)"><dt>Continue with Claude</dt><dd>A ready prompt with where you stopped, the remaining steps and the files involved. Paste it into a new session and carry on.</dd></div>
+          <div style="--c: var(--done)"><dt>Files and activity</dt><dd>Further down: every file edited for this card, and a log of every change with who made it.</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <h3 class="h3big tabs-title">Five tabs, so nothing lives only in the chat</h3>
+    <div class="window">
+      <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">localhost:4747 · brainstorms</span></div>
+      <img class="only-dark" src="img/tabs.png" width="1208" height="335" alt="The board's five tabs, Features, Questions, Brainstorms, Plans and References, with the Brainstorms tab open showing one brainstorm linked to card LE-15.">
+        <img class="only-light" src="img/tabs-light.png" width="1208" height="335" loading="lazy" alt="The board's five tabs, Features, Questions, Brainstorms, Plans and References, with the Brainstorms tab open showing one brainstorm linked to card LE-15.">
+    </div>
+    <div class="tab-list">
+      <div><b>Features <small>cards</small></b><span>Work with a next step: features, bugs and chores. Each one is a card like the one above.</span></div>
+      <div><b>Questions <small>cards</small></b><span>Things to find out before you can decide. Claude writes down the answer. You decide when it's settled.</span></div>
+      <div><b>Brainstorms <small>notes</small></b><span>The thinking behind a decision, linked to the cards that came out of it.</span></div>
+      <div><b>Plans <small>notes</small></b><span>A spec or plan document. <code>/clipped:plan</code> turns it into cards that point back to it.</span></div>
+      <div><b>References <small>notes</small></b><span>Links and docs you'd otherwise scroll back through the chat to find.</span></div>
+    </div>
+    <p class="note">Switch between Table, Board and Timeline views. The sidebar lists every project on your machine that has a board.</p>
+  </section>
+
+  <section id="does">
+    <p class="eyebrow">What it is</p>
+    <h2>What it does, and what it doesn't</h2>
+    <p class="sub">I'd rather you know the limits before you install it.</p>
+    <div class="split">
+      <div class="panel yes">
+        <h3>It does</h3>
+        <ul>
+          <li><b>Keeps the board without being asked</b><span>Claude opens a card when real work starts, adds steps, and moves the card along as the work goes.</span></li>
+          <li><b>Remembers where you stopped</b><span>Parking a card needs a note saying where you stopped, so picking it up weeks later is cheap.</span></li>
+          <li><b>Briefs Claude at the start of every session</b><span>Claude already knows what's open, parked and waiting for review before you type anything.</span></li>
+          <li><b>Shows every project in one place</b><span><code>board ui</code> opens a local page listing every repo that has a board, and it updates live.</span></li>
+          <li><b>Keeps notes you'd lose in the chat</b><span>Brainstorms, plans and references get their own tabs next to the cards.</span></li>
+        </ul>
+      </div>
+      <div class="panel no">
+        <h3>It doesn't</h3>
+        <ul>
+          <li><b>Close cards on a guess</b><span>When Claude isn't sure, a card goes to Review. It only moves to Done when you say so, or when the work is merged or deployed.</span></li>
+          <li><b>Touch your git</b><span>No commits, no pushes, no branches. It writes one file: <code>.board/board.json</code>.</span></li>
+          <li><b>Send your work anywhere</b><span>No account, no cloud copy. The board is a file in your repo. <a href="#privacy">Details below.</a></span></li>
+          <li><b>Start a board without asking</b><span>In a project with no board, Claude offers once. If you say no, it doesn't ask again that session.</span></li>
+          <li><b>Work for teams</b><span>It's for one person on one machine. There's no sharing, no sync and no assignees.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="runs">
+    <p class="eyebrow">Under the hood</p>
+    <h2>What runs on your machine</h2>
+    <p class="sub">A plugin can run code at points in a Claude Code session. Clipped hooks into three of them, and each one is a short script you can read.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hook</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="ev">SessionStart</span><span class="when">a session starts</span></td>
+            <td>Reads the board and adds a short summary to Claude's context. This costs tokens: a few hundred for a small board, about 750 for this repo's 19 cards.</td>
+          </tr>
+          <tr>
+            <td><span class="ev">PostToolUse</span><span class="when">after Claude edits a file</span></td>
+            <td>Attaches the file path to the active card, but only when the file plausibly belongs there. No output and no extra tokens.</td>
+          </tr>
+          <tr>
+            <td><span class="ev">Stop</span><span class="when">Claude finishes a turn</span></td>
+            <td>If code changed but the board didn't, Claude is asked once to update it or say why not. This adds one short step to that turn at most, and never loops.</td>
+          </tr>
+          <tr>
+            <td><span class="ev">board ui</span><span class="when">only when you type it</span></td>
+            <td>Starts a local server on <code>localhost:4747</code> for the board page.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      There's also a skill: the written rules Claude follows about when to open, update, park or close a card.
+      Read <a href="https://github.com/avivalushai/clipped/blob/main/skills/clipped/SKILL.md">the skill</a>
+      and <a href="https://github.com/avivalushai/clipped/tree/main/hooks">the hooks</a>.
+    </p>
+  </section>
+
+  <section id="privacy">
+    <p class="eyebrow">Privacy</p>
+    <h2>What leaves your machine</h2>
+    <div class="callout">
+      <span class="big">0 bytes</span>
+      <div><b>Right now, nothing.</b><span>No account, no sign-in, and no server of mine is involved.</span></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>What's in it</th></tr></thead>
+        <tbody>
+          <tr><td><code>.board/board.json</code></td><td>The cards and notes for that project. It lives in your repo, so you choose whether to commit it or add it to <code>.gitignore</code>.</td></tr>
+          <tr><td><code>~/.clipped/</code></td><td>The list of folders that have a board, so <code>board ui</code> can show them all, and your settings.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      To be exact: the code already contains usage counting (event names like <code>feature_added</code>, plus
+      numbers). It's inactive because there's no analytics project behind it. If I switch it on in a later
+      version, the release notes and the first run will say so. It will never include titles, notes, file paths
+      or project names, and <code>board telemetry off</code> stops it for good.
+    </p>
+  </section>
+
+  <section id="rough">
+    <p class="eyebrow">Honest status</p>
+    <h2>Where it's still rough</h2>
+    <p class="sub">It's early. I use it every day on three projects, and this is what still goes wrong.</p>
+    <ul class="rough">
+      <li><b>Sometimes it files work on the wrong card.</b><span>Claude can attach unrelated work to whichever card is open. The rules are better now but not perfect.</span></li>
+      <li><b>Sometimes it forgets.</b><span>Mostly after small fixes. The end-of-turn nudge catches most cases.</span></li>
+      <li><b>It has opinions about what counts as a card.</b><span>A card is work with a next step, so one-line fixes stay off the board. That's deliberate, but you may disagree.</span></li>
+      <li><b>It only runs on macOS so far.</b><span>It should work on Linux. Windows is untested.</span></li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <p class="eyebrow">Questions</p>
+    <h2>Things friends asked me</h2>
+    <div class="faq">
+      <details>
+        <summary>Does it cost tokens?</summary>
+        <p>A little. The brief at the start of a session is a few hundred tokens for a small board, about 750 for this one. The end-of-turn nudge adds one short step only when the board fell behind.</p>
+      </details>
+      <details>
+        <summary>Does it matter what language or stack I use?</summary>
+        <p>No. The board tracks the work, not the code, so it works in any project Claude Code works in.</p>
+      </details>
+      <details>
+        <summary>Can I edit the board myself?</summary>
+        <p>Yes. Add, move or rewrite cards in the board page, or just tell Claude. Both write through the same code, so nothing gets out of sync.</p>
+      </details>
+      <details>
+        <summary>What if Claude puts something on the wrong card?</summary>
+        <p>Tell it, or fix it in the board page. Files can be detached from a card with <code>board update --unfile</code>. The rules get tighter every time I catch one of these.</p>
+      </details>
+      <details>
+        <summary>Should I commit <code>.board/board.json</code>?</summary>
+        <p>Your call. It's plain JSON. Commit it to keep the history with the code, or add it to <code>.gitignore</code> to keep it to yourself.</p>
+      </details>
+      <details>
+        <summary>Does it need an internet connection?</summary>
+        <p>No. The board, the page and the commands all run on your machine.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="install">
+    <p class="eyebrow">Try it</p>
+    <h2>Two ways to install</h2>
+    <p class="sub">You need Claude Code and Node 20 or newer. Both do exactly the same thing.</p>
+    <div class="cols">
+      <div>
+        <h3>Ask for it</h3>
+        <ol class="steps">
+          <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
+          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and work as usual.</span></li>
+        </ol>
+        <p class="note">Works wherever Claude Code runs — the desktop app, a terminal, your editor.</p>
+      </div>
+      <div>
+        <h3>Type it yourself</h3>
+        <ol class="steps">
+          <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and work as usual.</span></li>
+        </ol>
+        <p class="note">Inside Claude Code, not in your shell — the first line says where to look, the second installs from it. From a shell, one line does both: <code>claude plugin marketplace add avivalushai/clipped &amp;&amp; claude plugin install clipped@clipped</code></p>
+      </div>
+    </div>
+
+    <div class="cols" style="margin-top: 32px">
+      <div>
+        <h3>Your first board</h3>
+        <ol class="steps">
+          <li class="step"><span class="n">1</span><code class="say">Set up a board for this project from my recent commits and open branches</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p class="note">Optional. Skip it and the board fills as you work; say it and it starts from what you already did.</p>
+      </div>
+      <div>
+        <h3>Uninstall</h3>
+        <ol class="steps">
+          <li class="step"><span class="n">1</span><code>/plugin uninstall clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+          <li class="step"><span class="n">2</span><span class="text">Optional: delete <code>.board/</code> in your projects and <code>~/.clipped/</code>.</span></li>
+        </ol>
+        <p class="note">Nothing else is left behind.</p>
+      </div>
+    </div>
+
+    <dl class="cmds">
+      <div><dt><code>/clipped:board</code></dt><dd>Open the board, or show where things stand</dd></div>
+      <div><dt><code>/clipped:park</code></dt><dd>Stop for now, with a note on where you stopped</dd></div>
+      <div><dt><code>/clipped:done</code></dt><dd>Mark a card finished</dd></div>
+      <div><dt><code>/clipped:ask</code></dt><dd>Record a question that needs finding out</dd></div>
+      <div><dt><code>/clipped:plan</code></dt><dd>Turn a plan or spec document into cards</dd></div>
+    </dl>
+    <p class="note">You don't need any of these commands. Talking normally is enough.</p>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Made by Aviv Alush. Open source, MIT. <a href="https://github.com/avivalushai/clipped">Source on GitHub</a>.</span>
+    <span>Something broke or confused you? <a href="https://github.com/avivalushai/clipped/issues">Tell me</a>.</span>
+  </div>
+</footer>
+
+<script>
+const themeBtn = document.getElementById("theme");
+const syncThemeLabel = () => themeBtn.setAttribute("aria-label", document.documentElement.dataset.theme === "light" ? "Switch to dark mode" : "Switch to light mode");
+syncThemeLabel();
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("clipped.theme", next); } catch (e) {}
+  syncThemeLabel();
+});
+const addNow = document.getElementById("add-now"), quick = document.getElementById("quick-install");
+addNow.addEventListener("click", () => {
+  quick.hidden = !quick.hidden;
+  addNow.setAttribute("aria-expanded", String(!quick.hidden));
+  addNow.textContent = quick.hidden ? "Add now" : "Hide install steps";
+});
+document.querySelectorAll(".copy").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const text = btn.parentElement.querySelector("code").textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch { btn.textContent = "Select it"; }
+    setTimeout(() => (btn.textContent = "Copy"), 1400);
+  });
+});
+</script>
+</body>
+</html>
