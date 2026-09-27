@@ -191,7 +191,7 @@
       <div>
         <h3 class="h3big">Open a card to see the whole piece of work</h3>
         <dl class="parts">
-          <div style="--c: var(--active)"><dt>Status</dt><dd>Idea, In progress, Parked, Your turn or Done. Claude moves the card along as it works; the last two are yours.</dd></div>
+          <div style="--c: var(--active)"><dt>Status</dt><dd>Idea, In progress, Parked, Your turn or Done. Claude moves the card along as it works; the last two are yours. The header counts them: <b>88% complete</b> next to <b>17 waiting on you</b>, because a percentage that counts your queue as nearly done isn't telling you much.</dd></div>
           <div style="--c: var(--parked)"><dt>Next step</dt><dd>What comes next. When a card is parked, this is where you stopped.</dd></div>
           <div style="--c: var(--review)"><dt>Steps</dt><dd>A checklist Claude ticks off as it goes. The progress bar is counted from it.</dd></div>
           <div style="--c: var(--accent)"><dt>Continue with Claude</dt><dd>A ready prompt with where you stopped, the remaining steps and the files involved. Paste it into a new session and carry on.</dd></div>
@@ -262,7 +262,8 @@
         <ul>
           <li><b>Keeps the board without being asked</b><span>Claude opens a card when real work starts, adds steps, and moves the card along as the work goes.</span></li>
           <li><b>Remembers where you stopped</b><span>Parking a card needs a note saying where you stopped, so picking it up weeks later is cheap.</span></li>
-          <li><b>Briefs Claude at the start of every session</b><span>Claude already knows what's open, parked and waiting for review before you type anything.</span></li>
+          <li><b>Briefs Claude at the start of every session</b><span>Claude already knows what's open, parked and waiting for you before you type anything.</span></li>
+          <li><b>Says which notes are its own guesses</b><span>A card only Claude ever touched is marked as its own, and after a fortnight unchecked it drops out of the brief entirely — so a wrong card can't quietly harden into a fact.</span></li>
           <li><b>Shows every project in one place</b><span><code>board ui</code> opens a local page listing every repo that has a board, and it updates live.</span></li>
           <li><b>Keeps notes you'd lose in the chat</b><span>Brainstorms, plans and references get their own tabs next to the cards.</span></li>
         </ul>
@@ -291,7 +292,7 @@
           <tbody>
             <tr>
               <td><span class="ev">SessionStart</span><span class="when">a session starts</span></td>
-              <td>Reads the board and adds a short summary to Claude's context. This costs tokens: a few hundred for a small board, about 750 for this repo's 19 cards.</td>
+              <td>Reads the board and adds a short summary to Claude's context: what's parked and where you stopped, what's in progress, and the titles of everything waiting on you. Notes Claude wrote and you never checked are left out of it and marked as its own — see <a href="#trust">below</a>. About 440 tokens for this repo's 25 cards.</td>
             </tr>
             <tr>
               <td><span class="ev">PostToolUse</span><span class="when">after Claude edits a file</span></td>
@@ -337,7 +338,7 @@ Active:
     </div>
     <div class="runs-expl">
       <h3>What Claude sees when a session starts</h3>
-        <p class="sub">The <code>SessionStart</code> hook puts a short brief in front of Claude before you type anything: what's parked and where it stopped, and what's in progress with its next step.</p>
+        <p class="sub">The <code>SessionStart</code> hook puts a short brief in front of Claude before you type anything: what's parked and where it stopped, what's in progress, and the titles of everything waiting on you. A note Claude wrote that you never checked stays out of it — the card is named, the guess isn't repeated.</p>
         <p class="sub">So when you say something vague like "the csv import thing", Claude knows which card you mean. It picks the work up there and ends its turn with one line saying what moved on the board.</p>
     </div>
   </section>
@@ -371,7 +372,7 @@ Active:
     <h2>Where it's still rough</h2>
     <p class="sub">It's early. I use it every day on three projects, and this is what still goes wrong.</p>
     <ul class="rough">
-      <li><b>Sometimes it files work on the wrong card.</b><span>Claude can attach unrelated work to whichever card is open. The rules are better now but not perfect.</span></li>
+      <li><b>Sometimes it files work on the wrong card.</b><span>Claude can attach unrelated work to whichever card is open. The rules are better now but not perfect — which is why a card it wrote and you never checked is labelled as its guess rather than treated as fact.</span></li>
       <li><b>Sometimes it forgets.</b><span>Mostly after small fixes. The end-of-turn nudge catches most cases.</span></li>
       <li><b>It has opinions about what counts as a card.</b><span>A card is work with a next step, so one-line fixes stay off the board. That's deliberate, but you may disagree.</span></li>
       <li><b>It only runs on macOS so far.</b><span>It should work on Linux. Windows is untested.</span></li>
@@ -382,9 +383,13 @@ Active:
     <p class="eyebrow">Questions</p>
     <h2>Before you install</h2>
     <div class="faq">
+      <details id="trust">
+        <summary>What if it writes down something wrong?</summary>
+        <p>Then you correct it, in the chat or on the board — and the design tries hard to stop that mistake feeding itself. The brief Claude reads at the start of a session carries titles, what's parked and where you stopped; it deliberately leaves out notes Claude wrote that nobody has checked, so its own guesses don't come back as project state. Anything it does carry that only Claude ever touched is labelled as its note, with an instruction to verify it against the repo before building on it. A card that stays unchecked for a fortnight drops out of the brief altogether and becomes a one-line count. And the rules it follows say that when today's work contradicts a card it wrote and you never confirmed, it fixes the card instead of building on it.</p>
+      </details>
       <details>
         <summary>Does it cost tokens?</summary>
-        <p>A little. The brief at the start of a session is a few hundred tokens for a small board, about 750 for this one. The end-of-turn nudge adds one short step only when the board fell behind.</p>
+        <p>A little. The brief at the start of a session is a few hundred tokens — about 440 for this repo's 25 cards, because it carries titles rather than every note. The end-of-turn nudge adds one short step only when the board fell behind.</p>
       </details>
       <details>
         <summary>Does it matter what language or stack I use?</summary>
