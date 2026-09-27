@@ -361,26 +361,26 @@ footer a { color: var(--ink); }
 
     <figure style="margin:0">
       <div class="window term-win">
-        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/loopstation</span></div>
-<pre class="term" aria-label="An example Claude Code session on a made-up project, starting with the Clipped brief"><span class="d">~/code/loopstation</span> <span class="p">❯</span> claude
+        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/nimbus-crm</span></div>
+<pre class="term" aria-label="An example Claude Code session on a made-up CRM project: the Clipped brief listing parked work, then a vague request landing on the right card"><span class="d">~/code/nimbus-crm</span> <span class="p">❯</span> claude
 <span class="d">⎿  SessionStart hook · clipped</span>
-<span class="h">Clipped board: Loopstation (LOOP) — 1 active, 1 parked, 1 review</span>
-Active:
-  <span class="a">LOOP-8</span> Drum row recording <span class="d">(2/4)</span>
-         <span class="d">next:</span> quantize hits to the grid when recording stops
+<span class="h">Clipped board: Nimbus CRM (CRM) — 1 active, 2 parked</span>
 Parked:
-  <span class="o">LOOP-3</span> Save loops to library <span class="d">(1/3)</span>
-         <span class="d">stopped:</span> schema drafted, Save button not wired yet
-Review:
-  <span class="r">LOOP-6</span> Export to WAV <span class="d">— check: does a 4-bar loop export clean?</span>
+  <span class="o">CRM-3</span> Import contacts from CSV <span class="d">(1/3)</span>
+         <span class="d">stopped:</span> mapping done, merge not written <span class="d">(idle 16d)</span>
+  <span class="o">CRM-7</span> Email sync drops long threads <span class="d">(0/2)</span>
+         <span class="d">stopped:</span> Gmail pagination, no retry yet <span class="d">(idle 9d)</span>
+Active:
+  <span class="a">CRM-8</span> Drag a deal between pipeline stages <span class="d">(2/4)</span>
+         <span class="d">next:</span> keep the new order after a reload
 
-<span class="p">›</span> pick up the library thing from last week
-<span class="g">●</span> <span class="d">Read(src/storage/schema.ts)</span>
-<span class="g">●</span> <span class="d">Update(src/components/SaveButton.tsx)</span>
-<span class="foot">Board: LOOP-3 Save loops to library → in progress · 2/3 steps</span>
+<span class="p">›</span> the csv import thing — let's finish it
+<span class="g">●</span> <span class="d">Read(src/import/mapping.ts)</span>
+<span class="g">●</span> <span class="d">Update(src/import/DedupeStep.tsx)</span>
+<span class="foot">Board: CRM-3 Import contacts from CSV → in progress · 2/3 steps</span>
 <span class="p">›</span> <span class="cur" aria-hidden="true"></span></pre>
       </div>
-      <figcaption class="caption">An example session on a made-up project: the brief Clipped gives Claude at the start, and the line Claude ends with.</figcaption>
+      <figcaption class="caption">An example session on a made-up project: what you left parked, a half-remembered sentence, and the line Claude ends with.</figcaption>
     </figure>
   </div>
 
