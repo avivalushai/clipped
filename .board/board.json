@@ -1216,7 +1216,7 @@
       "key": "LE-30",
       "title": "Board UI review fixes: close the loop, honest numbers, faster builders",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Plus: a click on another row while a card is open switches to it in one click, and the new-note row matches the card row. Then the checks above",
       "doneWhen": [],
       "steps": [
@@ -1282,8 +1282,8 @@
         "ui/index.html"
       ],
       "createdAt": "2026-09-27T15:54:36Z",
-      "updatedAt": "2026-09-27T17:19:33Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-27T17:23:35Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-27T15:54:36Z",
@@ -1374,6 +1374,11 @@
           "at": "2026-09-27T17:19:33Z",
           "by": "claude",
           "text": "Note: Plus: a click on another row while a card is open switches to it in one click, and the new-note row matches the card row. Then the checks above"
+        },
+        {
+          "at": "2026-09-27T17:23:35Z",
+          "by": "user",
+          "text": "Done"
         }
       ],
       "links": []
