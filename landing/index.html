@@ -159,7 +159,7 @@
       <div class="does-item">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>
         <h3>You stay in charge</h3>
-        <p>When Claude isn't sure, a card goes to Review. It only moves to Done when you say so, or when the work is merged or deployed. You can change anything on the board yourself.</p>
+        <p>When Claude isn't sure, a card lands in Your turn. It only moves to Done when you say so, or when the work is merged or deployed. You can change anything on the board yourself.</p>
       </div>
       <div class="does-item">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
@@ -214,6 +214,42 @@
       <div><b>References <small>notes</small></b><span>Links and docs you'd otherwise scroll back through the chat to find.</span></div>
     </div>
     <p class="note">Switch between Table, Board and Timeline views. The sidebar lists every project on your machine that has a board.</p>
+  </section>
+
+  <section id="what">
+    <p class="eyebrow">The rules</p>
+    <h2>What counts as what</h2>
+    <p class="sub">One line sits under all of it: <b>work has a next step, notes don't.</b> Claude applies the rest for you — this is here for the day you disagree with a call it made, and want to know what it was aiming at.</p>
+
+    <div class="split">
+      <div class="panel">
+        <h3>Cards — things with a next step</h3>
+        <dl class="parts">
+          <div style="--c: var(--accent)"><dt>Feature</dt><dd>A user-visible outcome that takes more than one reply to build. If it lands in a single reply, it's a step inside another card, or nothing at all.</dd></div>
+          <div style="--c: var(--parked)"><dt>Bug</dt><dd>Something that used to work, or that you called broken. Same card, different label — it still needs a next step and an end.</dd></div>
+          <div style="--c: var(--faint)"><dt>Chore</dt><dd>Work with nothing for you to look at afterwards: a cleanup, a config change, a job to run. Unticked boxes in a plan usually land here.</dd></div>
+          <div style="--c: var(--review)"><dt>Question</dt><dd>Something to go and find out before you can decide — a price, a library, what a spec allows. Claude records what it found; deciding stays yours.</dd></div>
+        </dl>
+      </div>
+      <div class="panel">
+        <h3>Notes — the thinking around it</h3>
+        <dl class="parts">
+          <div style="--c: var(--active)"><dt>Brainstorm</dt><dd>A conversation that reached a decision. The body says what was decided, not everything that was said — one per conversation, linked to the cards it produced.</dd></div>
+          <div style="--c: var(--done)"><dt>Plan</dt><dd>A spec or plan document you wrote. The document keeps the reasoning; the board only tracks what came of it.</dd></div>
+          <div style="--c: var(--muted)"><dt>Reference</dt><dd>A link you'd look up twice, tied to the card it informed. Not every link that went past — only the ones that were actually used.</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <p class="note"><b>Idea is not a type — it's a status.</b> A feature, a bug, a chore and a question all start there when you mention them in passing: it means nobody has picked it up yet.</p>
+
+    <h3 class="h3big tabs-title">How it decides, each time you ask for something</h3>
+    <ol class="steps" role="list">
+      <li class="step"><span class="n">1</span><span class="text">Is this about a card that's already open — same topic, same files? Then it updates that card instead of opening another one.</span></li>
+      <li class="step"><span class="n">2</span><span class="text">Will it take more than one reply, or touch several files? That's a new card, named the way you'd say it, not the way the code is organised.</span></li>
+      <li class="step"><span class="n">3</span><span class="text">Anything smaller becomes a step on the card you're already on — or nothing at all.</span></li>
+    </ol>
+    <p class="note">Chat isn't recorded, and neither is a question Claude answers in the same breath. Brainstorming records nothing until the conversation lands on something concrete — then it offers the list once, in your words, and drops it if you say no. Ask for three things at once and you get three cards: the one being worked on is In progress, the rest wait in Idea.</p>
   </section>
 
   <section id="does">
@@ -344,7 +380,7 @@ Active:
 
   <section id="faq">
     <p class="eyebrow">Questions</p>
-    <h2>Things friends asked me</h2>
+    <h2>Before you install</h2>
     <div class="faq">
       <details>
         <summary>Does it cost tokens?</summary>
@@ -422,7 +458,7 @@ Active:
       <div><dt><code>/clipped:board</code></dt><dd>Open the board, or show where things stand</dd></div>
       <div><dt><code>/clipped:park</code></dt><dd>Stop for now, with a note on where you stopped</dd></div>
       <div><dt><code>/clipped:done</code></dt><dd>Mark a card finished</dd></div>
-      <div><dt><code>/clipped:ask</code></dt><dd>Record a question that needs finding out</dd></div>
+      <div><dt><code>/clipped:question</code></dt><dd>Record a question that needs finding out</dd></div>
       <div><dt><code>/clipped:plan</code></dt><dd>Turn a plan or spec document into cards</dd></div>
     </dl>
     <p class="note">You don't need any of these commands. Talking normally is enough.</p>
