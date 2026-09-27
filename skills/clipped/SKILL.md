@@ -18,14 +18,14 @@ board context                                  # what's open, parked, in review
 board list [--status parked] [--type bug|chore|question] [--all] [--json]
 board show LE-3
 board add "Save loops to library" [--status active] [--type bug|chore] [--next "..."] [--step "..."]... [--done-when "..."]... [--file path]...
-board update LE-3 [--title ...] [--note ...] [--status ...] [--type ...] [--file path]... [--unfile path]...
+board update LE-3 [--title ...] [--next ...] [--status ...] [--type ...] [--file path]... [--unfile path]...
 board step LE-3 "Wire the Save button" [--done]
-board park LE-3 --note "Where we stopped"      # a note is required
-board review LE-3 [--note "What to check"]
+board park LE-3 --stopped "Where we stopped"   # saying where you stopped is required
+board review LE-3 [--check "What to check"]    # review = the user's turn to look
 board done LE-3
 board merge LE-15 --into LE-3
 
-board ask "Which auth provider?" [--status active] [--note "..."]   # a question is a card
+board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided
 
 board note add brainstorm|plan|reference "Title" [--body ...] [--url ...] [--file ...] [--card LE-3]...
@@ -296,6 +296,11 @@ files that live in the repo, which the user will open again.
 
 `idea` · `active` · `parked` · `review` · `done`
 
+The card carries one line of text whose meaning changes with the status, which
+is why each status has its own flag for it: `--next` while active, `--stopped`
+when parking, `--check` when sending it to review. `--note` still works and
+means the same field. The UI calls `review` **Your turn**, because it is.
+
 The note means something different in each: **next step** when active, **where we
 stopped** when parked, **what to check** in review. Write it so the user can pick
 the work up cold, weeks later — name the file or the exact next action, not
@@ -303,7 +308,7 @@ the work up cold, weeks later — name the file or the exact next action, not
 
 When the user switches topics, close the loop on the current card first:
 - looks finished → `board review`, and ask one short question
-- unfinished → `board park --note "..."` saying exactly where you stopped
+- unfinished → `board park --stopped "..."` saying exactly where you stopped
 
 Parked cards are the heart of this product. Never leave work in `active` when
 you've moved on, and never park without a real note.

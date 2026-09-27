@@ -1,5 +1,5 @@
 ---
-description: Mark a feature finished
+description: Mark a card finished
 argument-hint: "[card]"
 allowed-tools: Bash(board *)
 ---

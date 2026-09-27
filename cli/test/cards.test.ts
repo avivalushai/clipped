@@ -44,7 +44,7 @@ describe("board add", () => {
     const sb = withBoard();
     expect(sb.board("add", "   ").code).toBe(1);
     expect(sb.board("add", "X", "--status", "wip").err).toContain("status must be one of");
-    expect(sb.board("add", "X", "--status", "parked").err).toContain("note");
+    expect(sb.board("add", "X", "--status", "parked").err).toContain("where you stopped");
     expect(sb.read().features).toEqual([]);
     expect(sb.read().nextNum).toBe(1);
   });

@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 26,
+  "nextNum": 27,
   "features": [
     {
       "key": "LE-1",
@@ -723,7 +723,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "review",
-      "note": "Hero: Schibsted Grotesk + JetBrains Mono, board preview (HTML) on the right. Uncommitted",
+      "note": "New 'So, what does Clipped actually do?' section with icons replaces How it works. Uncommitted",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -754,7 +754,7 @@
         "landing/style.css"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T12:01:09Z",
+      "updatedAt": "2026-09-27T12:10:31Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -871,6 +871,16 @@
           "at": "2026-09-27T12:01:09Z",
           "by": "claude",
           "text": "Note: Hero: Schibsted Grotesk + JetBrains Mono, board preview (HTML) on the right. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T12:08:06Z",
+          "by": "claude",
+          "text": "Note: Add now scrolls the install steps to the top; typed word is inline code. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T12:10:31Z",
+          "by": "claude",
+          "text": "Note: New 'So, what does Clipped actually do?' section with icons replaces How it works. Uncommitted"
         }
       ]
     },
@@ -1085,6 +1095,26 @@
           "at": "2026-09-27T11:07:52Z",
           "by": "claude",
           "text": "Moved to review — Open landing/install.html (python3 -m http.server --directory landing) and read it as your friend would: desktop route, the check table, troubleshooting. Then deploy with the landing page"
+        }
+      ]
+    },
+    {
+      "key": "LE-26",
+      "title": "sdfasdf",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "createdAt": "2026-09-27T12:11:13Z",
+      "updatedAt": "2026-09-27T12:11:13Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-27T12:11:13Z",
+          "by": "user",
+          "text": "Created"
         }
       ]
     }

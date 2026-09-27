@@ -382,7 +382,7 @@ details.cols .menu input{accent-color:var(--accent)}
 <script>
 const STATUSES=[
   {id:'idea',label:'Idea'},{id:'active',label:'In progress'},{id:'parked',label:'Parked'},
-  {id:'review',label:'Review'},{id:'done',label:'Done'}];
+  {id:'review',label:'Your turn'},{id:'done',label:'Done'}];
 const SL=Object.fromEntries(STATUSES.map(s=>[s.id,s.label]));
 /* A question runs the same five statuses, but nobody says "in progress" about
    a question — so the Questions tab renames them and nothing else changes. */
@@ -391,13 +391,13 @@ const sl=id=>(P.tab==='questions'?QSL:SL)[id];
 /* The note means something different per status — and again for a question. */
 const noteLabel=f=>f.type==='question'
   ? (f.status==='review'||f.status==='done'?'Answer':f.status==='parked'?'Where you stopped':'What you\u2019re checking')
-  : (f.status==='parked'?'Where you stopped':f.status==='active'?'Next step':'Notes');
+  : (f.status==='parked'?'Where you stopped':f.status==='active'?'Next step':f.status==='review'?'What to check':'Next');
 const colLabel=c=>P.tab!=='questions'?c.label
   :c.id==='note'?'Answer / what you\u2019re checking':c.id==='title'?'Question':c.label;
 
 /* The five tabs. Features and questions are cards; the rest are notes. */
 const TABS=[
-  {id:'features',label:'Features',note:null},
+  {id:'features',label:'Work',note:null},   /* the data is still features; the label isn't */
   {id:'questions',label:'Questions',note:null},
   {id:'brainstorms',label:'Brainstorms',note:'brainstorm'},
   {id:'plans',label:'Plans',note:'plan'},
@@ -433,7 +433,7 @@ const ICON={
 const COLS=[
   {id:'key',label:'Key',w:92,sort:'key',lock:true},
   {id:'project',label:'Project',w:124,sort:'project',home:true},
-  {id:'title',label:'Feature',w:380,sort:'title',lock:true},
+  {id:'title',label:'Card',w:380,sort:'title',lock:true},
   {id:'status',label:'Status',w:136,sort:'status'},
   {id:'note',label:'Next step / where stopped',w:300,flex:true},
   {id:'progress',label:'Progress',w:120,sort:'progress'},
@@ -637,7 +637,7 @@ function renderPage(){
   const p=proj(view), isHome=!p, all=tabCards();
   const c=s=>all.filter(f=>f.status===s).length;
   const parked=S.features.filter(f=>(!p||f.project===p.id)&&f.type!=='question'&&f.status==='parked').length;
-  const noun=P.tab==='questions'?'question':'feature';
+  const noun=P.tab==='questions'?'question':'card';
   let h=`<div class="head"><div>
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono">${esc(p.path)}</span></div><h1>${esc(p.name)}</h1>`
          :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>`}
@@ -776,13 +776,13 @@ function composerRow(cols,isHome){
     const c=cols[i];
     if(c.id==='key') out+=`<td class="key">+ New</td>`;
     else if(c.id==='project') out+=`<td><span class="sel">${projSel}</span></td>`;
-    else if(c.id==='title') out+=`<td><input id="cTitle" class="cell-in title" placeholder="${P.tab==='questions'?'What do you need to find out?':'Feature name, then Enter'}" aria-label="New feature name"></td>`;
+    else if(c.id==='title') out+=`<td><input id="cTitle" class="cell-in title" placeholder="${P.tab==='questions'?'What do you need to find out?':'Name the work, then Enter'}" aria-label="New card"></td>`;
     else if(c.id==='status') out+=`<td><span class="sel"><select id="cStatus" aria-label="New card status">${STATUSES.map(s=>`<option value="${s.id}" ${s.id===comp.status?'selected':''}>${sl(s.id)}</option>`).join('')}</select></span></td>`;
     else if(c.id==='note') out+=`<td><input id="cNote" class="cell-in note" placeholder="${P.tab==='questions'?'What you need to find out':'Next step (optional)'}" aria-label="Note for the new card"></td>`;
     else break;
   }
   const rest=cols.length-i;
-  if(rest>0) out+=`<td colspan="${rest}"><button class="btn sm primary" id="cAdd">Add feature</button></td>`;
+  if(rest>0) out+=`<td colspan="${rest}"><button class="btn sm primary" id="cAdd">Add card</button></td>`;
   if(isHome&&!cols.some(c=>c.id==='project')) out=out.replace('<td class="key">+ New</td>',`<td class="key">+ New</td>`);
   return `<tr class="composer">${out}</tr>`;
 }
@@ -1043,7 +1043,7 @@ function renderDrawer(){
       ${isQ&&!f.files.length?'':`<div class="field"><span class="lbl">Files touched</span>${f.files.length?`<ul class="files">${f.files.map(x=>`<li class="mono">${esc(x)}</li>`).join('')}</ul>`:'<span class="hint">None yet. Claude records files as it edits them.</span>'}</div>`}
       ${sourceNotes(f)}
       <div class="field"><span class="lbl">Activity</span><ul class="log">${[...f.log].reverse().map(l=>`<li>${who(l.by)}<span>${esc(l.text)}<div class="when">${ago(l.at)} ago</div></span></li>`).join('')}</ul></div>
-      <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete feature'}</button><button class="btn primary" id="dSave">Save</button></div>
+      <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete card'}</button><button class="btn primary" id="dSave">Save</button></div>
     </div></aside>`;
   fitDrawerText();
   const close=()=>commit().then(()=>{openId=null;pendingPark=null;render()});

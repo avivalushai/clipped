@@ -83,8 +83,8 @@ describe("board context", () => {
         "  APP-1 Save loops (1/2) — next: Wire the Save button",
         "Parked:",
         "  APP-2 Mobile layout — stopped: Header overlaps the logo (idle 4d)",
-        "Review:",
-        "  APP-3 Fix drift — check: Play two loops; in review 4d — ask if it's done",
+        "Your turn:",
+        "  APP-3 Fix drift — check: Play two loops; waiting 4d — ask if it's done",
         "Ideas: APP-4 Bigger buttons",
       ].join("\n"),
     );

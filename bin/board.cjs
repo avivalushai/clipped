@@ -1221,9 +1221,9 @@ function context(ctx, { opts }) {
   };
   section("Active", by("active"), (f) => f.note ? `next: ${f.note}` : "");
   section("Parked", by("parked"), (f) => `stopped: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`);
-  section("Review", by("review"), (f) => {
+  section("Your turn", by("review"), (f) => {
     const d = ageDays(ctx, f.updatedAt);
-    return [f.note && `check: ${f.note}`, d >= 2 && `in review ${d}d \u2014 ask if it's done`].filter(Boolean).join("; ");
+    return [f.note && `check: ${f.note}`, d >= 2 && `waiting ${d}d \u2014 ask if it's done`].filter(Boolean).join("; ");
   });
   const ideas = by("idea");
   if (ideas.length) {
@@ -1263,7 +1263,7 @@ function add(ctx, { pos, opts }) {
       updatedBy: by,
       log: [{ at, by, text: status === "idea" ? "Created" : `Created \u2014 ${status}` }]
     };
-    if (status === "parked" && !note3.trim()) throw new UserError(`parking needs a note saying where you stopped (--note "...")`);
+    if (status === "parked" && !note3.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
     b.nextNum++;
     b.features.push(f2);
     return f2;
@@ -1326,7 +1326,7 @@ function statusCommand(to) {
   return (ctx, { pos, opts }) => {
     const keyArg = need(pos, 0, "card key");
     const by = actor(ctx, str2(opts, "by"));
-    const note3 = str2(opts, "note");
+    const note3 = str2(opts, "stopped") ?? str2(opts, "check") ?? str2(opts, "note");
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f2 = findFeature(b, keyArg);
       setStatus(ctx, f2, to, by, note3);
@@ -1699,7 +1699,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.3.2");
+    ctx.out("0.4.0");
     return 0;
   }
   const command = COMMANDS[name];
@@ -1751,22 +1751,22 @@ var init_cli = __esm({
       list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: listCmd },
       show: { usage: "show LOOP-3", options: {}, run: show },
       add: {
-        usage: `add "Title" [--status active] [--type bug] [--next "..."] [--step "..."]... [--done-when "..."]... [--file path]...`,
+        usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
         options: { status: s, type: s, next: s, note: s, step: many, "done-when": many, file: many },
         run: add
       },
       update: {
-        usage: "update LOOP-3 [--title ...] [--note ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
+        usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
         options: { title: s, note: s, next: s, status: s, type: s, "done-when": many, file: many, unfile: many },
         run: update
       },
       step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: step },
-      park: { usage: `park LOOP-3 --note "Where we stopped"`, options: { note: s }, run: park },
-      review: { usage: `review LOOP-3 [--note "What to check"]`, options: { note: s }, run: review },
+      park: { usage: `park LOOP-3 --stopped "Where we stopped"`, options: { stopped: s, note: s }, run: park },
+      review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: review },
       done: { usage: "done LOOP-3", options: {}, run: done },
       merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: merge },
       ask: {
-        usage: `ask "Which auth provider?" [--status active] [--note "..."]`,
+        usage: `ask "Which auth provider?" [--status active] [--next "what you're checking"]`,
         options: { status: s, next: s, note: s, step: many, "done-when": many, file: many },
         run: ask
       },

@@ -11,7 +11,7 @@ A feature board that Claude keeps for you while you build. Every project gets a 
 1. **Local-first.** Board data lives in files inside each project. It never leaves the user's machine.
 2. **We store no user content.** Our servers keep only: account (email, name, signup date) and anonymous usage events (action names + counts, never titles/notes/paths).
 3. **Classify by work, not by words.** Users write freely. Claude maps what it *actually changed* to board cards.
-4. **Never close a feature on a guess.** Claude may move a card to Review; Done needs the user's confirmation or a strong signal (merge / deploy).
+4. **Never close a feature on a guess.** Claude may move a card to `review` — the UI calls it **Your turn**, because "review" reads as code review — and Done needs the user's confirmation or a strong signal (merge / deploy).
 5. **"Parked" is the heart of the product.** Anything left halfway gets a status and a note saying where we stopped.
 
 ---
@@ -95,7 +95,7 @@ produced them, the **Plan** they came from, the **Reference** that answered them
 
 - `status`: `idea | active | parked | review | done`
 - `type`: `feature | bug | chore | question`
-- `note`: meaning depends on status — *Next step* (active), *Where we stopped* (parked), *What to check* (review)
+- `note`: one line whose meaning depends on status, which is why the CLI takes `--next`, `--stopped` and `--check` for it (`--note` still works) — *Next step* (active), *Where we stopped* (parked), *What to check* (review)
 - `updatedBy`: `claude | user`
 - `settings.granularity`: `coarse | normal | fine`
 
@@ -125,14 +125,14 @@ board init [--name "Looper"] [--key LOOP]
 board list [--status parked] [--json]
 board show LOOP-3
 board add "Export loop as WAV" [--status active] [--type bug] [--next "..."] [--step "..."]...
-board update LOOP-3 [--title ...] [--note ...] [--status ...]
+board update LOOP-3 [--title ...] [--next ...] [--status ...]
 board step LOOP-3 "Render buffer" [--done]
-board park LOOP-3 --note "Where we stopped"
-board review LOOP-3 [--note "What to check"]
+board park LOOP-3 --stopped "Where we stopped"
+board review LOOP-3 [--check "What to check"]
 board done LOOP-3
 board merge LOOP-15 --into LOOP-3
 
-board ask "Which auth provider?" [--status active] [--note "..."]
+board ask "Which auth provider?" [--status active] [--next "..."]
 board answer LOOP-7 "What you found out" [--done]
 
 board note add brainstorm|plan|reference "Title" [--body ...] [--url ...] [--file ...] [--card LOOP-3]...
@@ -193,7 +193,7 @@ If the user corrects ("that's part of saving"), merge/fix silently.
 ## 6. UI
 
 Start from `prototype/clipped.html` (working prototype with sample data). Keep:
-- Five tabs above the summary: Features · Questions · Brainstorms · Plans · References, each with a count
+- Five tabs above the summary: Work · Questions · Brainstorms · Plans · References, each with a count
 - Left menu: all projects, parked count, progress
 - Views: Table (editable cells, add row, group/density/columns), Board (drag between columns), Timeline (idle time for parked)
 - Card drawer: status, note, steps, files, activity, "Continue with Claude" prompt

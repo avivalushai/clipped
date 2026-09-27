@@ -37,7 +37,7 @@ In Claude Code:
 /plugin install clipped@clipped
 ```
 
-Then `/clipped:board`, `/clipped:park`, `/clipped:done`, `/clipped:ask`, `/clipped:plan`.
+Then `/clipped:board`, `/clipped:park`, `/clipped:done`, `/clipped:question`, `/clipped:plan`.
 
 ## Working on the skill or the hooks
 

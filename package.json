@@ -1,6 +1,6 @@
 {
   "name": "clipped",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
   "description": "A feature board Claude keeps for you while you build.",
   "type": "module",
@@ -8,7 +8,8 @@
     "node": ">=20"
   },
   "bin": {
-    "board": "bin/board"
+    "board": "bin/board",
+    "clipped": "bin/clipped"
   },
   "scripts": {
     "build": "npm run bundle",

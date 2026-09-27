@@ -26,22 +26,22 @@ const COMMANDS: Record<string, Command> = {
   list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: cmd.listCmd },
   show: { usage: "show LOOP-3", options: {}, run: cmd.show },
   add: {
-    usage: `add "Title" [--status active] [--type bug] [--next "..."] [--step "..."]... [--done-when "..."]... [--file path]...`,
+    usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
     options: { status: s, type: s, next: s, note: s, step: many, "done-when": many, file: many },
     run: cmd.add,
   },
   update: {
-    usage: "update LOOP-3 [--title ...] [--note ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
+    usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
     options: { title: s, note: s, next: s, status: s, type: s, "done-when": many, file: many, unfile: many },
     run: cmd.update,
   },
   step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: cmd.step },
-  park: { usage: `park LOOP-3 --note "Where we stopped"`, options: { note: s }, run: cmd.park },
-  review: { usage: `review LOOP-3 [--note "What to check"]`, options: { note: s }, run: cmd.review },
+  park: { usage: `park LOOP-3 --stopped "Where we stopped"`, options: { stopped: s, note: s }, run: cmd.park },
+  review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: cmd.review },
   done: { usage: "done LOOP-3", options: {}, run: cmd.done },
   merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: cmd.merge },
   ask: {
-    usage: `ask "Which auth provider?" [--status active] [--note "..."]`,
+    usage: `ask "Which auth provider?" [--status active] [--next "what you're checking"]`,
     options: { status: s, next: s, note: s, step: many, "done-when": many, file: many },
     run: cmd.ask,
   },
@@ -80,7 +80,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.3.2");
+    ctx.out("0.4.0");
     return 0;
   }
   const command = COMMANDS[name];

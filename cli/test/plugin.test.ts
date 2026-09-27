@@ -114,7 +114,7 @@ describe("skill and commands", () => {
 
   it("gives every command a description and only refers to real board commands", () => {
     const files = fs.readdirSync(path.join(repo, "commands"));
-    expect(files.sort()).toEqual(["ask.md", "board.md", "done.md", "park.md", "plan.md"]);
+    expect(files.sort()).toEqual(["board.md", "done.md", "park.md", "plan.md", "question.md"]);
     const known = /board (ui|init|context|list|show|add|update|step|park|review|done|merge|touch|ask|answer|note)\b/g;
     for (const f of files) {
       const text = read(`commands/${f}`);

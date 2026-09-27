@@ -211,9 +211,9 @@ export function context(ctx: Ctx, { opts }: Args) {
   };
   section("Active", by("active"), (f) => (f.note ? `next: ${f.note}` : ""));
   section("Parked", by("parked"), (f) => `stopped: ${f.note} (idle ${ageDays(ctx, f.updatedAt)}d)`);
-  section("Review", by("review"), (f) => {
+  section("Your turn", by("review"), (f) => {
     const d = ageDays(ctx, f.updatedAt);
-    return [f.note && `check: ${f.note}`, d >= 2 && `in review ${d}d — ask if it's done`].filter(Boolean).join("; ");
+    return [f.note && `check: ${f.note}`, d >= 2 && `waiting ${d}d — ask if it's done`].filter(Boolean).join("; ");
   });
   const ideas = by("idea");
   if (ideas.length) {
@@ -257,7 +257,7 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
       updatedBy: by,
       log: [{ at, by, text: status === "idea" ? "Created" : `Created — ${status}` }],
     };
-    if (status === "parked" && !note.trim()) throw new UserError(`parking needs a note saying where you stopped (--note "...")`);
+    if (status === "parked" && !note.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
     b.nextNum++;
     b.features.push(f);
     return f;
@@ -320,11 +320,13 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
   emit(ctx, opts, f, `Updated ${formatLine(f)}`);
 }
 
+/* The card carries one line of text whose meaning changes with the status, so
+   each status takes the flag that says what it means. --note still works. */
 function statusCommand(to: Status) {
   return (ctx: Ctx, { pos, opts }: Args) => {
     const keyArg = need(pos, 0, "card key");
     const by = actor(ctx, str(opts, "by"));
-    const note = str(opts, "note");
+    const note = str(opts, "stopped") ?? str(opts, "check") ?? str(opts, "note");
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f = findFeature(b, keyArg);
       setStatus(ctx, f, to, by, note);
