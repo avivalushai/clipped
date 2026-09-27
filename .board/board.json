@@ -984,19 +984,31 @@
       "key": "LE-25",
       "title": "An install guide page on the site",
       "type": "feature",
-      "status": "idea",
-      "note": "",
+      "status": "review",
+      "note": "Open landing/install.html (python3 -m http.server --directory landing) and read it as your friend would: desktop route, the check table, troubleshooting. Then deploy with the landing page",
       "doneWhen": [],
       "steps": [],
-      "files": [],
+      "files": [
+        "landing/install.html"
+      ],
       "createdAt": "2026-09-27T10:59:23Z",
-      "updatedAt": "2026-09-27T10:59:23Z",
+      "updatedAt": "2026-09-27T11:07:52Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T10:59:23Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-27T11:03:52Z",
+          "by": "claude",
+          "text": "Started — Write landing/install.html from the conversation with the friend"
+        },
+        {
+          "at": "2026-09-27T11:07:52Z",
+          "by": "claude",
+          "text": "Moved to review — Open landing/install.html (python3 -m http.server --directory landing) and read it as your friend would: desktop route, the check table, troubleshooting. Then deploy with the landing page"
         }
       ]
     }

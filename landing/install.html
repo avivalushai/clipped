@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install Clipped</title>
+<meta name="description" content="Install the Clipped plugin for Claude Code step by step: what you need, which buttons to press, how to check it works, and what to do when it doesn't.">
+<script>try { const t = localStorage.getItem("clipped.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* the guide: a step list on the left, the steps on the right */
+.guide-hero { padding-top: 72px; max-width: 760px; }
+.guide-hero h1 { font-size: clamp(36px, 4.2vw, 56px); }
+.guide { display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 56px; }
+@media (min-width: 1000px) { .guide { grid-template-columns: 240px minmax(0, 1fr); gap: 64px; } }
+.toc { display: none; }
+@media (min-width: 1000px) {
+  .toc { display: block; position: sticky; top: 92px; align-self: start; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; border-left: 1px solid var(--line); }
+  .toc li { counter-increment: toc; }
+  .toc a { display: block; padding: 7px 0 7px 16px; margin-left: -1px; border-left: 1px solid transparent; color: var(--muted); text-decoration: none; font-size: 14.5px; }
+  .toc a::before { content: counter(toc, decimal-leading-zero) "  "; font-family: var(--mono); font-size: 12px; color: var(--faint); white-space: pre; }
+  .toc a:hover { color: var(--ink); }
+  .toc a.on { color: var(--ink); border-left-color: var(--accent); }
+  .toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+.gsec { padding: 0 0 64px; max-width: 820px; }
+.gsec + .gsec { padding-top: 64px; border-top: 1px solid var(--line); }
+.gsec h2 { font-size: clamp(24px, 2.4vw, 32px); }
+.gsec h3 { margin-top: 28px; }
+.gsec > p, .gsec li { color: var(--muted); }
+.gsec > p { margin: 0 0 16px; max-width: 68ch; }
+.gsec p b, .gsec li b { color: var(--ink); font-weight: 600; }
+.plain { margin: 0 0 16px; padding-left: 20px; }
+.plain li { margin: 6px 0; }
+.gsec .steps { margin: 0 0 12px; }
+
+/* three install scopes, one recommended */
+.scopes { display: grid; gap: 10px; margin: 16px 0; }
+.scope { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+.scope b { font-weight: 600; color: var(--ink); }
+.scope span { grid-column: 1; color: var(--muted); font-size: 14.5px; }
+.scope em { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-style: normal; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.scope.pick { border-color: var(--accent); }
+.scope.pick em { color: var(--accent); font-weight: 600; }
+
+/* routes: desktop, terminal, just ask */
+.routes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 20px; }
+.route { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px 18px; }
+.route h3 { margin: 0 0 4px; font-family: var(--display); font-size: 19px; letter-spacing: -0.01em; }
+.route > p { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
+.route .step { background: var(--bg); }
+.route .note { margin-top: 4px; }
+
+/* the check: what you send, what should appear */
+.expect td:first-child { white-space: normal; width: 44%; }
+.expect td:nth-child(2) b { color: var(--ink); font-weight: 600; }
+.okay { display: flex; gap: 10px; align-items: baseline; margin-top: 16px; color: var(--muted); font-size: 15px; }
+.okay::before { content: "✓"; font-family: var(--mono); font-weight: 600; color: var(--done); }
+
+/* code block for settings.json */
+.block { margin: 12px 0 8px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 10px; position: relative; }
+.block pre { margin: 0; padding: 16px 18px; font-family: var(--mono); font-size: 13.5px; line-height: 1.6; color: var(--ink); overflow-x: auto; }
+.block .copy { position: absolute; top: 10px; right: 10px; }
+.trouble summary code { font-weight: 500; }
+.trouble details p, .trouble details ol { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+.trouble details ol { padding-left: 20px; }
+.gsec .faq { grid-template-columns: 1fr; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Clipped</a>
+    <nav aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="index.html#privacy">Privacy</a>
+      <a href="index.html#faq">FAQ</a>
+      <button class="theme-btn" id="theme" type="button" aria-label="Switch to light mode">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="gh" href="https://github.com/avivalushai/clipped">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+  <div class="guide-hero">
+    <p class="eyebrow">Install guide</p>
+    <h1>From nothing to your first card</h1>
+    <p class="lede">About five minutes. Every screen you'll see, which option to pick, how to tell it's working, and what to do when it isn't.</p>
+  </div>
+
+  <div class="guide">
+    <nav class="toc" aria-label="Steps">
+      <ol>
+        <li><a href="#need">What you need</a></li>
+        <li><a href="#install">Install the plugin</a></li>
+        <li><a href="#restart">Restart</a></li>
+        <li><a href="#work">Work as usual</a></li>
+        <li><a href="#see">Open the board</a></li>
+        <li><a href="#check">Check it works</a></li>
+        <li><a href="#prompts">Stop the permission prompts</a></li>
+        <li><a href="#trouble">If something's off</a></li>
+        <li><a href="#update">Update or remove</a></li>
+      </ol>
+    </nav>
+
+    <div>
+      <section class="gsec" id="need">
+        <h2>What you need</h2>
+        <h3>Claude Code, not the Claude chat</h3>
+        <p>Clipped is a Claude Code plugin. It works in the <b>Code</b> tab of the Claude desktop app, in the <code>claude</code> command in a terminal, and in the VS Code and JetBrains extensions.</p>
+        <p>It does <b>not</b> work in the regular Claude chat (the Chat tab, or claude.ai in a browser). The board is a file inside your project folder, and Claude updates it by running a small command on your computer. Chat can't reach either.</p>
+
+        <h3>Node 20 or newer</h3>
+        <p>The board command and the three hooks are small Node scripts. To check, open a terminal and run:</p>
+        <ol class="steps">
+          <li class="step"><span class="n">$</span><code>node -v</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p>If it prints <code>v20</code> or higher, you're set. If it says <code>command not found</code> or an older version, install the LTS version from <a href="https://nodejs.org">nodejs.org</a>, then close and reopen Claude.</p>
+        <p class="note">Without Node the plugin still installs, but the board never updates, and nothing tells you why.</p>
+      </section>
+
+      <section class="gsec" id="install">
+        <h2>Install the plugin</h2>
+        <p>Pick whichever is easiest. All three end in the same place.</p>
+
+        <div class="routes">
+          <div class="route">
+            <h3>In the Claude desktop app</h3>
+            <p>Slash commands like <code>/plugin</code> don't work in the desktop app, so this takes two parts. First, tell the app where Clipped lives. Open the <b>Code</b> tab, start a session in any folder, and send:</p>
+            <ol class="steps">
+              <li class="step"><span class="n">1</span><code class="say">Run: claude plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+            </ol>
+            <p>Approve the command when Claude asks. Then install it from the app's plugin menu:</p>
+            <ol class="steps">
+              <li class="step"><span class="n">2</span><span class="text">Click <b>+</b> next to the message box → <b>Plugins</b> → <b>Add plugin</b>, and open <b>Clipped</b>.</span></li>
+              <li class="step"><span class="n">3</span><span class="text">Click the arrow next to <b>Install</b> and choose where it goes:</span></li>
+            </ol>
+            <div class="scopes">
+              <div class="scope pick"><b>Install for me</b><span>Every project on this computer. Each one still gets its own board.</span><em>pick this</em></div>
+              <div class="scope"><b>Install for project (shared)</b><span>Only this project, written to its <code>.claude/</code> folder, so anyone who clones the repo gets it too.</span><em>teams</em></div>
+              <div class="scope"><b>Install for project (personal)</b><span>Only this project, only you, kept out of git.</span><em>trying it out</em></div>
+            </div>
+          </div>
+
+          <div class="route">
+            <h3>In a terminal or your editor</h3>
+            <p>Inside <code>claude</code>, one at a time:</p>
+            <ol class="steps">
+              <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+              <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+            </ol>
+            <p>Or from your shell, one line does both, for you, in every project:</p>
+            <ol class="steps">
+              <li class="step"><span class="n">$</span><code>claude plugin marketplace add avivalushai/clipped &amp;&amp; claude plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+            </ol>
+          </div>
+
+          <div class="route">
+            <h3>Or just ask Claude</h3>
+            <p>Paste this into any Claude Code session, desktop app included, and approve the two commands it runs:</p>
+            <ol class="steps">
+              <li class="step"><span class="n">›</span><code class="say">Install the Clipped plugin from github.com/avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="gsec" id="restart">
+        <h2>Restart</h2>
+        <p>Plugins load when Claude starts, so a session that was already open doesn't have it yet.</p>
+        <ul class="plain">
+          <li><b>Desktop app:</b> quit it fully (<code>⌘Q</code> on a Mac, not just closing the window) and open it again. Starting a new session alone can leave the slash-command list out of date.</li>
+          <li><b>Terminal or editor:</b> exit <code>claude</code> and run it again, or type <code>/reload-plugins</code>.</li>
+        </ul>
+        <p>To check it loaded, start a session and type <code>/</code> in the message box. You should see <code>clipped:board</code>, <code>clipped:park</code>, <code>clipped:done</code>, <code>clipped:ask</code> and <code>clipped:plan</code>.</p>
+      </section>
+
+      <section class="gsec" id="work">
+        <h2>Work as usual</h2>
+        <p>Open a session in your project folder and talk to Claude the way you already do. There's no setup command.</p>
+        <p>The first time something is worth keeping — a feature you start building, a question answered with a comparison or a table, a "let's do that later" — Claude records it, and the project's board appears in a <code>.board/</code> folder at the top of the project. Short questions and one-line answers stay off the board on purpose.</p>
+        <p>Want the board to start from what you've already done? Say:</p>
+        <ol class="steps">
+          <li class="step"><span class="n">›</span><code class="say">Set up a board for this project from my recent commits and open branches</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p class="note">Your home folder and hidden folders never get a board. If you work from one of those, open the project folder instead.</p>
+      </section>
+
+      <section class="gsec" id="see">
+        <h2>Open the board</h2>
+        <ol class="steps">
+          <li class="step"><span class="n">›</span><code>/clipped:board</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p>The board opens in your browser at <code>localhost:4747</code>. The sidebar lists every project on this computer that has a board. Keep the tab open: it updates live while Claude works, and new projects appear on their own.</p>
+        <p><code>/clipped:board status</code> prints the same summary in the chat instead.</p>
+      </section>
+
+      <section class="gsec" id="check">
+        <h2>Check it works</h2>
+        <p>In a <b>new</b> session in your project, with the board open next to it, send these one at a time:</p>
+        <div class="table-wrap expect">
+          <table>
+            <thead><tr><th>You send</th><th>The board should show</th></tr></thead>
+            <tbody>
+              <tr><td>Build me a simple web page listing 10 popular mobile games, with a filter by genre.</td><td>A card under <b>Features</b>, <b>In progress</b>, with the page's file attached</td></tr>
+              <tr><td>Later we should add a screenshot for each game.</td><td>A second card, title only, under <b>Idea</b></td></tr>
+              <tr><td>What are the top 3 mobile games in each genre?</td><td>A card under <b>Questions → Answered</b>, holding the picks</td></tr>
+              <tr><td>Elaborate on that.</td><td>The <b>same</b> question card, with the fuller answer — no second card</td></tr>
+              <tr><td><code>/clipped:park</code></td><td>The first card moves to <b>Parked</b>, with a note on where you stopped</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="okay">All five showed up? It works. From here on, just work — you never have to run these commands.</p>
+      </section>
+
+      <section class="gsec" id="prompts">
+        <h2>Stop the permission prompts</h2>
+        <p>Claude Code asks before running a command, and Clipped's is called <code>board</code>. You may see <b>Allow Claude to run <code>board …</code>?</b> a few times. It's safe to allow: <code>board</code> only reads and writes <code>.board/board.json</code> in your project and <code>~/.clipped/</code>.</p>
+        <p>To stop being asked in every project, add this to <code>~/.claude/settings.json</code> (create the file if it isn't there):</p>
+        <div class="block">
+<pre><code>{
+  "permissions": {
+    "allow": ["Bash(board *)"]
+  }
+}</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p class="note">If the file already has a <code>permissions.allow</code> list, add <code>"Bash(board *)"</code> to it instead of pasting a second one.</p>
+      </section>
+
+      <section class="gsec trouble" id="trouble">
+        <h2>If something's off</h2>
+        <div class="faq">
+          <details>
+            <summary>It says <code>/clipped:board</code> isn't a command here</summary>
+            <p>The app's command list wasn't refreshed after the install. Quit the app fully and reopen it, then type <code>/</code> and look for <code>clipped:</code>. If the command runs anyway (you see "Open the Clipped board…" and Claude working), ignore the message.</p>
+          </details>
+          <details>
+            <summary>I worked a whole session and the board is empty</summary>
+            <ol>
+              <li>Was it the <b>Code</b> tab, in a project folder? The Chat tab can't use plugins.</li>
+              <li>Was the session started <b>after</b> installing? Start a new one.</li>
+              <li>Does <code>node -v</code> print v20 or higher? Without Node nothing gets written.</li>
+              <li>Was there anything to keep? Quick questions and one-line answers stay off the board on purpose. Try the <a href="#check">check</a> above.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Does it work in the Claude chat or on claude.ai?</summary>
+            <p>No. Chat can't read files on your computer or run commands there, and the board is both. Use the Code tab in the desktop app, the terminal, or your editor.</p>
+          </details>
+          <details>
+            <summary><code>board: command not found</code> in my own terminal</summary>
+            <p>The <code>board</code> command is on Claude's path, not your shell's. Use <code>/clipped:board</code> inside Claude, or ask Claude to run whatever you wanted.</p>
+          </details>
+          <details>
+            <summary>The board landed in the wrong folder</summary>
+            <p>A board goes at the top of the git repo you're in, or in the folder the session was opened in if there's no repo. Delete that <code>.board/</code> folder and open the session from your project folder instead.</p>
+          </details>
+          <details>
+            <summary>Claude put something on the wrong card</summary>
+            <p>Tell it, or fix it in the board page: open the card and edit it. Files can be detached with <code>board update --unfile</code>.</p>
+          </details>
+          <details>
+            <summary>I'm on Windows</summary>
+            <p>It's untested there. It should work where Node and Claude Code work. If it doesn't, <a href="https://github.com/avivalushai/clipped/issues">tell me what you see</a>.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="gsec" id="update">
+        <h2>Update or remove</h2>
+        <h3>Update</h3>
+        <p>Clipped doesn't update itself. When there's a new version:</p>
+        <ul class="plain">
+          <li><b>Desktop app:</b> <b>+</b> → <b>Plugins</b> → <b>Manage plugins</b> → Clipped → update, then start a new session.</li>
+          <li><b>Terminal or editor:</b> <code>/plugin</code> → <b>Installed</b> → Clipped → <b>Update now</b>, then <code>/reload-plugins</code>.</li>
+        </ul>
+        <ol class="steps">
+          <li class="step"><span class="n">$</span><code>claude plugin update clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p class="note">The shell version of the same thing.</p>
+        <h3>Remove</h3>
+        <ul class="plain">
+          <li><b>Desktop app:</b> <b>+</b> → <b>Plugins</b> → <b>Manage plugins</b> → Clipped → uninstall.</li>
+          <li><b>Anywhere else:</b></li>
+        </ul>
+        <ol class="steps">
+          <li class="step"><span class="n">$</span><code>claude plugin uninstall clipped@clipped</code><button class="copy" type="button">Copy</button></li>
+        </ol>
+        <p>Your boards stay behind. To remove them too, delete <code>.board/</code> in your projects and <code>~/.clipped/</code>. Nothing else is left.</p>
+        <p class="note">Stuck on something this page doesn't cover? <a href="https://github.com/avivalushai/clipped/issues">Open an issue</a> with a screenshot.</p>
+      </section>
+    </div>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Made by Aviv Alush. Open source, MIT. <a href="https://github.com/avivalushai/clipped">Source on GitHub</a>.</span>
+    <span>Something broke or confused you? <a href="https://github.com/avivalushai/clipped/issues">Tell me</a>.</span>
+  </div>
+</footer>
+
+<script>
+const themeBtn = document.getElementById("theme");
+const syncThemeLabel = () => themeBtn.setAttribute("aria-label", document.documentElement.dataset.theme === "light" ? "Switch to dark mode" : "Switch to light mode");
+syncThemeLabel();
+themeBtn.addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("clipped.theme", next); } catch (e) {}
+  syncThemeLabel();
+});
+document.querySelectorAll(".copy").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const text = btn.parentElement.querySelector("code").textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch { btn.textContent = "Select it"; }
+    setTimeout(() => (btn.textContent = "Copy"), 1400);
+  });
+});
+// Highlight the step you're reading in the side list.
+const links = [...document.querySelectorAll(".toc a")];
+const seen = new IntersectionObserver((entries) => {
+  for (const e of entries) if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.hash === "#" + e.target.id));
+}, { rootMargin: "-20% 0px -70% 0px" });
+document.querySelectorAll(".gsec").forEach((s) => seen.observe(s));
+</script>
+</body>
+</html>
