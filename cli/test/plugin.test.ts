@@ -100,6 +100,18 @@ describe("skill and commands", () => {
     expect(body).toContain("Do not record: links you produced in passing");
   });
 
+  it("records a researched answer and the loose ends a reply leaves behind", () => {
+    const body = read("skills/clipped/SKILL.md");
+    expect(body).toContain("## What gets captured");
+    // an answer that took work lands in Answered, a fact you knew doesn't
+    expect(body).toContain("Answered on the spot");
+    expect(body).toContain("`board ask` then `board answer`");
+    // things somebody still has to do become ideas, your own suggestions don't
+    expect(body).toContain("if it's worth a sentence in your reply, it's worth a row");
+    expect(body).toContain("never your own suggestions");
+    expect(body).toContain("A decision with nothing to build");
+  });
+
   it("gives every command a description and only refers to real board commands", () => {
     const files = fs.readdirSync(path.join(repo, "commands"));
     expect(files.sort()).toEqual(["ask.md", "board.md", "done.md", "park.md", "plan.md"]);

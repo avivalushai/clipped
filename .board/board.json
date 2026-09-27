@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 22,
+  "nextNum": 23,
   "features": [
     {
       "key": "LE-1",
@@ -713,7 +713,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "active",
-      "note": "Hero is now a question, 'Sound familiar?' section, real board screenshot. Next: Aviv reads it, then deploy",
+      "note": "Board explainer added (open card + five tabs). Next: Aviv's read, then deploy",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -735,10 +735,12 @@
       "files": [
         "landing/index.html",
         ".claude/launch.json",
-        "landing/img/board.png"
+        "landing/img/board.png",
+        "landing/img/card.png",
+        "landing/img/tabs.png"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T09:40:12Z",
+      "updatedAt": "2026-09-27T09:58:55Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -770,6 +772,16 @@
           "at": "2026-09-27T09:40:12Z",
           "by": "claude",
           "text": "Note: Hero is now a question, 'Sound familiar?' section, real board screenshot. Next: Aviv reads it, then deploy"
+        },
+        {
+          "at": "2026-09-27T09:58:55Z",
+          "by": "claude",
+          "text": "Files: landing/img/card.png, landing/img/tabs.png"
+        },
+        {
+          "at": "2026-09-27T09:58:55Z",
+          "by": "claude",
+          "text": "Note: Board explainer added (open card + five tabs). Next: Aviv's read, then deploy"
         }
       ]
     },
@@ -813,6 +825,55 @@
           "at": "2026-09-27T09:35:59Z",
           "by": "claude",
           "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-22",
+      "title": "Researched answers and loose ends land on the board",
+      "type": "feature",
+      "status": "review",
+      "note": "Update the plugin to 0.3.1, then ask a research question in a Braille session: it should land in Questions → Answered on its own, and any 'do this first' should appear as an idea",
+      "doneWhen": [
+        "A researched answer lands in Answered on its own in a Braille session",
+        "Tests pass on 0.3.1"
+      ],
+      "steps": [
+        {
+          "text": "Capture map, researched answers, loose ends, decisions, chat plans in SKILL.md",
+          "done": true
+        },
+        {
+          "text": "Version 0.3.1",
+          "done": true
+        }
+      ],
+      "files": [
+        "skills/clipped/SKILL.md"
+      ],
+      "createdAt": "2026-09-27T10:02:32Z",
+      "updatedAt": "2026-09-27T10:03:46Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T10:02:32Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-27T10:03:46Z",
+          "by": "claude",
+          "text": "Step added (done): Capture map, researched answers, loose ends, decisions, chat plans in SKILL.md"
+        },
+        {
+          "at": "2026-09-27T10:03:46Z",
+          "by": "claude",
+          "text": "Step added (done): Version 0.3.1"
+        },
+        {
+          "at": "2026-09-27T10:03:46Z",
+          "by": "claude",
+          "text": "Moved to review — Update the plugin to 0.3.1, then ask a research question in a Braille session: it should land in Questions → Answered on its own, and any 'do this first' should appear as an idea"
         }
       ]
     }
