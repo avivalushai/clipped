@@ -1651,7 +1651,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.2.0");
+    ctx.out("0.2.1");
     return 0;
   }
   const command = COMMANDS[name];

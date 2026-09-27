@@ -277,7 +277,7 @@
       "title": "Dogfood on Braille.AI and bud",
       "type": "chore",
       "status": "active",
-      "note": "Install the plugin, then work normally for two weeks — I'll ask the DOGFOOD.md questions at the end",
+      "note": "Two weeks of real sessions on Braille.AI and bud — I'll ask the DOGFOOD.md questions at the end",
       "doneWhen": [
         "Two weeks of real sessions on both projects",
         "The skill rules changed in response to what actually went wrong",
@@ -294,7 +294,7 @@
         },
         {
           "text": "Install the plugin in Claude Code",
-          "done": false
+          "done": true
         },
         {
           "text": "Two weeks of real sessions",
@@ -330,7 +330,7 @@
         "cli/src/cli.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-24T13:39:24Z",
+      "updatedAt": "2026-09-27T09:14:30Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -377,6 +377,16 @@
           "at": "2026-09-23T13:42:11Z",
           "by": "claude",
           "text": "Step added: Tune the skill rules from what went wrong"
+        },
+        {
+          "at": "2026-09-27T09:14:29Z",
+          "by": "claude",
+          "text": "Step done: Install the plugin in Claude Code"
+        },
+        {
+          "at": "2026-09-27T09:14:30Z",
+          "by": "claude",
+          "text": "Note: Two weeks of real sessions on Braille.AI and bud — I'll ask the DOGFOOD.md questions at the end"
         }
       ]
     },
