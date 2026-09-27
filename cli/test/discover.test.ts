@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { discoverProjects, isKnownProject, looksLikeAProject } from "../../server/src/discover.js";
+import { discoverProjects, isKnownProject } from "../../server/src/discover.js";
+import { looksLikeAProject } from "../src/project.js";
 import { type Sandbox, sandbox, withBoard } from "./helpers.js";
 
 /** Write a fake Claude Code session file for a folder, the way Claude Code does. */

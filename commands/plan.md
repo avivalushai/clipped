@@ -1,7 +1,7 @@
 ---
 description: Turn a plan or spec document into cards on the board
 argument-hint: "<file>"
-allowed-tools: Bash(board:*), Read, Glob
+allowed-tools: Bash(board *), Read, Glob
 ---
 
 Put a plan on the board: $ARGUMENTS

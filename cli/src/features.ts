@@ -32,8 +32,10 @@ export function setStatus(ctx: Ctx, f: Feature, to: Status, by: Actor, note?: st
   if (to === "parked" && !f.note.trim())
     throw new UserError(`parking needs a note saying where you stopped (--note "...")`);
   if (f.status === to && note === undefined) return;
+  // Same status, new note: an answer filled in on a follow-up, not a move.
+  const text = f.status === to ? `Updated — ${note}` : statusLog(to, note ?? "");
   f.status = to;
-  stamp(ctx, f, by, statusLog(to, note ?? ""));
+  stamp(ctx, f, by, text);
 }
 
 export function progress(f: Feature): { done: number; total: number } {

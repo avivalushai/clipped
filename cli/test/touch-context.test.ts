@@ -98,6 +98,7 @@ describe("board context", () => {
     const r = bare.board("context");
     expect(r.code).toBe(0);
     expect(r.out).toContain("no board in this project yet");
+    expect(r.out).not.toContain("Offer to create");
     expect(bare.json("context")).toEqual({ board: null });
   });
 

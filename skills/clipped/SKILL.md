@@ -1,6 +1,7 @@
 ---
 name: clipped
-description: Keep the project's Clipped feature board up to date with the `board` CLI. Use whenever work starts, changes topic, gets parked, finished or mentioned — creating, updating, parking, reviewing and finishing cards without being asked.
+description: Keep the project's Clipped feature board up to date with the `board` CLI. Use whenever work starts, changes topic, gets parked, finished or mentioned — creating, updating, parking, reviewing and finishing cards without being asked. Also use whenever you answer a question with a table, a list, a comparison or a recommendation — those are recorded too.
+allowed-tools: Bash(board *)
 ---
 
 You keep a feature board for this project so the user always knows what's in
@@ -56,7 +57,8 @@ or an answered question. Neither → nothing.
 | You spot a bug or chore outside the task and don't fix it | an `idea` card, `--type bug` or `chore` |
 | You tell the user they have to do something — add keys, run a migration, move a service first | an `idea` card, `--type chore` |
 | A question someone has to go and find out later | `board ask` — Open |
-| A question you researched and answered in this reply | `board ask` then `board answer` — Answered |
+| A question you answered with a table, a list, a comparison or a recommendation — looked up or from memory | `board ask` then `board answer` — Answered |
+| "Elaborate", "more detail", "why?" on an answer you recorded | `board answer` on the same card again — never a new one |
 | A fact you knew and said in a line | nothing |
 | The source an answer or the work rested on | a reference note, linked to its card |
 | A discussion that ended in a decision | a brainstorm note (and ideas, if they say yes) |
@@ -66,8 +68,10 @@ or an answered question. Neither → nothing.
 
 The rest of this file is the detail behind each row.
 
-Cards can be referred to as `LE-3` or just `3`. If there's no board yet, offer
-once to run `board init` — don't nag.
+Cards can be referred to as `LE-3` or just `3`. If there's no board yet, don't
+offer to make one and don't mention it: the first `board add`, `board ask` or
+`board note add` creates it, named after the project folder. Just record things
+as usual.
 
 Files attach themselves as you edit, but only to a card they plausibly belong
 to. When you know which card the work is for, say so: `board touch <file>
@@ -85,9 +89,9 @@ For each request:
 2. Takes more than one reply, or touches several files? → new card.
 3. Otherwise → a step on the active card, or don't record it.
 
-- Chat, and quick questions you answer from what you know → record nothing. A
-  question you had to look into is a card, even when you answer it in the same
-  reply: see **Questions**.
+- Chat, and quick facts you say in a line → record nothing. A question whose
+  answer is worth coming back to is a card, even when you answer it in the same
+  reply and even when you knew it: see **Questions**.
 - Several asks in one message → one card each. What you work on now is `active`,
   the rest are `idea`.
 - Vague asks ("make it nicer") → name the card by the screens you actually changed.
@@ -129,14 +133,22 @@ board ask "Which marketing and GTM approach should we use?" --status active
 board answer BRL-7 "Free scan, paid monitoring — …"
 ```
 
-It counts as researched when any of these is true: you read files, data or
-pages to answer it; you compared options; you made a recommendation the user
-will act on. Put the finding in the answer — what they'd need to decide from
-that sentence alone — not a summary of the search.
+Judge the answer, not how you got it. Record it when any of these is true: it's
+a table, a ranked list or a comparison; it ends on a recommendation the user
+will act on; you read files, data or pages to write it. An answer from memory
+counts just as much as a researched one — "top 3 mobile games in each genre"
+answered from what you know is still a twelve-row table they'll scroll back
+for. Put the finding in the answer — what they'd need from that line alone
+(the picks, the verdict) — not a summary of how you got there.
 
 A quick fact you knew and said in a line
 was never a question; it was a sentence. Don't record it. "What port does Vite use?" is a sentence. "Which of
 these four competitors should we worry about?" is a question.
+
+**Follow-ups.** "Elaborate", "go deeper", "why that one?" on an answer you
+already recorded is the same question. Run `board answer` on that card again
+with the fuller finding — including anything you changed your mind about — and
+don't open a second card.
 
 If the answer names work that has to happen first ("move the worker off your
 Mac before launching"), that's a loose end: add it as an idea, see below.

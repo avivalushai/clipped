@@ -14,7 +14,7 @@ safely(async (input) => {
         "",
         `Keep this board up to date as you work — see the clipped skill. Write to it with \`board\` (on PATH) or \`node ${BOARD_BIN}\`.`,
       ].join("\n")
-    : "This project has no Clipped board. If the user starts building something, offer once to create one with `board init` (you can seed it from recent git history). Don't ask again this session.";
+    : "This project has no Clipped board yet. Don't offer to create one: the first `board add`, `board ask` or `board note add` makes it. Follow the clipped skill as usual — when something is worth keeping, record it and the board appears.";
 
   emit({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext } });
 });

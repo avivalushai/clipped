@@ -1,7 +1,7 @@
 ---
 description: Open the Clipped board, or show its status
 argument-hint: "[status]"
-allowed-tools: Bash(board:*)
+allowed-tools: Bash(board *)
 ---
 
 Argument: $ARGUMENTS
@@ -10,4 +10,4 @@ Argument: $ARGUMENTS
 - `status`: run `board context` and show it as-is. Don't editorialize.
 - Anything else: pass it through to `board` as a subcommand.
 
-If there's no board here, offer to run `board init`.
+If there's no board here yet, say so in one line: one appears the first time something is worth keeping. Don't offer `board init`.

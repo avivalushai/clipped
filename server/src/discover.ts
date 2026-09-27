@@ -6,10 +6,10 @@
 // instead of decoded from the name — and nothing else in those files is read.
 
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { prettyName } from "../../cli/src/commands.js";
 import type { Ctx } from "../../cli/src/context.js";
+import { claudeHome, looksLikeAProject } from "../../cli/src/project.js";
 import { readRegistry } from "../../cli/src/registry.js";
 import { boardFileFor } from "../../cli/src/store.js";
 
@@ -18,9 +18,6 @@ export interface Candidate {
   name: string;
   lastSeen: string;
 }
-
-export const claudeHome = (ctx: Ctx) =>
-  ctx.env.CLIPPED_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
 
 /** First `cwd` in a session file. Reads a bounded prefix — transcripts get large. */
 function cwdFromSession(file: string): string | null {
@@ -44,20 +41,6 @@ function cwdFromSession(file: string): string | null {
     }
   }
   return null;
-}
-
-/**
- * Not every folder Claude Code opened is a project worth a board: it also works
- * in scratch workspaces, its own config directory, and sometimes $HOME itself.
- */
-export function looksLikeAProject(ctx: Ctx, dir: string): boolean {
-  const home = os.homedir();
-  const resolved = path.resolve(dir);
-  if (resolved === home || resolved === path.parse(resolved).root) return false;
-  if (path.basename(resolved).startsWith(".")) return false;
-  if (resolved.startsWith(path.resolve(claudeHome(ctx)) + path.sep)) return false;
-  if (resolved.split(path.sep).includes("Library")) return false; // app support, scratch workspaces
-  return true;
 }
 
 /** Folders worked in, still present on disk, with no board and not registered. */

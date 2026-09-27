@@ -238,14 +238,15 @@ function setStatus(ctx, f, to, by, note3) {
   if (to === "parked" && !f.note.trim())
     throw new UserError(`parking needs a note saying where you stopped (--note "...")`);
   if (f.status === to && note3 === void 0) return;
+  const text = f.status === to ? `Updated \u2014 ${note3}` : statusLog(to, note3 ?? "");
   f.status = to;
-  stamp(ctx, f, by, statusLog(to, note3 ?? ""));
+  stamp(ctx, f, by, text);
 }
 function progress(f) {
   return { done: f.steps.filter((s2) => s2.done).length, total: f.steps.length };
 }
-function sortFeatures(fs11) {
-  return [...fs11].sort(
+function sortFeatures(fs12) {
+  return [...fs12].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || b.updatedAt.localeCompare(a.updatedAt)
   );
 }
@@ -342,7 +343,7 @@ var init_registry = __esm({
 // cli/src/schema.ts
 function validateBoard(b) {
   const errs = [];
-  const err = (path11, msg) => errs.push(`${path11}: ${msg}`);
+  const err = (path12, msg) => errs.push(`${path12}: ${msg}`);
   if (!isObj(b)) return ["board: must be an object"];
   if (b.schemaVersion !== SCHEMA_VERSION) err("schemaVersion", `must be ${SCHEMA_VERSION}`);
   if (!isObj(b.project)) err("project", "must be an object");
@@ -454,6 +455,34 @@ var init_schema = __esm({
   }
 });
 
+// cli/src/project.ts
+function looksLikeAProject(ctx, dir) {
+  const home = import_node_os2.default.homedir();
+  const resolved = import_node_path5.default.resolve(dir);
+  if (resolved === home || resolved === import_node_path5.default.parse(resolved).root) return false;
+  if (import_node_path5.default.basename(resolved).startsWith(".")) return false;
+  if (resolved.startsWith(import_node_path5.default.resolve(claudeHome(ctx)) + import_node_path5.default.sep)) return false;
+  if (resolved.split(import_node_path5.default.sep).includes("Library")) return false;
+  return true;
+}
+function projectRootFor(cwd) {
+  const start = import_node_path5.default.resolve(cwd);
+  for (let dir = start; ; dir = import_node_path5.default.dirname(dir)) {
+    if (import_node_fs5.default.existsSync(import_node_path5.default.join(dir, ".git"))) return dir;
+    if (import_node_path5.default.dirname(dir) === dir) return start;
+  }
+}
+var import_node_fs5, import_node_os2, import_node_path5, claudeHome;
+var init_project = __esm({
+  "cli/src/project.ts"() {
+    "use strict";
+    import_node_fs5 = __toESM(require("node:fs"), 1);
+    import_node_os2 = __toESM(require("node:os"), 1);
+    import_node_path5 = __toESM(require("node:path"), 1);
+    claudeHome = (ctx) => ctx.env.CLIPPED_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || import_node_path5.default.join(import_node_os2.default.homedir(), ".claude");
+  }
+});
+
 // cli/src/notes.ts
 function findNote(board2, input) {
   const raw = input.trim().toUpperCase();
@@ -539,11 +568,11 @@ var init_migrations = __esm({
 
 // cli/src/store.ts
 function findBoard(start) {
-  let dir = import_node_path5.default.resolve(start);
+  let dir = import_node_path6.default.resolve(start);
   for (; ; ) {
     const file = boardFileFor(dir);
-    if (import_node_fs5.default.existsSync(file)) return { root: dir, file };
-    const parent = import_node_path5.default.dirname(dir);
+    if (import_node_fs6.default.existsSync(file)) return { root: dir, file };
+    const parent = import_node_path6.default.dirname(dir);
     if (parent === dir) return null;
     dir = parent;
   }
@@ -556,7 +585,7 @@ function requireBoard(ctx) {
 function readBoard(file) {
   let raw;
   try {
-    raw = JSON.parse(import_node_fs5.default.readFileSync(file, "utf8"));
+    raw = JSON.parse(import_node_fs6.default.readFileSync(file, "utf8"));
   } catch (e) {
     throw new UserError(`can't read ${file}: ${e.message}`);
   }
@@ -571,7 +600,7 @@ function readBoard(file) {
   if (errs.length) throw new UserError(`${file} is invalid:
   ${errs.slice(0, 10).join("\n  ")}`);
   if (res.migrated) {
-    import_node_fs5.default.copyFileSync(file, `${file}.v${res.from}.bak`);
+    import_node_fs6.default.copyFileSync(file, `${file}.v${res.from}.bak`);
     writeJsonAtomic(file, res.board);
   }
   return res.board;
@@ -590,19 +619,19 @@ function mutateBoard(loc, fn) {
     return result;
   });
 }
-var import_node_fs5, import_node_path5, BOARD_DIR, BOARD_FILE, boardFileFor;
+var import_node_fs6, import_node_path6, BOARD_DIR, BOARD_FILE, boardFileFor;
 var init_store = __esm({
   "cli/src/store.ts"() {
     "use strict";
-    import_node_fs5 = __toESM(require("node:fs"), 1);
-    import_node_path5 = __toESM(require("node:path"), 1);
+    import_node_fs6 = __toESM(require("node:fs"), 1);
+    import_node_path6 = __toESM(require("node:path"), 1);
     init_context();
     init_fsutil();
     init_migrations();
     init_schema();
     BOARD_DIR = ".board";
     BOARD_FILE = "board.json";
-    boardFileFor = (root) => import_node_path5.default.join(root, BOARD_DIR, BOARD_FILE);
+    boardFileFor = (root) => import_node_path6.default.join(root, BOARD_DIR, BOARD_FILE);
   }
 });
 
@@ -610,10 +639,10 @@ var init_store = __esm({
 function cwdFromSession(file) {
   let text;
   try {
-    const fd = import_node_fs6.default.openSync(file, "r");
+    const fd = import_node_fs7.default.openSync(file, "r");
     const buf = Buffer.alloc(64 * 1024);
-    const read = import_node_fs6.default.readSync(fd, buf, 0, buf.length, 0);
-    import_node_fs6.default.closeSync(fd);
+    const read = import_node_fs7.default.readSync(fd, buf, 0, buf.length, 0);
+    import_node_fs7.default.closeSync(fd);
     text = buf.subarray(0, read).toString("utf8");
   } catch {
     return null;
@@ -628,57 +657,47 @@ function cwdFromSession(file) {
   }
   return null;
 }
-function looksLikeAProject(ctx, dir) {
-  const home = import_node_os2.default.homedir();
-  const resolved = import_node_path6.default.resolve(dir);
-  if (resolved === home || resolved === import_node_path6.default.parse(resolved).root) return false;
-  if (import_node_path6.default.basename(resolved).startsWith(".")) return false;
-  if (resolved.startsWith(import_node_path6.default.resolve(claudeHome(ctx)) + import_node_path6.default.sep)) return false;
-  if (resolved.split(import_node_path6.default.sep).includes("Library")) return false;
-  return true;
-}
 function discoverProjects(ctx) {
-  const dir = import_node_path6.default.join(claudeHome(ctx), "projects");
-  if (!import_node_fs6.default.existsSync(dir)) return [];
+  const dir = import_node_path7.default.join(claudeHome(ctx), "projects");
+  if (!import_node_fs7.default.existsSync(dir)) return [];
   const registered = new Set(readRegistry(ctx).map((e) => e.path));
   const found = /* @__PURE__ */ new Map();
-  for (const entry of import_node_fs6.default.readdirSync(dir)) {
-    const projectDir = import_node_path6.default.join(dir, entry);
+  for (const entry of import_node_fs7.default.readdirSync(dir)) {
+    const projectDir = import_node_path7.default.join(dir, entry);
     let sessions;
     try {
-      if (!import_node_fs6.default.statSync(projectDir).isDirectory()) continue;
-      sessions = import_node_fs6.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
+      if (!import_node_fs7.default.statSync(projectDir).isDirectory()) continue;
+      sessions = import_node_fs7.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
     } catch {
       continue;
     }
     if (!sessions.length) continue;
-    const newest = sessions.map((f) => import_node_path6.default.join(projectDir, f)).sort((a, b) => import_node_fs6.default.statSync(b).mtimeMs - import_node_fs6.default.statSync(a).mtimeMs)[0];
+    const newest = sessions.map((f) => import_node_path7.default.join(projectDir, f)).sort((a, b) => import_node_fs7.default.statSync(b).mtimeMs - import_node_fs7.default.statSync(a).mtimeMs)[0];
     const cwd = cwdFromSession(newest);
     if (!cwd || registered.has(cwd) || found.has(cwd)) continue;
-    if (!import_node_fs6.default.existsSync(cwd) || import_node_fs6.default.existsSync(boardFileFor(cwd))) continue;
+    if (!import_node_fs7.default.existsSync(cwd) || import_node_fs7.default.existsSync(boardFileFor(cwd))) continue;
     if (!looksLikeAProject(ctx, cwd)) continue;
-    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs6.default.statSync(newest).mtimeMs).toISOString() });
+    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs7.default.statSync(newest).mtimeMs).toISOString() });
   }
   return [...found.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
 }
-var import_node_fs6, import_node_os2, import_node_path6, claudeHome, isKnownProject;
+var import_node_fs7, import_node_path7, isKnownProject;
 var init_discover = __esm({
   "server/src/discover.ts"() {
     "use strict";
-    import_node_fs6 = __toESM(require("node:fs"), 1);
-    import_node_os2 = __toESM(require("node:os"), 1);
-    import_node_path6 = __toESM(require("node:path"), 1);
+    import_node_fs7 = __toESM(require("node:fs"), 1);
+    import_node_path7 = __toESM(require("node:path"), 1);
     init_commands();
+    init_project();
     init_registry();
     init_store();
-    claudeHome = (ctx) => ctx.env.CLIPPED_CLAUDE_HOME || ctx.env.CLAUDE_CONFIG_DIR || import_node_path6.default.join(import_node_os2.default.homedir(), ".claude");
-    isKnownProject = (ctx, candidate) => discoverProjects(ctx).some((c) => c.path === import_node_path6.default.resolve(candidate));
+    isKnownProject = (ctx, candidate) => discoverProjects(ctx).some((c) => c.path === import_node_path7.default.resolve(candidate));
   }
 });
 
 // server/src/projects.ts
 function listProjects(ctx) {
-  return readRegistry(ctx).filter((e) => import_node_fs7.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
+  return readRegistry(ctx).filter((e) => import_node_fs8.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
 }
 function findProject(ctx, id) {
   return listProjects(ctx).find((p) => p.id === id);
@@ -705,16 +724,16 @@ function summarize(project2) {
     percentComplete: total ? Math.round(100 * base.counts.done / total) : 0
   };
 }
-var import_node_crypto2, import_node_fs7, projectId;
+var import_node_crypto2, import_node_fs8, projectId;
 var init_projects = __esm({
   "server/src/projects.ts"() {
     "use strict";
     import_node_crypto2 = __toESM(require("node:crypto"), 1);
-    import_node_fs7 = __toESM(require("node:fs"), 1);
+    import_node_fs8 = __toESM(require("node:fs"), 1);
     init_registry();
     init_schema();
     init_store();
-    projectId = (path11) => import_node_crypto2.default.createHash("sha1").update(path11).digest("hex").slice(0, 8);
+    projectId = (path12) => import_node_crypto2.default.createHash("sha1").update(path12).digest("hex").slice(0, 8);
   }
 });
 
@@ -758,8 +777,8 @@ function applyPatch(ctx, p, key, patch) {
   return feature(p, key);
 }
 function handleApi(ctx, req) {
-  const { method, path: path11 } = req;
-  const seg = path11.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  const { method, path: path12 } = req;
+  const seg = path12.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   if (seg[0] === "discover" && seg.length === 1) {
     if (method !== "GET") throw new HttpError(405, "use GET");
     return discoverProjects(ctx);
@@ -804,7 +823,7 @@ function handleApi(ctx, req) {
       return argv.length > 3 ? board(ctx, p, argv) : note(p, id);
     }
   }
-  if (seg[2] !== "features") throw new HttpError(404, `no route ${path11}`);
+  if (seg[2] !== "features") throw new HttpError(404, `no route ${path12}`);
   if (seg.length === 3) {
     if (method !== "POST") throw new HttpError(405, "use POST");
     const b = req.body ?? {};
@@ -822,7 +841,7 @@ function handleApi(ctx, req) {
     if (method === "DELETE") return board(ctx, p, ["delete", key]);
     throw new HttpError(405, "use PATCH or DELETE");
   }
-  throw new HttpError(404, `no route ${path11}`);
+  throw new HttpError(404, `no route ${path12}`);
 }
 var HttpError, feature, note, str;
 var init_api = __esm({
@@ -872,7 +891,7 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
   };
   const watch = (target, handler) => {
     try {
-      const w = import_node_fs8.default.watch(target, { persistent: false }, handler);
+      const w = import_node_fs9.default.watch(target, { persistent: false }, handler);
       w.on("error", () => {
       });
       watchers.push(w);
@@ -882,16 +901,16 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
   const rebuild = () => {
     while (watchers.length) watchers.pop().close();
     if (closed) return;
-    watch(import_node_path7.default.dirname(registryFile(ctx)), (_e, file) => {
+    watch(import_node_path8.default.dirname(registryFile(ctx)), (_e, file) => {
       if (!file || String(file).startsWith("projects.json")) {
         rebuild();
         fire(null);
       }
     });
-    for (const p of listProjects(ctx)) watch(import_node_path7.default.join(p.path, BOARD_DIR), () => fire(p.id));
+    for (const p of listProjects(ctx)) watch(import_node_path8.default.join(p.path, BOARD_DIR), () => fire(p.id));
   };
   try {
-    import_node_fs8.default.mkdirSync(import_node_path7.default.dirname(registryFile(ctx)), { recursive: true });
+    import_node_fs9.default.mkdirSync(import_node_path8.default.dirname(registryFile(ctx)), { recursive: true });
   } catch {
   }
   rebuild();
@@ -904,12 +923,12 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
     rebuild
   };
 }
-var import_node_fs8, import_node_path7;
+var import_node_fs9, import_node_path8;
 var init_watch = __esm({
   "server/src/watch.ts"() {
     "use strict";
-    import_node_fs8 = __toESM(require("node:fs"), 1);
-    import_node_path7 = __toESM(require("node:path"), 1);
+    import_node_fs9 = __toESM(require("node:fs"), 1);
+    import_node_path8 = __toESM(require("node:path"), 1);
     init_registry();
     init_store();
     init_projects();
@@ -924,9 +943,9 @@ __export(server_exports, {
   listen: () => listen
 });
 function defaultUiDir() {
-  const here = typeof __dirname === "string" ? __dirname : import_node_path8.default.dirname((0, import_node_url.fileURLToPath)(__filename));
-  const candidates = [import_node_path8.default.resolve(here, "../../ui"), import_node_path8.default.resolve(here, "../ui")];
-  return candidates.find((d) => import_node_fs9.default.existsSync(import_node_path8.default.join(d, "index.html"))) ?? candidates[0];
+  const here = typeof __dirname === "string" ? __dirname : import_node_path9.default.dirname((0, import_node_url.fileURLToPath)(__filename));
+  const candidates = [import_node_path9.default.resolve(here, "../../ui"), import_node_path9.default.resolve(here, "../ui")];
+  return candidates.find((d) => import_node_fs10.default.existsSync(import_node_path9.default.join(d, "index.html"))) ?? candidates[0];
 }
 function cors(req, res) {
   const origin = req.headers.origin;
@@ -958,13 +977,13 @@ async function readBody(req) {
 }
 function serveStatic(res, urlPath, uiDir) {
   const rel = urlPath === "/" || urlPath === "/app" ? "index.html" : urlPath.replace(/^\/+/, "");
-  const file = import_node_path8.default.join(uiDir, rel);
-  if (!file.startsWith(uiDir + import_node_path8.default.sep) || !import_node_fs9.default.existsSync(file) || !import_node_fs9.default.statSync(file).isFile()) {
+  const file = import_node_path9.default.join(uiDir, rel);
+  if (!file.startsWith(uiDir + import_node_path9.default.sep) || !import_node_fs10.default.existsSync(file) || !import_node_fs10.default.statSync(file).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain" });
     return void res.end("Not found");
   }
-  res.writeHead(200, { "Content-Type": MIME[import_node_path8.default.extname(file)] ?? "application/octet-stream", "Cache-Control": "no-cache" });
-  import_node_fs9.default.createReadStream(file).pipe(res);
+  res.writeHead(200, { "Content-Type": MIME[import_node_path9.default.extname(file)] ?? "application/octet-stream", "Cache-Control": "no-cache" });
+  import_node_fs10.default.createReadStream(file).pipe(res);
 }
 function createServer(ctx, options = {}) {
   const uiDir = options.uiDir ?? defaultUiDir();
@@ -1039,13 +1058,13 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs9, import_node_http, import_node_path8, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
+var import_node_fs10, import_node_http, import_node_path9, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
-    import_node_fs9 = __toESM(require("node:fs"), 1);
+    import_node_fs10 = __toESM(require("node:fs"), 1);
     import_node_http = __toESM(require("node:http"), 1);
-    import_node_path8 = __toESM(require("node:path"), 1);
+    import_node_path9 = __toESM(require("node:path"), 1);
     import_node_url = require("node:url");
     init_api();
     init_watch();
@@ -1089,7 +1108,7 @@ function parseType(v) {
   return v;
 }
 function prettyName(dir) {
-  return import_node_path9.default.basename(dir).replace(/[-_.]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim() || "Project";
+  return import_node_path10.default.basename(dir).replace(/[-_.]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim() || "Project";
 }
 function deriveKey(name) {
   const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
@@ -1098,21 +1117,24 @@ function deriveKey(name) {
   if (!/^[A-Z]/.test(key)) key = "P" + key;
   return (key + "XX").slice(0, Math.max(2, Math.min(key.length, 4)));
 }
+function createBoard(root, name, key) {
+  if (!KEY_RE.test(key)) throw new UserError("--key must be 2\u20136 letters/digits, starting with a letter (e.g. LOOP)");
+  const board2 = emptyBoard(name, key);
+  writeBoard(boardFileFor(root), board2);
+  writeFileAtomic(import_node_path10.default.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
+  return board2;
+}
 function init(ctx, { opts }) {
-  const root = import_node_path9.default.resolve(ctx.cwd);
+  const root = import_node_path10.default.resolve(ctx.cwd);
   const file = boardFileFor(root);
   let board2;
   let created = false;
-  if (import_node_fs10.default.existsSync(file)) {
+  if (import_node_fs11.default.existsSync(file)) {
     board2 = readBoard(file);
     if (opts.name || opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 rename with the UI or edit settings later`);
   } else {
     const name = str2(opts, "name")?.trim() || prettyName(root);
-    const key = (str2(opts, "key") ?? deriveKey(name)).toUpperCase();
-    if (!KEY_RE.test(key)) throw new UserError("--key must be 2\u20136 letters/digits, starting with a letter (e.g. LOOP)");
-    board2 = emptyBoard(name, key);
-    writeBoard(file, board2);
-    writeFileAtomic(import_node_path9.default.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
+    board2 = createBoard(root, name, (str2(opts, "key") ?? deriveKey(name)).toUpperCase());
     created = true;
   }
   const isNew = registerProject(ctx, { path: root, name: board2.project.name, key: board2.project.key });
@@ -1121,20 +1143,32 @@ function init(ctx, { opts }) {
     isNew ? `Registered in ${registryFile(ctx)}` : `Already registered`
   ]);
 }
+function boardForAdding(ctx, opts) {
+  const found = findBoard(ctx.cwd);
+  if (found) return found;
+  const root = projectRootFor(ctx.cwd);
+  if (!looksLikeAProject(ctx, root))
+    throw new UserError(`no board here, and ${root} doesn't look like a project folder. Run \`board init\` there if it is one.`);
+  const name = prettyName(root);
+  const board2 = createBoard(root, name, deriveKey(name));
+  registerProject(ctx, { path: root, name, key: board2.project.key });
+  if (!opts.json) ctx.out(`Created board ${name} (${board2.project.key}) in ${import_node_path10.default.join(root, BOARD_DIR)}/`);
+  return { root, file: boardFileFor(root) };
+}
 function listCmd(ctx, { opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const statuses = str2(opts, "status")?.split(",").map((s2) => parseStatus(s2.trim()));
   const type = parseType(str2(opts, "type"));
-  let fs11 = board2.features;
-  if (statuses) fs11 = fs11.filter((f) => statuses.includes(f.status));
-  else if (!opts.all) fs11 = fs11.filter((f) => f.status !== "done");
-  if (type) fs11 = fs11.filter((f) => f.type === type);
-  fs11 = sortFeatures(fs11);
-  const w = Math.max(0, ...fs11.map((f) => f.key.length));
+  let fs12 = board2.features;
+  if (statuses) fs12 = fs12.filter((f) => statuses.includes(f.status));
+  else if (!opts.all) fs12 = fs12.filter((f) => f.status !== "done");
+  if (type) fs12 = fs12.filter((f) => f.type === type);
+  fs12 = sortFeatures(fs12);
+  const w = Math.max(0, ...fs12.map((f) => f.key.length));
   const hidden = !statuses && !opts.all ? board2.features.filter((f) => f.status === "done").length : 0;
-  const lines = fs11.length ? fs11.map((f) => formatLine(f, w)) : ["No cards."];
+  const lines = fs12.length ? fs12.map((f) => formatLine(f, w)) : ["No cards."];
   if (hidden) lines.push(`(+${hidden} done \u2014 use --all)`);
-  emit(ctx, opts, fs11, lines);
+  emit(ctx, opts, fs12, lines);
 }
 function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
@@ -1144,7 +1178,7 @@ function show(ctx, { pos, opts }) {
 function context(ctx, { opts }) {
   const loc = findBoard(ctx.cwd);
   if (!loc) {
-    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet. Offer to create one with `board init`.");
+    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet \u2014 the first `board add` or `board ask` makes one. Don't offer `board init`.");
   }
   const b = readBoard(loc.file);
   const work = b.features.filter((f) => f.type !== "question");
@@ -1173,10 +1207,10 @@ function context(ctx, { opts }) {
     );
   const summary = STATUSES.filter((s2) => counts[s2]).map((s2) => `${counts[s2]} ${s2}`).join(", ") || "empty";
   const lines = [`Clipped board: ${b.project.name} (${b.project.key}) \u2014 ${summary}`];
-  const section = (title, fs11, extra) => {
-    if (!fs11.length) return;
+  const section = (title, fs12, extra) => {
+    if (!fs12.length) return;
     lines.push(`${title}:`);
-    for (const f of fs11) {
+    for (const f of fs12) {
       const { done: done2, total } = progress(f);
       const bits = [`  ${f.key} ${f.title}`];
       if (total) bits.push(`(${done2}/${total})`);
@@ -1212,7 +1246,7 @@ function add(ctx, { pos, opts }) {
   const type = parseType(str2(opts, "type")) ?? "feature";
   const note3 = str2(opts, "note") ?? str2(opts, "next") ?? "";
   const by = actor(ctx, str2(opts, "by"));
-  const loc = requireBoard(ctx);
+  const loc = boardForAdding(ctx, opts);
   const f = mutateBoard(loc, (b) => {
     const at = nowIso(ctx);
     const f2 = {
@@ -1354,7 +1388,7 @@ function merge(ctx, { pos, opts }) {
   emit(ctx, opts, into, `Merged ${from.key} into ${into.key} ${into.title}`);
 }
 function projectFiles(root, cwd, paths) {
-  const rels = paths.map((p) => import_node_path9.default.relative(root, import_node_path9.default.resolve(cwd, p))).filter((r) => r && !r.startsWith("..") && !import_node_path9.default.isAbsolute(r)).map((r) => r.split(import_node_path9.default.sep).join("/")).filter((r) => r !== BOARD_DIR && !r.startsWith(BOARD_DIR + "/"));
+  const rels = paths.map((p) => import_node_path10.default.relative(root, import_node_path10.default.resolve(cwd, p))).filter((r) => r && !r.startsWith("..") && !import_node_path10.default.isAbsolute(r)).map((r) => r.split(import_node_path10.default.sep).join("/")).filter((r) => r !== BOARD_DIR && !r.startsWith(BOARD_DIR + "/"));
   return [...new Set(rels)];
 }
 function touch(ctx, { pos, opts }) {
@@ -1468,7 +1502,7 @@ function noteAdd(ctx, pos, opts) {
   const title = need(pos, 1, `title (e.g. board note add reference "The CRDT paper" --url ...)`).trim();
   if (!title) throw new UserError("title can't be empty");
   const by = actor(ctx, str2(opts, "by"));
-  const loc = requireBoard(ctx);
+  const loc = boardForAdding(ctx, opts);
   const n = mutateBoard(loc, (b) => {
     const at = nowIso(ctx);
     const n2 = {
@@ -1620,13 +1654,13 @@ function telemetry(ctx, { pos, opts }) {
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous)."
   ]);
 }
-var import_node_child_process, import_node_fs10, import_node_path9, str2, list, park, review, done, wait;
+var import_node_child_process, import_node_fs11, import_node_path10, str2, list, park, review, done, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
     import_node_child_process = require("node:child_process");
-    import_node_fs10 = __toESM(require("node:fs"), 1);
-    import_node_path9 = __toESM(require("node:path"), 1);
+    import_node_fs11 = __toESM(require("node:fs"), 1);
+    import_node_path10 = __toESM(require("node:path"), 1);
     init_account();
     init_analytics();
     init_context();
@@ -1634,6 +1668,7 @@ var init_commands = __esm({
     init_fsutil();
     init_registry();
     init_schema();
+    init_project();
     init_notes();
     init_store();
     str2 = (o, k) => typeof o[k] === "string" ? o[k] : void 0;
@@ -1664,7 +1699,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.3.1");
+    ctx.out("0.3.2");
     return 0;
   }
   const command = COMMANDS[name];
@@ -1685,7 +1720,7 @@ usage: board ${command.usage}`);
       ctx.out(`usage: board ${command.usage}`);
       return 0;
     }
-    const dir = typeof opts.dir === "string" ? import_node_path10.default.resolve(ctx.cwd, opts.dir) : ctx.cwd;
+    const dir = typeof opts.dir === "string" ? import_node_path11.default.resolve(ctx.cwd, opts.dir) : ctx.cwd;
     command.run({ ...ctx, cwd: dir }, { pos: parsed.positionals, opts });
     return 0;
   } catch (e) {
@@ -1694,11 +1729,11 @@ usage: board ${command.usage}`);
     return 1;
   }
 }
-var import_node_path10, import_node_util, GLOBAL, s, many, flag, COMMANDS;
+var import_node_path11, import_node_util, GLOBAL, s, many, flag, COMMANDS;
 var init_cli = __esm({
   "cli/src/cli.ts"() {
     "use strict";
-    import_node_path10 = __toESM(require("node:path"), 1);
+    import_node_path11 = __toESM(require("node:path"), 1);
     import_node_util = require("node:util");
     init_commands();
     init_context();

@@ -1,7 +1,7 @@
 ---
 description: Record a question that needs finding out, or answer one
 argument-hint: "<question> | <card> <answer>"
-allowed-tools: Bash(board:*), Read, Glob, WebSearch, WebFetch
+allowed-tools: Bash(board *), Read, Glob, WebSearch, WebFetch
 ---
 
 Question: $ARGUMENTS

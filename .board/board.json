@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 24,
+  "nextNum": 26,
   "features": [
     {
       "key": "LE-1",
@@ -917,6 +917,86 @@
           "at": "2026-09-27T10:15:06Z",
           "by": "claude",
           "text": "Moved to review — Refresh the board: click a row anywhere (title, note, empty space) and its panel opens; hover and click a pencil to edit the title or note in place; open BRL-7 and the answer shows whole"
+        }
+      ]
+    },
+    {
+      "key": "LE-24",
+      "title": "Answers and new folders get captured without asking (0.3.2)",
+      "type": "feature",
+      "status": "review",
+      "note": "Update the plugin to 0.3.2, open a new session in a folder with no board and ask 'top 3 mobile games per genre' — a board should appear with the answer under Questions → Answered; 'elaborate' should update that same card",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Board appears on the first card",
+          "done": true
+        },
+        {
+          "text": "Answers from memory and follow-ups get recorded",
+          "done": true
+        },
+        {
+          "text": "Plugin allows its own board command",
+          "done": true
+        }
+      ],
+      "files": [
+        "cli/src/project.ts"
+      ],
+      "createdAt": "2026-09-27T10:59:23Z",
+      "updatedAt": "2026-09-27T11:03:45Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T10:59:23Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-27T11:00:12Z",
+          "by": "claude",
+          "text": "Started — Auto-create board on first write, then the capture rule, then permissions"
+        },
+        {
+          "at": "2026-09-27T11:03:29Z",
+          "by": "claude",
+          "text": "Step added (done): Board appears on the first card"
+        },
+        {
+          "at": "2026-09-27T11:03:29Z",
+          "by": "claude",
+          "text": "Step added (done): Answers from memory and follow-ups get recorded"
+        },
+        {
+          "at": "2026-09-27T11:03:29Z",
+          "by": "claude",
+          "text": "Step added (done): Plugin allows its own board command"
+        },
+        {
+          "at": "2026-09-27T11:03:45Z",
+          "by": "claude",
+          "text": "Moved to review — Update the plugin to 0.3.2, open a new session in a folder with no board and ask 'top 3 mobile games per genre' — a board should appear with the answer under Questions → Answered; 'elaborate' should update that same card"
+        }
+      ]
+    },
+    {
+      "key": "LE-25",
+      "title": "An install guide page on the site",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "createdAt": "2026-09-27T10:59:23Z",
+      "updatedAt": "2026-09-27T10:59:23Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T10:59:23Z",
+          "by": "claude",
+          "text": "Created"
         }
       ]
     }

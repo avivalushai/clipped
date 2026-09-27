@@ -170,12 +170,13 @@ describe("hook behaviour", () => {
     expect(ctx).toContain("clipped skill");
   });
 
-  it("SessionStart offers to create a board when there is none, once", () => {
+  it("SessionStart without a board tells Claude one comes on the first card, and not to ask", () => {
     const bare = sandbox();
     const ctx = runHook("session-start.mjs", { hook_event_name: "SessionStart", session_id: "s1", cwd: bare.root }).json
       .hookSpecificOutput.additionalContext;
-    expect(ctx).toContain("board init");
-    expect(ctx).toContain("Don't ask again this session");
+    expect(ctx).toContain("Don't offer to create one");
+    expect(ctx).toContain("`board ask`");
+    expect(ctx).not.toMatch(/offer once/i);
   });
 
   it("PostToolUse attaches the edited file to the active card", () => {

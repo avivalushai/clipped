@@ -1,7 +1,7 @@
 ---
 description: Park what we're working on, with a note on where we stopped
 argument-hint: "[card] [where we stopped]"
-allowed-tools: Bash(board:*)
+allowed-tools: Bash(board *)
 ---
 
 Park the current work: $ARGUMENTS

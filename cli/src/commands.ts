@@ -31,8 +31,9 @@ import {
   TYPES,
   emptyBoard,
 } from "./schema.js";
+import { looksLikeAProject, projectRootFor } from "./project.js";
 import { findNote, formatNoteDetail, formatNoteLine, sortNotes, stampNote } from "./notes.js";
-import { BOARD_DIR, boardFileFor, findBoard, mutateBoard, readBoard, requireBoard, writeBoard } from "./store.js";
+import { BOARD_DIR, type Located, boardFileFor, findBoard, mutateBoard, readBoard, requireBoard, writeBoard } from "./store.js";
 
 export type Opts = Record<string, string | boolean | string[] | undefined>;
 export interface Args {
@@ -85,6 +86,15 @@ export function deriveKey(name: string): string {
   return (key + "XX").slice(0, Math.max(2, Math.min(key.length, 4)));
 }
 
+/** A fresh board in `root`, registered so the UI lists it. */
+function createBoard(root: string, name: string, key: string): Board {
+  if (!KEY_RE.test(key)) throw new UserError("--key must be 2–6 letters/digits, starting with a letter (e.g. LOOP)");
+  const board = emptyBoard(name, key);
+  writeBoard(boardFileFor(root), board);
+  writeFileAtomic(path.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
+  return board;
+}
+
 export function init(ctx: Ctx, { opts }: Args) {
   const root = path.resolve(ctx.cwd);
   const file = boardFileFor(root);
@@ -96,11 +106,7 @@ export function init(ctx: Ctx, { opts }: Args) {
     if (opts.name || opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ — rename with the UI or edit settings later`);
   } else {
     const name = str(opts, "name")?.trim() || prettyName(root);
-    const key = (str(opts, "key") ?? deriveKey(name)).toUpperCase();
-    if (!KEY_RE.test(key)) throw new UserError("--key must be 2–6 letters/digits, starting with a letter (e.g. LOOP)");
-    board = emptyBoard(name, key);
-    writeBoard(file, board);
-    writeFileAtomic(path.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
+    board = createBoard(root, name, (str(opts, "key") ?? deriveKey(name)).toUpperCase());
     created = true;
   }
   const isNew = registerProject(ctx, { path: root, name: board.project.name, key: board.project.key });
@@ -111,6 +117,24 @@ export function init(ctx: Ctx, { opts }: Args) {
       : `Board ${board.project.name} (${board.project.key}) already exists`,
     isNew ? `Registered in ${registryFile(ctx)}` : `Already registered`,
   ]);
+}
+
+/**
+ * The board to add to — made on the spot when the folder has none, so nobody
+ * has to know about `board init`. Only in a folder that looks like a project:
+ * a card added from $HOME or a scratch folder still fails, and says why.
+ */
+function boardForAdding(ctx: Ctx, opts: Opts): Located {
+  const found = findBoard(ctx.cwd);
+  if (found) return found;
+  const root = projectRootFor(ctx.cwd);
+  if (!looksLikeAProject(ctx, root))
+    throw new UserError(`no board here, and ${root} doesn't look like a project folder. Run \`board init\` there if it is one.`);
+  const name = prettyName(root);
+  const board = createBoard(root, name, deriveKey(name));
+  registerProject(ctx, { path: root, name, key: board.project.key });
+  if (!opts.json) ctx.out(`Created board ${name} (${board.project.key}) in ${path.join(root, BOARD_DIR)}/`);
+  return { root, file: boardFileFor(root) };
 }
 
 // --- read commands ---------------------------------------------------------
@@ -141,7 +165,7 @@ export function show(ctx: Ctx, { pos, opts }: Args) {
 export function context(ctx: Ctx, { opts }: Args) {
   const loc = findBoard(ctx.cwd);
   if (!loc) {
-    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet. Offer to create one with `board init`.");
+    return emit(ctx, opts, { board: null }, "Clipped: no board in this project yet — the first `board add` or `board ask` makes one. Don't offer `board init`.");
   }
   const b = readBoard(loc.file);
   // Questions get their own section, so they don't show up twice.
@@ -215,7 +239,7 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
   const type = parseType(str(opts, "type")) ?? "feature";
   const note = str(opts, "note") ?? str(opts, "next") ?? "";
   const by = actor(ctx, str(opts, "by"));
-  const loc = requireBoard(ctx);
+  const loc = boardForAdding(ctx, opts);
 
   const f = mutateBoard(loc, (b) => {
     const at = nowIso(ctx);
@@ -522,7 +546,7 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
   const title = need(pos, 1, `title (e.g. board note add reference "The CRDT paper" --url ...)`).trim();
   if (!title) throw new UserError("title can't be empty");
   const by = actor(ctx, str(opts, "by"));
-  const loc = requireBoard(ctx);
+  const loc = boardForAdding(ctx, opts);
 
   const n = mutateBoard(loc, (b) => {
     const at = nowIso(ctx);

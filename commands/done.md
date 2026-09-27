@@ -1,7 +1,7 @@
 ---
 description: Mark a feature finished
 argument-hint: "[card]"
-allowed-tools: Bash(board:*)
+allowed-tools: Bash(board *)
 ---
 
 Mark finished: $ARGUMENTS
