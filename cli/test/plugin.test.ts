@@ -79,11 +79,14 @@ describe("skill and commands", () => {
     expect(read("commands/plan.md")).toContain("board list --all --json");
   });
 
-  it("says what to do with a brainstorm: nothing, until it reaches a decision", () => {
+  it("says what to do with a brainstorm: nothing while it's talk, ideas once it lands", () => {
     const body = read("skills/clipped/SKILL.md");
     expect(body).toContain("Talk is not work");
-    expect(body).toContain("Want these on the board as ideas?");
-    expect(body).toContain("don't ask again this session");
+    // concrete things become ideas without asking, whoever proposed them
+    expect(body).toContain("theirs or yours, it doesn't matter who proposed it");
+    expect(body).toContain("Leave out what they turned down");
+    expect(body).toContain("Settled over many small steps");
+    expect(body).toContain("Picked from a list");
   });
 
   it("draws the line between a card and a note, so the board can't fill up on its own", () => {
@@ -106,10 +109,14 @@ describe("skill and commands", () => {
     // an answer that took work lands in Answered, a fact you knew doesn't
     expect(body).toContain("Answered on the spot");
     expect(body).toContain("`board ask` then `board answer`");
-    // things somebody still has to do become ideas, your own suggestions don't
+    // things somebody still has to do become cards; a step only the user can do is their turn
     expect(body).toContain("if it's worth a sentence in your reply, it's worth a row");
-    expect(body).toContain("never your own suggestions");
+    expect(body).toContain("It doesn't matter who said it first");
+    expect(body).toContain("Steps only the user can do");
     expect(body).toContain("A decision with nothing to build");
+    // setup facts and the self-check that catches what leaves no diff
+    expect(body).toContain("How it's set up");
+    expect(body).toContain("## Before you end a turn");
   });
 
   it("gives every command a description and only refers to real board commands", () => {

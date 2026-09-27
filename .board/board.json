@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 44,
+  "nextNum": 49,
   "features": [
     {
       "key": "LE-1",
@@ -516,12 +516,12 @@
       "title": "Set the GitHub repo website once the site is deployed",
       "type": "feature",
       "status": "idea",
-      "note": "Site is live at https://useclipped.vercel.app — set it as the repo website (needs gh or the GitHub settings page)",
+      "note": "Due now: the site is live at https://useclipped.vercel.app",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-27T11:16:49Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -538,6 +538,11 @@
           "at": "2026-09-27T11:16:49Z",
           "by": "claude",
           "text": "Note: Site is live at https://useclipped.vercel.app — set it as the repo website (needs gh or the GitHub settings page)"
+        },
+        {
+          "at": "2026-09-27T17:35:59Z",
+          "by": "claude",
+          "text": "Note: Due now: the site is live at https://useclipped.vercel.app"
         }
       ],
       "links": []
@@ -1655,9 +1660,118 @@
           "text": "Created"
         }
       ]
+    },
+    {
+      "key": "LE-44",
+      "title": "Landing page token figure is out of date",
+      "type": "chore",
+      "status": "idea",
+      "note": "The What runs table says about 750 tokens for 19 cards; measure board context again and update it",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/index.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:35:59Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-45",
+      "title": "Landing version badge is typed by hand",
+      "type": "chore",
+      "status": "idea",
+      "note": "Read the version from package.json at build time, or add a test that fails when they differ",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/index.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:35:59Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-46",
+      "title": "Commit or ignore .claude/ and .impeccable/",
+      "type": "chore",
+      "status": "idea",
+      "note": "Both sit untracked in the repo root; decide which belongs in git",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:35:59Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-47",
+      "title": "The claude.ai preview of the landing page is out of date",
+      "type": "chore",
+      "status": "idea",
+      "note": "The private artifact link predates the live site; delete it or point people at useclipped.vercel.app",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:35:59Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-48",
+      "title": "What happens to the Next.js site in site/ now that landing/ is live?",
+      "type": "question",
+      "status": "idea",
+      "note": "LE-5 built sign-up and analytics there; landing/ is what deploys now. Park it, merge the useful parts, or drop it",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-27T17:36:00Z",
+      "updatedAt": "2026-09-27T17:36:00Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T17:36:00Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
     }
   ],
-  "nextNoteNum": 4,
+  "nextNoteNum": 6,
   "notes": [
     {
       "id": "LE-N1",
@@ -1715,6 +1829,37 @@
       ],
       "createdAt": "2026-09-27T17:29:41Z",
       "updatedAt": "2026-09-27T17:29:49Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N4",
+      "kind": "brainstorm",
+      "title": "Landing page design direction",
+      "body": "Dark by default, with a light switch; the hero terminal stays dark in both. Schibsted Grotesk for text and JetBrains Mono for code. The hero is text on the left and a small example board on the right; the changing word under the headline is typed as inline code in one colour. The session terminal lives under the hood, beside the hooks table. Real screenshots come from this project's own board, in both themes.",
+      "considered": "Bricolage Grotesque with IBM Plex: read as childish. Geist and Geist Mono: flagged as overused. A terminal in the hero: it showed code instead of value, so it moved down. A rainbow of colours on the typed word: one colour reads more technical.",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-19"
+      ],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N5",
+      "kind": "reference",
+      "title": "How the landing site deploys",
+      "body": "Vercel project 'clipped', Root Directory 'landing', connected to github.com/avivalushai/clipped: every push to main deploys to useclipped.vercel.app. The Vercel GitHub app only sees the repos picked in its settings. A manual deploy runs from the repo root: npx vercel --prod.",
+      "considered": "",
+      "url": "https://useclipped.vercel.app",
+      "file": "",
+      "cards": [
+        "LE-19",
+        "LE-11"
+      ],
+      "createdAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-27T17:35:59Z",
       "updatedBy": "claude"
     }
   ]

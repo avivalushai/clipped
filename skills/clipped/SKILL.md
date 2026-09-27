@@ -75,16 +75,18 @@ or an answered question. Neither → nothing.
 | The user asks for several things at once | one card each; the rest `idea` |
 | The user says "later we should…", "one day…", "don't forget…" | an `idea` card, title only |
 | You spot a bug or chore outside the task and don't fix it | an `idea` card, `--type bug` or `chore` |
-| You tell the user they have to do something — add keys, run a migration, move a service first | an `idea` card, `--type chore` |
+| You tell the user they have to do something — add keys, run a migration, update the plugin, click connect in a dashboard | a `chore` in `review` (their turn): see **Steps only the user can do** |
 | A question someone has to go and find out later | `board ask` — Open |
 | A question you answered with a table, a list, a comparison or a recommendation — looked up or from memory | `board ask` then `board answer` — Answered |
 | "Elaborate", "more detail", "why?" on an answer you recorded | `board answer` on the same card again — never a new one |
 | A fact you knew and said in a line | nothing |
 | The source an answer or the work rested on | a reference note, linked to its card |
-| A discussion that ended in a decision | a brainstorm note (and ideas, if they say yes) |
+| A discussion that ended in a decision | a brainstorm note, plus an `idea` for each concrete thing still to build |
+| A run of small design or wording changes that settled a direction | one brainstorm note when the run ends |
+| How the project is set up — where it deploys, which account or dashboard holds what, the command that matters | a reference note |
 | A plan document in the repo | cards, plus one plan note |
 | A plan you wrote in chat and they approved | steps on the card, not a note |
-| Thinking aloud, options nobody chose, your own suggestions they ignored | nothing |
+| Thinking aloud, and anything the user turned down | nothing |
 
 The rest of this file is the detail behind each row.
 
@@ -188,8 +190,10 @@ it — and if the decision creates work, add that card and say so in one line.
 
 ## Ideas and loose ends
 
-An idea is a title and nothing else. It weighs nothing, so recording one is cheap —
-but only the user's intentions become ideas, never your own suggestions.
+An idea is a title and nothing else. It weighs nothing, so recording one is cheap.
+It doesn't matter who said it first: a concrete suggestion of yours that the user
+heard and didn't turn down is as much a loose end as one of theirs. What they
+turned down, and what stayed a "maybe", is not.
 
 **Said in passing.** Mid-task, the user says "later we should add dark mode" or
 "don't forget the export button". That's a decision about the future, not
@@ -206,6 +210,19 @@ board add "Signup form drops the email on error" --type bug
 board add "Add the Stripe keys in Vercel" --type chore
 ```
 
+**Steps only the user can do.** Some work ends on their side: "update the plugin",
+"connect the repo in Vercel", "add the Stripe keys". You can't do it, and if they
+stop halfway it lives only in a reply. Make it a chore in their turn, saying
+exactly what to do and where:
+
+```
+board add "Connect the repo in Vercel" --type chore --status review \
+  --check "Vercel → clipped → Settings → Git → Connect, pick avivalushai/clipped"
+```
+
+When they say it's done, `board done` it. If they did it before you recorded it,
+record nothing.
+
 The test: **if it's worth a sentence in your reply, it's worth a row.** If you
 wouldn't mention it to the user at all — a style nit, a naming quibble, a "could
 be refactored" — it isn't a loose end, and it doesn't go on the board either.
@@ -219,15 +236,20 @@ Talk is not work. While the user is thinking out loud — weighing options, aski
 what you think, wondering aloud — record nothing. A board full of musings is a
 board they have to maintain, which defeats the point.
 
-But a brainstorm that reaches decisions and then evaporates is itself a loose
-end. So when a conversation lands on concrete things to build, offer once, in
-one line, and name them in the user's own words:
+But a brainstorm that reaches concrete things and then evaporates is itself a
+loose end. So when the discussion is done, add each concrete thing still to
+build as an `idea` — theirs or yours, it doesn't matter who proposed it — and
+name them in the footer. Title only: no steps, no done-when. An idea is a title
+until someone picks it up, and deleting one costs a click.
 
-`Want these on the board as ideas? — voice input · offline mode · shared lists`
+Leave out what they turned down ("no, skip offline mode") and what never got
+past a "maybe" that nobody picked up.
 
-- Yes → `board add "..."` for each, status `idea`, title only. No steps, no
-  done-when: an idea is a title until someone picks it up.
-- No, or no answer → drop it and don't ask again this session.
+**Settled over many small steps.** Design and wording often settle across a dozen
+small requests — this font, then that one; the terminal here, then there — and no
+single message feels like a decision. When such a run ends, write one brainstorm
+note: the body is where it landed, `--considered` is what was tried and dropped,
+and why. Link the card it served.
 
 **Picked from a list.** When you laid out a list of options — a review, a set of
 suggestions, a numbered menu — and the user chose some of them to do now, the
@@ -238,15 +260,15 @@ Name the ideas in the footer. Two exceptions: anything they explicitly turned
 down ("skip the phone stuff") is dropped, and if they only asked questions about
 the list without choosing anything, it's still thinking aloud — record nothing.
 
-Only offer for things the user actually settled on. "Maybe we could do voice
-input" is thinking aloud; "right, voice input's in" is a decision. If you can't
-tell which it was, leave it out of the list — a missing idea costs one sentence
-to add later, a wrong one costs trust in every row on the board.
+Concrete means you could name the card: "voice input", "a Last 7 days view".
+"Maybe it could feel faster" isn't one yet. If you can't tell, leave it out — a
+missing idea costs one sentence to add later, a wrong one costs trust in every
+row on the board.
 
-Never offer in the middle of work. Wait until the discussion is done.
+Don't record mid-work. Wait until the discussion is done.
 
-When they say yes and the discussion was long enough that the *reasoning* is
-worth keeping too, add one brainstorm note alongside the cards and link them:
+When the discussion was long enough that the *reasoning* is worth keeping too,
+add one brainstorm note alongside the cards and link them:
 
 ```
 board note add brainstorm "Should the board hold more than features?" \
@@ -283,6 +305,12 @@ When you answer a question from outside sources, add the one or two the answer
 actually rests on and link them to the question card — not every page you
 opened. Sources inside the repo need no note: point the card at them with
 `--file`.
+
+**How it's set up.** Where the site deploys, which dashboard a setting lives in,
+which account owns the domain, the one command that deploys by hand — none of it
+is work, and all of it is gone from memory in a month. Record it as one reference
+note per system, `--url` pointing at the dashboard or the live address, the body
+saying what's configured where. Update the same note when the setup changes.
 
 Do not record: links you produced in passing, anything already in the repo's
 README, search results nobody opened, or a page you only skimmed. A references
@@ -361,6 +389,20 @@ as finished. Signals that it's done, strongest first:
 5. A card has sat in review for days → mention it at the next session start
 
 Never move a card to `done` on a guess. Review is where uncertainty goes.
+
+## Before you end a turn
+
+The end-of-turn hook only notices when code changed and the board didn't. A
+decision, a loose end or a step for the user leaves no diff, so check yourself
+before your last line:
+
+- Did something get **decided** — even across many small replies? → a brainstorm note
+- Did you **mention** something left to do — a bug, a chore, a "you'll need to"? → a card
+- Is there a **step only the user can do**? → a chore in their turn
+- Did a **suggestion** get discussed and not turned down? → an idea
+- Did you learn **how something is set up**? → a reference note
+
+Then write the footer.
 
 ## The footer
 
