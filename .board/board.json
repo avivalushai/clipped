@@ -723,7 +723,7 @@
       "title": "A landing page I can send to friends",
       "type": "feature",
       "status": "review",
-      "note": "Runs section: shared title, hooks table and terminal side by side, explanation full width underneath. Uncommitted",
+      "note": "Hero: Schibsted Grotesk + JetBrains Mono, board preview (HTML) on the right. Uncommitted",
       "doneWhen": [
         "A friend can read it and decide to install without asking me anything",
         "Every claim on it matches the code"
@@ -754,7 +754,7 @@
         "landing/style.css"
       ],
       "createdAt": "2026-09-27T09:34:48Z",
-      "updatedAt": "2026-09-27T11:48:43Z",
+      "updatedAt": "2026-09-27T12:01:09Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -861,6 +861,16 @@
           "at": "2026-09-27T11:48:43Z",
           "by": "claude",
           "text": "Note: Runs section: shared title, hooks table and terminal side by side, explanation full width underneath. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T11:56:07Z",
+          "by": "claude",
+          "text": "Note: Hero more technical: Geist + Geist Mono, two-tone headline, version badge, single-colour typed chip, Read the source button. Uncommitted"
+        },
+        {
+          "at": "2026-09-27T12:01:09Z",
+          "by": "claude",
+          "text": "Note: Hero: Schibsted Grotesk + JetBrains Mono, board preview (HTML) on the right. Uncommitted"
         }
       ]
     },
