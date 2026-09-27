@@ -131,6 +131,7 @@ board park LOOP-3 --stopped "Where we stopped"
 board review LOOP-3 [--check "What to check"]
 board done LOOP-3
 board merge LOOP-15 --into LOOP-3
+board rename "Loop Station"      # the project's name; the key is in every card id, so it stays
 
 board ask "Which auth provider?" [--status active] [--next "..."]
 board answer LOOP-7 "What you found out" [--done]

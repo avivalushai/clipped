@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "project": {
-    "name": "Loose Ends",
+    "name": "Clipped",
     "key": "LE"
   },
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 27,
+  "nextNum": 30,
   "features": [
     {
       "key": "LE-1",
@@ -911,19 +911,24 @@
       "key": "LE-21",
       "title": "Renaming a project needs a command",
       "type": "feature",
-      "status": "idea",
-      "note": "board init refuses once a board exists, and nothing else renames it — this repo's board still says Loose Ends (LE) after the rename",
+      "status": "review",
+      "note": "board rename \"New name\" — CLI, API and an editable title in the UI. I used it here: the board is called Clipped now, and the key stayed LE",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "createdAt": "2026-09-27T09:35:59Z",
-      "updatedAt": "2026-09-27T09:35:59Z",
+      "updatedAt": "2026-09-27T13:07:25Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T09:35:59Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-27T13:07:25Z",
+          "by": "claude",
+          "text": "Moved to review — board rename \"New name\" — CLI, API and an editable title in the UI. I used it here: the board is called Clipped now, and the key stayed LE"
         }
       ]
     },
@@ -1115,6 +1120,70 @@
           "at": "2026-09-27T12:11:13Z",
           "by": "user",
           "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-27",
+      "title": "The board says what is waiting on you",
+      "type": "feature",
+      "status": "review",
+      "note": "88% complete now sits beside '17 waiting on you' (click to filter), work untouched for 3 days goes amber, empty columns shrink to a rail, / focuses search and n opens a new card",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "createdAt": "2026-09-27T13:07:25Z",
+      "updatedAt": "2026-09-27T13:07:25Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T13:07:25Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-28",
+      "title": "Words that were fighting each other",
+      "type": "chore",
+      "status": "review",
+      "note": "Shipped in 0.4.0 and live on main: --next/--stopped/--check, Features→Work, Review→Your turn, /clipped:question, and a clipped binary beside board",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "createdAt": "2026-09-27T13:07:26Z",
+      "updatedAt": "2026-09-27T13:07:26Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T13:07:26Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-29",
+      "title": "Screenshots and copy catch up with the UI",
+      "type": "feature",
+      "status": "review",
+      "note": "Six screenshots re-shot at 2x from the real board, the What counts as what section, and the hero word that no longer collapses its box mid-delete",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/index.html"
+      ],
+      "createdAt": "2026-09-27T13:07:26Z",
+      "updatedAt": "2026-09-27T13:07:26Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-27T13:07:26Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }

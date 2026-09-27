@@ -24,6 +24,7 @@ board park LE-3 --stopped "Where we stopped"   # saying where you stopped is req
 board review LE-3 [--check "What to check"]    # review = the user's turn to look
 board done LE-3
 board merge LE-15 --into LE-3
+board rename "Clipped"                         # the project's name; the key stays
 
 board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided

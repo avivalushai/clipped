@@ -49,6 +49,11 @@ function emit(ctx: Ctx, opts: Opts, json: unknown, text: string | string[]) {
   else for (const l of [text].flat()) ctx.out(l);
 }
 
+/** The card's one line of text, under whichever name the caller used for it. */
+function theLine(opts: Opts): string | undefined {
+  return str(opts, "note") ?? str(opts, "next") ?? str(opts, "stopped") ?? str(opts, "check");
+}
+
 function need(pos: string[], i: number, what: string): string {
   const v = pos[i];
   if (v === undefined || v === "") throw new UserError(`missing ${what}`);
@@ -103,7 +108,8 @@ export function init(ctx: Ctx, { opts }: Args) {
 
   if (fs.existsSync(file)) {
     board = readBoard(file);
-    if (opts.name || opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ — rename with the UI or edit settings later`);
+    if (opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ — the key is in every card's id, so it can't change now`);
+    if (opts.name) throw new UserError(`board already exists in ${BOARD_DIR}/ — rename it with \`board rename "${str(opts, "name")}"\``);
   } else {
     const name = str(opts, "name")?.trim() || prettyName(root);
     board = createBoard(root, name, (str(opts, "key") ?? deriveKey(name)).toUpperCase());
@@ -237,7 +243,7 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
   if (!title) throw new UserError("title can't be empty");
   const status = parseStatus(str(opts, "status")) ?? "idea";
   const type = parseType(str(opts, "type")) ?? "feature";
-  const note = str(opts, "note") ?? str(opts, "next") ?? "";
+  const note = theLine(opts) ?? "";
   const by = actor(ctx, str(opts, "by"));
   const loc = boardForAdding(ctx, opts);
 
@@ -271,7 +277,7 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
   const status = parseStatus(str(opts, "status"));
   const type = parseType(str(opts, "type"));
   const title = str(opts, "title")?.trim();
-  const note = str(opts, "note") ?? str(opts, "next");
+  const note = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
   if (!status && !type && title === undefined && note === undefined && !doneWhen.length && !list(opts, "file").length && !list(opts, "unfile").length)
@@ -322,11 +328,24 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
 
 /* The card carries one line of text whose meaning changes with the status, so
    each status takes the flag that says what it means. --note still works. */
+/** The board's own name. The key stays: it's baked into every card's id. */
+export function rename(ctx: Ctx, { pos, opts }: Args) {
+  const name = need(pos, 0, "new name").trim();
+  if (!name) throw new UserError("a project needs a name");
+  const loc = requireBoard(ctx);
+  const project = mutateBoard(loc, (b) => {
+    b.project.name = name;
+    return b.project;
+  });
+  registerProject(ctx, { path: loc.root, name: project.name, key: project.key });
+  emit(ctx, opts, { project, file: loc.file }, `Renamed to ${project.name} (${project.key})`);
+}
+
 function statusCommand(to: Status) {
   return (ctx: Ctx, { pos, opts }: Args) => {
     const keyArg = need(pos, 0, "card key");
     const by = actor(ctx, str(opts, "by"));
-    const note = str(opts, "stopped") ?? str(opts, "check") ?? str(opts, "note");
+    const note = theLine(opts);
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f = findFeature(b, keyArg);
       setStatus(ctx, f, to, by, note);

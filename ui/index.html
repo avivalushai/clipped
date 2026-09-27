@@ -102,6 +102,9 @@ main{padding-block:26px 60px;padding-inline:28px;min-width:0}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .crumb{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;gap:6px;align-items:center}
 h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1.1;margin:0;text-wrap:balance}
+.h1in{font:inherit;letter-spacing:inherit;color:inherit;border:0;background:none;padding:2px 6px;margin-left:-6px;border-radius:8px;width:100%;max-width:560px}
+.h1in:hover{background:var(--sunk)}
+.h1in:focus{background:var(--sunk);outline:2px solid var(--focus);outline-offset:0}
 .sub{color:var(--muted);margin-top:6px}
 h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 h2 .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400}
@@ -135,6 +138,10 @@ a.ext:hover{text-decoration:underline}
 .stat{display:flex;align-items:baseline;gap:6px;font-size:13px;color:var(--muted)}
 .stat b{font-family:var(--display);font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
 .bigbar{flex:1 1 220px;display:flex;flex-direction:column;gap:4px;min-width:180px}
+.statrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.waiting{border:0;background:none;padding:0;cursor:pointer;color:var(--s-review)}
+.waiting b{color:var(--s-review)}
+.waiting:hover{text-decoration:underline}
 .bigbar .track{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;display:flex}
 
 /* ---------- jira-like table ---------- */
@@ -178,6 +185,9 @@ tr.grp:hover td{background:var(--ground)}
 .board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;min-width:1150px}
 .col{background:var(--sunk);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:240px;transition:background .15s}
 .col.over{background:color-mix(in srgb,var(--accent) 12%,var(--sunk))}
+.col.empty{min-height:120px}
+.col.empty .col-h{color:var(--faint);font-size:12px;gap:6px}
+.col.empty .col-h .n{display:none}
 .col-h{display:flex;align-items:center;gap:8px;padding:4px 4px 6px;font-weight:600;font-size:13px}
 .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
 .col-h .n{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400;margin-left:auto}
@@ -512,6 +522,14 @@ async function deleteCard(f){
   catch(e){ toast(e.message); return false }
 }
 
+/* The project's own name. `board rename` under the hood, like every other write. */
+async function renameProject(p,name){
+  try{
+    await api('/api/projects/'+p.id,{method:'PATCH',body:JSON.stringify({name})});
+    p.name=name; render(); toast('Renamed to '+name);
+  }catch(e){ toast(e.message); await loadAll(); render() }
+}
+
 /* Notes go through the same CLI-backed API as cards. */
 function replaceNote(pid,raw){
   const n=toNote(pid,raw), i=S.notes.findIndex(x=>x.id===n.id);
@@ -563,7 +581,10 @@ function progress(f){
 const committed=fs=>fs.filter(f=>f.status!=='idea');
 const avgProg=fs=>{const c=committed(fs);return c.length?Math.round(c.reduce((a,f)=>a+progress(f),0)/c.length):0};
 const progBar=f=>{const pg=progress(f);return `<div class="prog"><div class="track"><div class="fill" style="width:${pg}%;background:${color(f.status)}"></div></div><span class="pct">${pg}%</span></div>`};
-const stale=f=>f.status==='parked'&&Date.now()-f.updatedAt>3*D;
+/* Parked and waiting both mean "nothing has happened here", and after a few
+   days that is the most useful thing the row can tell you. */
+const stale=f=>(f.status==='parked'||f.status==='review')&&Date.now()-f.updatedAt>3*D;
+const sinceLabel=f=>f.status==='parked'?`idle ${ago(f.updatedAt)}`:f.status==='review'?`waiting ${ago(f.updatedAt)}`:`updated ${ago(f.updatedAt)} ago`;
 function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1900)}
 
 /* ---------- left menu ---------- */
@@ -639,10 +660,10 @@ function renderPage(){
   const parked=S.features.filter(f=>(!p||f.project===p.id)&&f.type!=='question'&&f.status==='parked').length;
   const noun=P.tab==='questions'?'question':'card';
   let h=`<div class="head"><div>
-      ${p?`<div class="crumb">${pbadge(p)}<span class="mono">${esc(p.path)}</span></div><h1>${esc(p.name)}</h1>`
+      ${p?`<div class="crumb">${pbadge(p)}<span class="mono">${esc(p.path)}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>`
          :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>`}
     </div>
-    <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search ${esc(TAB().label.toLowerCase())}" value="${esc(query)}" aria-label="Search ${esc(TAB().label.toLowerCase())}">
+    <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search ${esc(TAB().label.toLowerCase())}" value="${esc(query)}" aria-label="Search ${esc(TAB().label.toLowerCase())}" title="Press / to search">
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
       <button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(TAB().note):noun}</button></div></div>
   ${tabStrip()}
@@ -650,7 +671,7 @@ function renderPage(){
   if(isNoteTab()) return h;
   h+=`
   <div class="stats">
-    <div class="bigbar"><div class="stat"><b>${avgProg(all)}%</b> complete</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
+    <div class="bigbar"><div class="statrow"><div class="stat"><b>${avgProg(all)}%</b> complete</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
     ${STATUSES.map(s=>`<div class="stat"><span class="dot" style="background:${color(s.id)}"></span><b>${c(s.id)}</b>${sl(s.id).toLowerCase()}</div>`).join('')}
   </div>
   <div class="chips" role="group" aria-label="Filter by status">
@@ -765,7 +786,7 @@ function cell(c,f){
     case 'progress': return `<td>${progBar(f)}</td>`;
     case 'steps': return `<td class="steps">${f.steps.length?`${f.steps.filter(s=>s.done).length}/${f.steps.length}`:'—'}</td>`;
     case 'files': return `<td class="steps">${f.files.length||'—'}</td>`;
-    case 'updated': return `<td class="age ${stale(f)?'stale':''}">${ago(f.updatedAt)}</td>`;
+    case 'updated': return `<td class="age ${stale(f)?'stale':''}" title="${esc(sinceLabel(f))}">${ago(f.updatedAt)}</td>`;
     case 'by': return `<td>${who(f.by)}</td>`;
   }
 }
@@ -804,16 +825,22 @@ function renderTable(fs,isHome){
 
 /* ---------- board ---------- */
 function renderBoard(fs,isHome){
-  let h=`<div class="board-wrap"><div class="board">`;
-  for(const s of STATUSES){
-    if(P.hideDone&&s.id==='done'&&filter!=='done') continue;
+  /* Empty columns keep their place in the row — you still need to drop into
+     them — but not their width: four cards shouldn't share a fifth of the board
+     with two columns holding nothing. */
+  const shown=STATUSES.filter(s=>!(P.hideDone&&s.id==='done'&&filter!=='done'));
+  const counts=Object.fromEntries(shown.map(s=>[s.id,fs.filter(f=>f.status===s.id).length]));
+  const track=shown.map(s=>counts[s.id]?'minmax(220px,1fr)':'132px').join(' ');
+  const minW=shown.reduce((a,s)=>a+(counts[s.id]?230:132),0);
+  let h=`<div class="board-wrap"><div class="board" style="grid-template-columns:${track};min-width:${minW}px">`;
+  for(const s of shown){
     const cs=fs.filter(f=>f.status===s.id).sort((a,b)=>b.updatedAt-a.updatedAt);
-    h+=`<div class="col" data-col="${s.id}"><div class="col-h"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}<span class="n">${cs.length}</span></div>`;
+    h+=`<div class="col${cs.length?'':' empty'}" data-col="${s.id}"><div class="col-h"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}<span class="n">${cs.length}</span></div>`;
     for(const f of cs){
       h+=`<div class="card ${f.status}" draggable="true" data-open="${f.id}" data-id="${f.id}" tabindex="0" role="button" aria-label="${esc(f.title)}">
         <div class="t">${esc(f.title)}</div>${f.note&&['parked','active','review'].includes(f.status)?`<div class="note">${esc(f.note)}</div>`:''}
         ${progBar(f)}
-        <div class="meta">${isHome?pbadge(proj(f.project),true):''}<span>${fkey(f)}</span><span>${ago(f.updatedAt)}</span><span class="by">${who(f.by)}</span></div></div>`;
+        <div class="meta">${isHome?pbadge(proj(f.project),true):''}<span>${fkey(f)}</span><span class="age ${stale(f)?'stale':''}" title="${esc(sinceLabel(f))}">${ago(f.updatedAt)}</span><span class="by">${who(f.by)}</span></div></div>`;
     }
     h+='</div>';
   }
@@ -943,6 +970,17 @@ function bindPage(){
   const p=proj(view), isHome=!p;
   $('search').oninput=e=>{query=e.target.value;const pos=e.target.selectionStart;render();const n=$('search');n.focus();n.setSelectionRange(pos,pos)};
   bindTabs();
+  if(p&&$('projName')){
+    const el=$('projName');
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();el.blur()}
+      if(e.key==='Escape'){el.value=p.name;el.blur()}});
+    el.addEventListener('change',()=>{
+      const v=el.value.trim();
+      if(!v||v===p.name){el.value=p.name;return}
+      renameProject(p,v);
+    });
+  }
   if(p&&$('showJson')) $('showJson').onclick=()=>api('/api/projects/'+p.id+'/board')
     .then(b=>openDialog(p.path+'/.board/board.json',JSON.stringify(b,null,2)))
     .catch(e=>toast(e.message));
@@ -1179,6 +1217,16 @@ document.addEventListener('focusout',e=>{
 document.addEventListener('mousedown',e=>{
   if(editCell&&!e.target.closest('td.vcell.editing')){editCell=null;render()}
 },true);
+/* Two shortcuts, no more: search and new. Any bigger keymap is one nobody
+   asked for and everybody has to be taught. */
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const t=e.target, typing=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable);
+  if(e.key==='Escape'&&t&&t.id==='search'&&query){query='';render();$('search')?.focus();return}
+  if(typing||openId||openNote||$('dlg').open) return;
+  if(e.key==='/'){e.preventDefault();$('search')?.focus();return}
+  if(e.key==='n'){e.preventDefault();$('newBtn')?.click()}
+});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&editCell){editCell=null;render();return}
   if(e.key==='Escape'&&(openId||openNote)&&!$('dlg').open){openId=null;openNote=null;render()}

@@ -107,6 +107,15 @@ describe("writing through the API", () => {
     expect(sb.read().features).toHaveLength(1);
   });
 
+  it("renames the project", async () => {
+    const sb = withBoard();
+    const { post, id } = await serve(sb);
+    const { status, body } = await post(`/api/projects/${id}`, { name: "Loop Station" }, "PATCH");
+    expect(status).toBe(200);
+    expect(body).toMatchObject({ project: { name: "Loop Station", key: "APP" } });
+    expect(sb.read().project.name).toBe("Loop Station");
+  });
+
   it("patches fields and diffs steps", async () => {
     const sb = seeded();
     const { post, id } = await serve(sb);

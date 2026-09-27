@@ -27,12 +27,12 @@ const COMMANDS: Record<string, Command> = {
   show: { usage: "show LOOP-3", options: {}, run: cmd.show },
   add: {
     usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
-    options: { status: s, type: s, next: s, note: s, step: many, "done-when": many, file: many },
+    options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
     run: cmd.add,
   },
   update: {
     usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
-    options: { title: s, note: s, next: s, status: s, type: s, "done-when": many, file: many, unfile: many },
+    options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many },
     run: cmd.update,
   },
   step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: cmd.step },
@@ -40,9 +40,10 @@ const COMMANDS: Record<string, Command> = {
   review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: cmd.review },
   done: { usage: "done LOOP-3", options: {}, run: cmd.done },
   merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: cmd.merge },
+  rename: { usage: `rename "Loop Station"   # the project, not a card; the key stays`, options: {}, run: cmd.rename },
   ask: {
     usage: `ask "Which auth provider?" [--status active] [--next "what you're checking"]`,
-    options: { status: s, next: s, note: s, step: many, "done-when": many, file: many },
+    options: { status: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
     run: cmd.ask,
   },
   answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: cmd.answer },
@@ -80,7 +81,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.4.0");
+    ctx.out("0.5.0");
     return 0;
   }
   const command = COMMANDS[name];

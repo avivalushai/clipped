@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { deriveKey, prettyName } from "../src/commands.js";
-import { sandbox } from "./helpers.js";
+import { sandbox, withBoard } from "./helpers.js";
 
 describe("board init", () => {
   it("creates a valid board and registers the project", () => {
@@ -52,6 +52,23 @@ describe("board init", () => {
 
     expect(sb.registry().map((e: any) => e.name)).toEqual(["Gone", "My App"]);
     expect(fs.existsSync(legacy)).toBe(false);
+  });
+
+  it("renames the project without touching the card keys", () => {
+    const sb = withBoard();                       // "My App" (APP)
+    sb.board("add", "Save loops");
+    expect(sb.board("rename", "Loop Station").out).toContain("Renamed to Loop Station (APP)");
+    expect(sb.read().project).toEqual({ name: "Loop Station", key: "APP" });
+    expect(sb.read().features[0].key).toBe("APP-1");   // the key is in every id; it stays
+    expect(sb.registry()[0].name).toBe("Loop Station");
+  });
+
+  it("points at rename when init is asked to change a name", () => {
+    const sb = withBoard();
+    const r = sb.board("init", "--name", "Loop Station");
+    expect(r.code).toBe(1);
+    expect(r.err).toContain('board rename "Loop Station"');
+    expect(sb.board("rename", "   ").code).toBe(1);
   });
 
   it("derives name and key from the folder", () => {

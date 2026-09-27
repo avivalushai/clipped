@@ -122,6 +122,13 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
 
   const p = project(ctx, seg[1]!);
 
+  // PATCH /api/projects/:id — rename the project
+  if (seg.length === 2) {
+    if (method !== "PATCH") throw new HttpError(405, "use PATCH");
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    return board(ctx, p, ["rename", str(b.name, "name")]);
+  }
+
   // GET /api/projects/:id/board
   if (seg.length === 3 && seg[2] === "board") {
     if (method !== "GET") throw new HttpError(405, "use GET");

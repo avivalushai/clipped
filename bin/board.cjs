@@ -796,6 +796,11 @@ function handleApi(ctx, req) {
     return board(ctx, { id: "", name: "", key: "", path: dir, addedAt: "" }, argv);
   }
   const p = project(ctx, seg[1]);
+  if (seg.length === 2) {
+    if (method !== "PATCH") throw new HttpError(405, "use PATCH");
+    const b = req.body ?? {};
+    return board(ctx, p, ["rename", str(b.name, "name")]);
+  }
   if (seg.length === 3 && seg[2] === "board") {
     if (method !== "GET") throw new HttpError(405, "use GET");
     return loadBoard(p);
@@ -1092,6 +1097,9 @@ function emit(ctx, opts, json2, text) {
   if (opts.json) ctx.out(JSON.stringify(json2, null, 2));
   else for (const l of [text].flat()) ctx.out(l);
 }
+function theLine(opts) {
+  return str2(opts, "note") ?? str2(opts, "next") ?? str2(opts, "stopped") ?? str2(opts, "check");
+}
 function need(pos, i, what) {
   const v = pos[i];
   if (v === void 0 || v === "") throw new UserError(`missing ${what}`);
@@ -1131,7 +1139,8 @@ function init(ctx, { opts }) {
   let created = false;
   if (import_node_fs11.default.existsSync(file)) {
     board2 = readBoard(file);
-    if (opts.name || opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 rename with the UI or edit settings later`);
+    if (opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 the key is in every card's id, so it can't change now`);
+    if (opts.name) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 rename it with \`board rename "${str2(opts, "name")}"\``);
   } else {
     const name = str2(opts, "name")?.trim() || prettyName(root);
     board2 = createBoard(root, name, (str2(opts, "key") ?? deriveKey(name)).toUpperCase());
@@ -1244,7 +1253,7 @@ function add(ctx, { pos, opts }) {
   if (!title) throw new UserError("title can't be empty");
   const status = parseStatus(str2(opts, "status")) ?? "idea";
   const type = parseType(str2(opts, "type")) ?? "feature";
-  const note3 = str2(opts, "note") ?? str2(opts, "next") ?? "";
+  const note3 = theLine(opts) ?? "";
   const by = actor(ctx, str2(opts, "by"));
   const loc = boardForAdding(ctx, opts);
   const f = mutateBoard(loc, (b) => {
@@ -1276,7 +1285,7 @@ function update(ctx, { pos, opts }) {
   const status = parseStatus(str2(opts, "status"));
   const type = parseType(str2(opts, "type"));
   const title = str2(opts, "title")?.trim();
-  const note3 = str2(opts, "note") ?? str2(opts, "next");
+  const note3 = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
   if (!status && !type && title === void 0 && note3 === void 0 && !doneWhen.length && !list(opts, "file").length && !list(opts, "unfile").length)
@@ -1322,11 +1331,22 @@ function update(ctx, { pos, opts }) {
   });
   emit(ctx, opts, f, `Updated ${formatLine(f)}`);
 }
+function rename(ctx, { pos, opts }) {
+  const name = need(pos, 0, "new name").trim();
+  if (!name) throw new UserError("a project needs a name");
+  const loc = requireBoard(ctx);
+  const project2 = mutateBoard(loc, (b) => {
+    b.project.name = name;
+    return b.project;
+  });
+  registerProject(ctx, { path: loc.root, name: project2.name, key: project2.key });
+  emit(ctx, opts, { project: project2, file: loc.file }, `Renamed to ${project2.name} (${project2.key})`);
+}
 function statusCommand(to) {
   return (ctx, { pos, opts }) => {
     const keyArg = need(pos, 0, "card key");
     const by = actor(ctx, str2(opts, "by"));
-    const note3 = str2(opts, "stopped") ?? str2(opts, "check") ?? str2(opts, "note");
+    const note3 = theLine(opts);
     const f = mutateBoard(requireBoard(ctx), (b) => {
       const f2 = findFeature(b, keyArg);
       setStatus(ctx, f2, to, by, note3);
@@ -1699,7 +1719,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.4.0");
+    ctx.out("0.5.0");
     return 0;
   }
   const command = COMMANDS[name];
@@ -1752,12 +1772,12 @@ var init_cli = __esm({
       show: { usage: "show LOOP-3", options: {}, run: show },
       add: {
         usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]...`,
-        options: { status: s, type: s, next: s, note: s, step: many, "done-when": many, file: many },
+        options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
         run: add
       },
       update: {
         usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]...",
-        options: { title: s, note: s, next: s, status: s, type: s, "done-when": many, file: many, unfile: many },
+        options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many },
         run: update
       },
       step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: step },
@@ -1765,9 +1785,10 @@ var init_cli = __esm({
       review: { usage: `review LOOP-3 [--check "What to check"]`, options: { check: s, note: s }, run: review },
       done: { usage: "done LOOP-3", options: {}, run: done },
       merge: { usage: "merge LOOP-15 --into LOOP-3", options: { into: s }, run: merge },
+      rename: { usage: `rename "Loop Station"   # the project, not a card; the key stays`, options: {}, run: rename },
       ask: {
         usage: `ask "Which auth provider?" [--status active] [--next "what you're checking"]`,
-        options: { status: s, next: s, note: s, step: many, "done-when": many, file: many },
+        options: { status: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many },
         run: ask
       },
       answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: answer },
