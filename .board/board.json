@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 51,
+  "nextNum": 52,
   "features": [
     {
       "key": "LE-1",
@@ -1926,6 +1926,71 @@
           "at": "2026-09-28T11:00:53Z",
           "by": "claude",
           "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-51",
+      "title": "The board looks like the landing page",
+      "type": "feature",
+      "status": "review",
+      "note": "Open board ui: light sidebar, Geist, rounded cards in grey columns, pill tabs and buttons; flip to dark mode",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Tokens: colours, Geist, radius, shadows, light sidebar",
+          "done": true
+        },
+        {
+          "text": "Components: cards, tabs, buttons, chips, detail panel",
+          "done": true
+        },
+        {
+          "text": "Check every view in light, dark and phone",
+          "done": true
+        },
+        {
+          "text": "Sync to site/public/app",
+          "done": true
+        }
+      ],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T11:13:49Z",
+      "updatedAt": "2026-09-28T11:17:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T11:13:49Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T11:17:41Z",
+          "by": "claude",
+          "text": "Step done: Tokens: colours, Geist, radius, shadows, light sidebar"
+        },
+        {
+          "at": "2026-09-28T11:17:41Z",
+          "by": "claude",
+          "text": "Step done: Components: cards, tabs, buttons, chips, detail panel"
+        },
+        {
+          "at": "2026-09-28T11:17:41Z",
+          "by": "claude",
+          "text": "Step done: Check every view in light, dark and phone"
+        },
+        {
+          "at": "2026-09-28T11:17:41Z",
+          "by": "claude",
+          "text": "Step done: Sync to site/public/app"
+        },
+        {
+          "at": "2026-09-28T11:17:41Z",
+          "by": "claude",
+          "text": "Moved to review — Open board ui: light sidebar, Geist, rounded cards in grey columns, pill tabs and buttons; flip to dark mode"
         }
       ]
     }

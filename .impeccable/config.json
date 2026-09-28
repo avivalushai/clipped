@@ -10,7 +10,7 @@
           "landing/install.html"
         ],
         "createdAt": "2026-09-27T11:08:29.027Z",
-        "reason": "Claude triage: both hits are intentional insets owned by children \u2014 the step-list rail's links carry 16px left padding, and table cells carry 16px/20px padding inside .table-wrap (same pattern as the landing page)"
+        "reason": "Claude triage: both hits are intentional insets owned by children — the step-list rail's links carry 16px left padding, and table cells carry 16px/20px padding inside .table-wrap (same pattern as the landing page)"
       },
       {
         "rule": "cramped-padding",
@@ -29,6 +29,60 @@
         ],
         "createdAt": "2026-09-28T11:08:13.004Z",
         "reason": "Aviv asked for Cal.com-style cards and the original hero board; index.html is now v4"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "files": [
+          "ui/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.410Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "files": [
+          "landing/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.439Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "files": [
+          "site/public/app/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.462Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "files": [
+          "ui/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.486Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "files": [
+          "landing/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.510Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "files": [
+          "site/public/app/index.html"
+        ],
+        "createdAt": "2026-09-28T11:17:59.532Z",
+        "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
       }
     ]
   }
