@@ -13,7 +13,16 @@ All board writes go through the `board` CLI. Never edit `.board/board.json` by h
 
 ## The CLI
 
+**"Open the board", "show me the board", "where's my board?", "open clipped" — or a
+message that's just "clipped" (or a typo like "clippd")** → run `board ui`. A message
+that only mentions Clipped while asking for something else is about that request, not this.
+It opens the board in the browser (reusing the one already running) and prints its
+link, usually http://clipped.localhost:4747 — give the user that link in one line.
+Every project on this computer is on it, so this works from any folder. To stop it:
+`board ui --stop`.
+
 ```
+board ui                                       # open the board in the browser; prints its link
 board context                                  # what's open, parked, in review
 board list [--status parked] [--type bug|chore|question] [--all] [--json]
 board show LE-3
