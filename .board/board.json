@@ -1190,20 +1190,25 @@
       "title": "Screenshots and copy catch up with the UI",
       "type": "feature",
       "status": "review",
-      "note": "Six screenshots re-shot at 2x from the real board, the What counts as what section, and the hero word that no longer collapses its box mid-delete",
+      "note": "Board and card screenshots on the landing page show the new look, light and dark",
       "doneWhen": [],
       "steps": [],
       "files": [
         "landing/index.html"
       ],
       "createdAt": "2026-09-27T13:07:26Z",
-      "updatedAt": "2026-09-27T13:07:26Z",
+      "updatedAt": "2026-09-28T11:25:26Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T13:07:26Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T11:25:26Z",
+          "by": "claude",
+          "text": "Updated — Board and card screenshots on the landing page show the new look, light and dark"
         }
       ],
       "links": []
