@@ -771,16 +771,15 @@ function toast(t,undo){
 
 /* ---------- left menu ---------- */
 function renderNav(){
-  const parkedAll=S.features.filter(f=>f.status==='parked').length;
   let h=`<div class="nav-label"><span>Overview</span></div>
-  <button class="nav-item ${parkedAll?'has-parked':''}" data-go="home" aria-current="${view==='home'}" title="All projects">
-    <span class="pkey all">∗</span><span class="name">All projects</span>${parkedAll?`<span class="pip" title="Parked across projects">${parkedAll}</span>`:'<span></span>'}</button>
+  <button class="nav-item" data-go="home" aria-current="${view==='home'}" title="All projects">
+    <span class="pkey all">∗</span><span class="name">All projects</span><span></span></button>
   <div class="nav-label" style="margin-top:14px"><span>Projects · ${S.projects.length}</span><button id="addProjBtn" title="Add project" aria-label="Add project">+</button></div>`;
   if(false) h+=`<form class="newproj" id="newProjForm"><input id="npName" placeholder="Project name" aria-label="Project name" required><input id="npPath" class="mono" placeholder="~/code/my-app" aria-label="Project folder"><div class="r"><button type="button" class="btn sm ghost" id="npCancel">Cancel</button><button class="btn sm primary">Add</button></div></form>`;
   for(const p of S.projects){
-    const pk=pf(p.id).filter(f=>f.status==='parked').length, pr=doneShare(pf(p.id));
-    h+=`<button class="nav-item ${pk?'has-parked':''}" data-go="${p.id}" aria-current="${view===p.id}" title="${esc(p.name)}">
-      ${pbadge(p)}<span class="name">${esc(p.name)}</span>${pk?`<span class="pip" title="Parked">${pk}</span>`:'<span></span>'}
+    const pr=doneShare(pf(p.id));
+    h+=`<button class="nav-item" data-go="${p.id}" aria-current="${view===p.id}" title="${esc(p.name)}">
+      ${pbadge(p)}<span class="name">${esc(p.name)}</span><span></span>
       <span class="mini" aria-hidden="true"><span style="width:${pr}%"></span></span></button>`;
   }
   if(S.unlinked.length){
