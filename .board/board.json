@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 89,
+  "nextNum": 90,
   "features": [
     {
       "key": "LE-1",
@@ -3515,14 +3515,14 @@
       "title": "The Stop hook only nudges when code changed, once per turn",
       "type": "feature",
       "status": "review",
-      "note": "Removed the reply-text check (6 of 7 nudges, ~0.43% of tokens, 2 of ~174 writes). SPEC and SKILL updated; 212 tests pass. Uncommitted.",
+      "note": "Committed as 922d4f4 (0.7.4), not pushed yet.",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "links": [],
       "area": "",
       "createdAt": "2026-09-28T17:18:21Z",
-      "updatedAt": "2026-09-28T17:32:44Z",
+      "updatedAt": "2026-09-28T17:33:54Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3539,6 +3539,11 @@
           "at": "2026-09-28T17:32:44Z",
           "by": "claude",
           "text": "Note: Removed the reply-text check (6 of 7 nudges, ~0.43% of tokens, 2 of ~174 writes). SPEC and SKILL updated; 212 tests pass. Uncommitted."
+        },
+        {
+          "at": "2026-09-28T17:33:54Z",
+          "by": "claude",
+          "text": "Note: Committed as 922d4f4 (0.7.4), not pushed yet."
         }
       ]
     },
@@ -3591,6 +3596,35 @@
           "at": "2026-09-28T17:26:31Z",
           "by": "user",
           "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-89",
+      "title": "'Mark all seen' says what it does and can be undone",
+      "type": "feature",
+      "status": "review",
+      "note": "Next to 'N new since you looked': the link reads 'Clear the new dots'; clicking it says no card changed status and offers Undo",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:35:43Z",
+      "updatedAt": "2026-09-28T17:35:44Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T17:35:43Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T17:35:44Z",
+          "by": "claude",
+          "text": "Moved to review — Next to 'N new since you looked': the link reads 'Clear the new dots'; clicking it says no card changed status and offers Undo"
         }
       ]
     }

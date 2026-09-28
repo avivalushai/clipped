@@ -896,7 +896,7 @@ function renderPage(){
   if(isNoteTab()) return h;
   h+=`
   <div class="stats">
-    <div class="bigbar"><div class="statrow"><div class="stat" title="Done, out of everything that isn\u2019t an idea"><b>${doneShare(all)}%</b> ${P.tab==='questions'?'decided':'done'}</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}${(()=>{const n=all.filter(isNew).length;return n?`<span class="newbits"><button class="stat fresh" data-filter="new" title="Show only these"><span class="newdot"></span><b>${n}</b> new since you looked</button><button class="linkbtn" id="seenAll">Mark all seen</button></span>`:''})()}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
+    <div class="bigbar"><div class="statrow"><div class="stat" title="Done, out of everything that isn\u2019t an idea"><b>${doneShare(all)}%</b> ${P.tab==='questions'?'decided':'done'}</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}${(()=>{const n=all.filter(isNew).length;return n?`<span class="newbits"><button class="stat fresh" data-filter="new" title="Show only these"><span class="newdot"></span><b>${n}</b> new since you looked</button><button class="linkbtn" id="seenAll" title="Only removes the blue dots. No card changes status.">Clear the new dots</button></span>`:''})()}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
     ${STATUSES.map(s=>`<div class="stat"><span class="dot" style="background:${color(s.id)}"></span><b>${c(s.id)}</b>${sl(s.id).toLowerCase()}</div>`).join('')}
   </div>
   <div class="chips" role="group" aria-label="Filter by status">
@@ -1366,7 +1366,9 @@ function bindPage(){
   if($('bulkMove')) $('bulkMove').onchange=e=>{if(e.target.value) bulkStatus(e.target.value)};
   if($('bulkDel')) $('bulkDel').onclick=bulkDelete;
   if($('bulkClear')) $('bulkClear').onclick=()=>{sel.clear();render()};
-  if($('seenAll')) $('seenAll').onclick=()=>{markAllSeen();if(filter==='new')filter='all';render();toast('All caught up')};
+  /* Only the blue "new" dots go; statuses never change. Undo puts the dots back. */
+  if($('seenAll')) $('seenAll').onclick=()=>{const was=JSON.parse(JSON.stringify(SEEN));markAllSeen();if(filter==='new')filter='all';render();
+    toast('New dots cleared — no card changed status',()=>{SEEN=was;saveSeen();render()})};
   // row click opens card (except on controls)
   bindPencils();
   document.querySelectorAll('tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{
