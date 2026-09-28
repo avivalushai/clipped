@@ -10,3 +10,6 @@ site/public/app/index.html
 .claude/settings.local.json
 # the impeccable design checker: its per-session cache stays local; config.json is shared
 .impeccable/hook.cache.json
+
+# rendered intro videos: big, regenerated from video/clipped-intro.html (the site copy lives in landing/video/)
+video/*.mp4

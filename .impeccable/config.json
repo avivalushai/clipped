@@ -83,6 +83,36 @@
         ],
         "createdAt": "2026-09-28T11:17:59.532Z",
         "reason": "user confirmed: Aviv chose to keep Geist so the product matches the landing page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-09-28T12:08:34.896Z",
+        "reason": "Claude: Geist is the product's brand face, same as landing/index.html"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "video/clipped-intro.html"
+        ],
+        "createdAt": "2026-09-28T12:08:34.924Z",
+        "reason": "Claude: 1.06 leading is on 72–112px display headlines in a 1080p video, matching the landing page"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "video/clipped-intro.html"
+        ],
+        "createdAt": "2026-09-28T12:08:34.949Z",
+        "reason": "Claude: flagged items are the headline word chip and pills, checked in rendered frames"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist mono",
+        "createdAt": "2026-09-28T12:27:30.278Z",
+        "reason": "Claude: Geist Mono is the product's brand mono face, same as landing/index.html"
       }
     ]
   }

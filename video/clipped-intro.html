@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clipped intro</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7f4; --surface: #ffffff; --inset: #f1f1ed;
+  --ink: #1d1c18; --muted: #6b6a63; --faint: #75736b;
+  --line: rgba(29, 28, 24, .08); --line-2: rgba(29, 28, 24, .14);
+  --accent: #2f5bff; --active: #0e9fc2; --parked: #d9831f; --review: #7c5cf0; --done: #1fa56b;
+  --term-bg: #16161a; --term-ink: #d6d6dc; --term-dim: #85858f;
+  --shadow: 0 1px 2px rgba(29, 28, 24, .05), 0 4px 14px -4px rgba(29, 28, 24, .08);
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #000; }
+body { display: grid; place-items: center; min-height: 100vh; }
+#film { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; transform-origin: center; }
+#film::before { content: ""; position: absolute; inset: 0; background:
+  radial-gradient(60% 60% at 10% 0%, color-mix(in srgb, var(--parked) 12%, transparent), transparent 70%),
+  radial-gradient(60% 60% at 95% 10%, color-mix(in srgb, var(--review) 11%, transparent), transparent 70%),
+  radial-gradient(70% 60% at 50% 115%, color-mix(in srgb, var(--active) 11%, transparent), transparent 70%); }
+#film::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: linear-gradient(rgb(20 35 70 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(20 35 70 / .05) 1px, transparent 1px);
+  background-size: 48px 48px; -webkit-mask-image: radial-gradient(80% 80% at 50% 40%, #000, transparent); }
+.layer { position: absolute; inset: 0; z-index: 1; opacity: 0; }
+.abs { position: absolute; left: 0; top: 0; }
+code { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 22px; color: var(--muted); display: inline-flex; align-items: center; gap: 12px; margin: 0 0 22px; }
+.eyebrow::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--accent); }
+h1, h2 { font-weight: 500; margin: 0; letter-spacing: -.045em; line-height: 1.06; }
+h1 { font-size: 112px; }
+h2 { font-size: 64px; }
+.brand { display: inline-flex; align-items: center; gap: 16px; font-weight: 600; font-size: 40px; letter-spacing: -.02em; }
+.brand svg { width: 44px; height: 44px; }
+
+/* A — the problem */
+#sA .eyebrow { position: absolute; left: 140px; top: 160px; }
+#punch { position: absolute; left: 140px; right: 140px; bottom: 150px; font-size: 68px; font-weight: 500; letter-spacing: -.04em; line-height: 1.1; }
+
+/* B — title */
+#sB { display: grid; place-items: center; text-align: center; z-index: 3; }
+#sB .inner { display: grid; justify-items: center; gap: 44px; }
+.rot { display: inline-grid; grid-template-columns: minmax(0, 1fr); justify-items: center; vertical-align: baseline; font-family: var(--mono); font-size: .8em; letter-spacing: -.04em; height: 1.36em; border-radius: .2em; overflow: hidden; }
+.rot span { grid-area: 1 / 1; width: max-content; white-space: nowrap; padding: 0 .28em; line-height: 1.36em; }
+#sB .sub { font-size: 34px; color: var(--muted); max-width: 30ch; line-height: 1.4; letter-spacing: -.01em; }
+
+/* cards that start as the story and end as the board */
+#cards { z-index: 2; opacity: 1; }
+.fly { position: absolute; left: 0; top: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; }
+.front { position: absolute; left: 0; top: 0; width: 306px; height: 330px; padding: 28px 28px 30px; }
+.front .n { display: block; font-family: var(--mono); font-size: 21px; color: var(--faint); margin-bottom: 14px; }
+.front b { display: block; font-weight: 500; font-size: 33px; letter-spacing: -.025em; margin-bottom: 12px; line-height: 1.12; }
+.front p { margin: 0; color: var(--muted); font-size: 25px; line-height: 1.35; }
+.front.chaos { background: color-mix(in srgb, var(--parked) 9%, var(--surface)); }
+.front.chaos .n, .front.chaos b { color: #b3650f; }
+.front.chaos b { font-size: 44px; }
+.back { position: absolute; inset: 0; padding: 14px 20px; display: grid; gap: 7px; align-content: center; }
+.btop { display: flex; align-items: baseline; gap: 14px; }
+.btop code { font-size: 17px; color: var(--faint); flex: none; }
+.btop b { font-weight: 500; font-size: 22px; flex: 1; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btop .n { font-family: var(--mono); font-size: 17px; color: var(--faint); }
+.back p { margin: 0; font-size: 19px; color: var(--muted); white-space: nowrap; }
+.back p span { font-family: var(--mono); font-size: 17px; margin-right: 8px; }
+.bar4 { height: 6px; border-radius: 6px; background: var(--line-2); overflow: hidden; }
+.bar4 i { display: block; height: 100%; border-radius: inherit; }
+.back .kind { font-family: var(--mono); font-size: 15px; text-transform: uppercase; letter-spacing: .06em; }
+.back .nt { font-weight: 500; font-size: 20px; line-height: 1.25; white-space: normal; }
+
+/* board window + group headings */
+#board { z-index: 1; }
+.window { position: absolute; border-radius: 22px; overflow: hidden; background: var(--inset); border: 1px solid var(--line-2); box-shadow: 0 40px 80px -30px rgba(0,0,0,.3), var(--shadow); }
+.chrome { display: flex; align-items: center; gap: 9px; height: 52px; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.chrome i { width: 14px; height: 14px; border-radius: 50%; background: var(--line-2); }
+.chrome span { flex: 1; text-align: center; font-family: var(--mono); font-size: 18px; color: var(--faint); margin-right: 60px; display: inline-flex; justify-content: center; align-items: center; gap: 10px; }
+.live { width: 10px; height: 10px; border-radius: 50%; background: var(--done); }
+.grp { position: absolute; display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); height: 28px; z-index: 2; }
+.grp .cnt { color: var(--faint); }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+
+/* D — live */
+#sD .copy { position: absolute; left: 130px; top: 100px; }
+.term { position: absolute; left: 130px; top: 330px; width: 820px; height: 600px; background: var(--term-bg); color: var(--term-ink); border-radius: 22px; font-family: var(--mono); font-size: 23px; line-height: 1.8; box-shadow: 0 40px 80px -30px rgba(0,0,0,.45); overflow: hidden; }
+.term .bar { display: flex; gap: 10px; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.07); margin-bottom: 16px; }
+.term .bar i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.14); }
+.term .ln { padding: 0 34px; white-space: pre; min-height: 1.8em; }
+.term .d { color: var(--term-dim); } .term .a { color: #8da2ff; } .term .o { color: #f3a64c; } .term .g { color: #3fd08f; } .term .p { color: #b39dff; } .term .w { color: #fff; }
+.cur { display: inline-block; width: .6em; height: 1.1em; background: var(--term-ink); vertical-align: -.18em; margin-left: 2px; }
+#dcap { position: absolute; left: 1010px; width: 790px; top: 945px; text-align: center; font-size: 30px; color: var(--muted); letter-spacing: -.01em; }
+#dcap b { color: var(--review); font-weight: 500; }
+
+/* E — end */
+#sE { display: grid; place-items: center; text-align: center; z-index: 4; }
+#sE .inner { display: grid; justify-items: center; gap: 40px; }
+#sE h2 { font-size: 92px; }
+.cmd { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 22px; padding: 26px 34px; box-shadow: var(--shadow); font-family: var(--mono); font-size: 27px; }
+.cmd .p { color: var(--faint); }
+.cmd .hl { color: var(--accent); }
+.points { display: flex; gap: 40px; font-size: 26px; color: var(--muted); }
+.points span { display: inline-flex; gap: 10px; align-items: center; }
+.points svg { width: 24px; height: 24px; color: var(--done); }
+</style>
+</head>
+<body>
+<div id="film">
+
+  <!-- A. The problem -->
+  <section class="layer" id="sA">
+    <p class="eyebrow">Every project, eventually</p>
+    <div id="punch">By Friday, your chat history<br>looks like a crime scene.</div>
+  </section>
+
+  <!-- B. Logo + changing title, over the scattered cards -->
+  <section class="layer" id="sB"><div class="inner">
+    <div class="brand" id="bBrand"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clipped</div>
+    <h1 id="bH">Never lose that<br><span class="rot" id="rot"></span> again.</h1>
+    <div class="sub" id="bSub">A plugin for Claude Code that keeps a board of your work while you build.</div>
+  </div></section>
+
+  <!-- The board window and its group headings -->
+  <section class="layer" id="board">
+    <div class="window" id="win"><div class="chrome"><i></i><i></i><i></i><span><i class="live" id="live"></i>board · nimbus-crm</span></div></div>
+    <div class="grp" id="h-act"><span class="dot" style="background: var(--active)"></span>In progress <span class="cnt" id="c-act"></span></div>
+    <div class="grp" id="h-park"><span class="dot" style="background: var(--parked)"></span>Parked <span class="cnt" id="c-park"></span></div>
+    <div class="grp" id="h-turn"><span class="dot" style="background: var(--review)"></span>Your turn <span class="cnt" id="c-turn"></span></div>
+  </section>
+
+  <!-- D. Live: terminal on the left -->
+  <section class="layer" id="sD">
+    <div class="copy" id="dCopy">
+      <p class="eyebrow">While you work</p>
+      <h2>Claude writes it down<br>as it goes.</h2>
+    </div>
+    <div class="term" id="term"><div class="bar"><i></i><i></i><i></i></div><div id="lines"></div></div>
+    <div id="dcap">Nothing is Done until <b>you</b> say so.</div>
+  </section>
+
+  <!-- Story cards that become board cards -->
+  <section class="layer" id="cards">
+    <div class="fly" id="k8"><div class="front"><span class="n">01</span><b>You start building.</b><p>One chat, one clear idea.</p></div><div class="back"></div></div>
+    <div class="fly" id="k7"><div class="front"><span class="n">02</span><b>A few more sessions.</b><p>A feature, a fix, a pivot.</p></div><div class="back"></div></div>
+    <div class="fly" id="k5"><div class="front"><span class="n">03</span><b>Questions and research.</b><p>Spread over five chats.</p></div><div class="back"></div></div>
+    <div class="fly" id="kq"><div class="front"><span class="n">04</span><b>Nothing written down.</b><p>It lives in the scroll-back.</p></div><div class="back"></div></div>
+    <div class="fly" id="kb"><div class="front chaos"><span class="n">05</span><b>Chaos.</b><p>What was half done? Which chat was it in?</p></div><div class="back"></div></div>
+    <div class="fly" id="k9"><div class="back"></div></div>
+  </section>
+
+  <!-- E. End -->
+  <section class="layer" id="sE"><div class="inner">
+    <div class="brand" id="eBrand"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clipped</div>
+    <h2 id="eH">Install once. Code as usual.<br>Never lose a thought.</h2>
+    <div class="cmd" id="eCmd"><span class="p">$</span><span>claude plugin marketplace add <span class="hl">avivalushai/clipped</span> &amp;&amp; claude plugin install <span class="hl">clipped@clipped</span></span></div>
+    <div class="points" id="ePts">
+      <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Free and open source</span>
+      <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Local-first</span>
+      <span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>github.com/avivalushai/clipped</span>
+    </div>
+  </div></section>
+</div>
+
+<script>
+// Everything is a pure function of time t (seconds), so every frame renders the same way twice.
+const DURATION = 36;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+const eio = (p) => (p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const seg = (t, a, b, e = easeOut) => e(clamp((t - a) / (b - a)));
+const lerp = (a, b, p) => a + (b - a) * p;
+const lerpR = (a, b, p) => ({ x: lerp(a.x, b.x, p), y: lerp(a.y, b.y, p), w: lerp(a.w, b.w, p), h: lerp(a.h, b.h, p), r: lerp(a.r || 0, b.r || 0, p), s: lerp(a.s ?? 1, b.s ?? 1, p) });
+const typed = (s, t, a, cps = 26) => s.slice(0, Math.max(0, Math.floor((t - a) * cps)));
+
+function rise(el, t, a, dur = .6, dist = 24) {
+  const p = seg(t, a, a + dur);
+  el.style.opacity = p;
+  el.style.transform = `translateY(${(1 - p) * dist}px)`;
+}
+function layer(el, t, a, b) {
+  const p = seg(t, a, a + .5) * (1 - seg(t, b - .5, b, eio));
+  el.style.opacity = p;
+  el.style.visibility = p > 0 ? "visible" : "hidden";
+  return p;
+}
+function place(el, r) {
+  el.style.width = r.w + "px"; el.style.height = r.h + "px";
+  el.style.transform = `translate(${r.x}px, ${r.y}px) rotate(${r.r || 0}deg) scale(${r.s ?? 1})`;
+}
+
+// ---------- timeline ----------
+const T = {
+  aEnd: 7.6,              // problem scene
+  chaos: [5.0, 5.8],      // cards tip over
+  scatter: [6.9, 7.9],    // cards pushed to the edges
+  bIn: 7.4, bOut: 12.5,   // title
+  fly: 12.2,              // cards fly into the board (staggered)
+  winIn: 12.3,
+  dIn: 13.9,              // terminal
+  m1: [17.2, 17.9], m2: [22.0, 22.8], m3: [24.3, 25.0],
+  eIn: 27.3,
+};
+
+// ---------- geometry ----------
+const STORY_W = 306, STORY_H = 330;
+const row = (i) => ({ x: 140 + i * (STORY_W + 28), y: 250, w: STORY_W, h: STORY_H, r: 0, s: 1 });
+const TILT = [0, -.8, 1.4, -2.2, 3.4];
+const CHAOS = [[-30, 40, -7], [20, -30, 5], [-10, 60, -9], [30, 10, 8], [0, -20, -4]];
+const EDGE = [
+  { x: 40, y: 60, r: -11 }, { x: 1570, y: 50, r: 8 }, { x: 30, y: 700, r: 9 }, { x: 1580, y: 690, r: -8 }, { x: 1180, y: 830, r: -5 },
+].map((e) => ({ ...e, w: STORY_W, h: STORY_H, s: .74 }));
+
+const WIN = { x: 1010, y: 150, w: 790, h: 760 };
+const BX = WIN.x + 22, BW = WIN.w - 44, BODY = WIN.y + 52;
+const CH = 96, NH = 84, HH = 28;
+function boardLayout(st) {
+  const pos = {}; let y = BODY + 22;
+  [["h-act", "act"], ["h-park", "park"], ["h-turn", "turn"]].forEach(([h, g], gi) => {
+    if (gi) y += 12;
+    pos[h] = { x: BX, y, w: BW, h: HH }; y += HH + 10;
+    st[g].forEach((id) => { pos[id] = { x: BX, y, w: BW, h: CH }; y += CH + 10; });
+  });
+  y += 12;
+  const nw = (BW - 14) / 2;
+  pos.kq = { x: BX, y, w: nw, h: NH }; pos.kb = { x: BX + nw + 14, y, w: nw, h: NH };
+  return pos;
+}
+const S = [
+  { act: ["k8"], park: ["k7"], turn: ["k5"] },
+  { act: ["k9", "k8"], park: ["k7"], turn: ["k5"] },
+  { act: ["k7", "k8"], park: ["k9"], turn: ["k5"] },
+  { act: ["k8"], park: ["k9"], turn: ["k7", "k5"] },
+];
+const L = S.map(boardLayout);
+L[0].k9 = L[1].k9;
+function boardPos(id, t) {
+  const m = [seg(t, ...T.m1, eio), seg(t, ...T.m2, eio), seg(t, ...T.m3, eio)];
+  let r = L[0][id];
+  m.forEach((p, i) => { r = lerpR(r, L[i + 1][id], p); });
+  // a card that changes group lifts a little while it moves
+  const lift = m.map((p, i) => (L[i][id].y !== L[i + 1][id].y && ["k9", "k7"].includes(id) && Math.abs(L[i][id].y - L[i + 1][id].y) > 120 ? Math.sin(p * Math.PI) : 0)).reduce((a, b) => Math.max(a, b), 0);
+  return { ...r, x: r.x + lift * 28, s: 1 + lift * .03, lift };
+}
+
+// ---------- board card contents over time ----------
+const COL = { active: "var(--active)", parked: "var(--parked)", review: "var(--review)" };
+function card(key, title, n, kind, word, note, pct) {
+  const c = COL[kind];
+  return `<div class="btop"><code>${key}</code><b>${title}</b><span class="n">${n}</span></div><p><span style="color: ${c}">${word}</span>${note}</p><div class="bar4"><i style="width: ${Math.max(3, pct)}%; background: ${c}"></i></div>`;
+}
+const note = (kind, text, color) => `<p class="kind" style="color: ${color}">${kind}</p><p class="nt">${text}</p>`;
+const CONTENT = {
+  k8: () => card("CRM-8", "Drag a deal between pipeline stages", "2/4", "active", "next", "keep the new order after a reload", 50),
+  k5: () => card("CRM-5", "Search contacts by company", "3/3", "review", "check", "try a search, then mark it Done", 100),
+  kq: () => note("question", "Dedupe contacts on email or phone?", "var(--review)"),
+  kb: () => note("brainstorm", "Pipeline view: board or table", "var(--accent)"),
+  k9: (t) => {
+    if (t >= 22.4) return card("CRM-9", "Import contacts from CSV", "2/3", "parked", "stopped", "mapping done, merge not written", 67);
+    const k = t < 18.2 ? 0 : t < 19.0 ? 1 : 2;
+    const pct = 33 * seg(t, 18.2, 18.7) + 34 * seg(t, 19.0, 19.5);
+    return card("CRM-9", "Import contacts from CSV", `${k}/3`, "active", "next", ["parse the file", "map the columns", "write the merge"][k], pct);
+  },
+  k7: (t) => {
+    if (t < 22.4) return card("CRM-7", "Email sync drops long threads", "0/2", "parked", "stopped", "Gmail pagination, no retry yet", 0);
+    if (t < 24.65) return card("CRM-7", "Email sync drops long threads", t < 23.4 ? "0/2" : "2/2", "active", "next", t < 23.4 ? "add a retry to pagination" : "hand it over for a check", 100 * seg(t, 23.4, 24));
+    return card("CRM-7", "Email sync drops long threads", "2/2", "review", "check", "open a long thread, then mark it Done", 100);
+  },
+};
+const FLASH = { k9: [17.5, 18.2, 19.0, 22.2], k7: [22.2, 23.4, 24.5] };
+
+// ---------- scenes ----------
+const WORDS = [["idea", "--accent", 0], ["decision", "--review", 1.2], ["half-done feature", "--parked", 2.2], ["research", "--done", 3.2]];
+const rot = $("rot");
+rot.innerHTML = WORDS.map(([w, c]) => `<span style="color: var(${c})">${w}</span>`).join("");
+const rotSpans = [...rot.children];
+let widths = [];
+function measure() { widths = rotSpans.map((s) => s.getBoundingClientRect().width); }
+
+function sceneA(t) {
+  layer($("sA"), t, 0, T.aEnd);
+  rise($("punch"), t, 3.6, .8);
+}
+
+function sceneB(t) {
+  if (!layer($("sB"), t, T.bIn, T.bOut)) return;
+  rise($("bBrand"), t, T.bIn + .2);
+  rise($("bH"), t, T.bIn + .4, .8, 40);
+  rise($("bSub"), t, T.bIn + 1.2);
+  const base = T.bIn + .5;
+  let k = 0;
+  WORDS.forEach((w, i) => { if (t >= base + w[2]) k = i; });
+  const p = k === 0 ? 1 : seg(t - (base + WORDS[k][2]), 0, .5);
+  rotSpans.forEach((s, i) => {
+    let y = 100, o = 0;
+    if (i === k) { y = (1 - p) * 100; o = p; } else if (i === k - 1) { y = -p * 100; o = 1 - p; }
+    s.style.transform = `translateY(${y}%)`; s.style.opacity = o;
+  });
+  rot.style.width = lerp(widths[Math.max(0, k - 1)], widths[k], p) + "px";
+  const c = `var(${WORDS[k][1]})`;
+  rot.style.background = `color-mix(in srgb, ${c} 13%, transparent)`;
+  rot.style.boxShadow = `inset 0 0 0 2px color-mix(in srgb, ${c} 22%, transparent)`;
+}
+
+const STORY_IDS = ["k8", "k7", "k5", "kq", "kb"];
+function storyRect(i, t) {
+  const appear = 0.3 + i * .55 + (i === 4 ? .3 : 0);
+  const p = seg(t, appear, appear + .7);
+  const chaos = seg(t, ...T.chaos, eio);
+  const [dx, dy, dr] = CHAOS[i];
+  let r = { ...row(i), y: row(i).y + (1 - p) * 40 + dy * chaos, x: row(i).x + dx * chaos, r: TILT[i] * p + dr * chaos };
+  const sc = seg(t, ...T.scatter, eio);
+  const drift = { ...EDGE[i], y: EDGE[i].y + Math.sin(t * .9 + i * 1.7) * 7, r: EDGE[i].r + Math.sin(t * .7 + i) * 1.2 };
+  r = lerpR(r, drift, sc);
+  return { r, opacity: p };
+}
+
+function cards(t) {
+  const end = 1 - seg(t, T.eIn - .3, T.eIn + .3, eio);
+  $("cards").style.opacity = end;
+  STORY_IDS.forEach((id, i) => {
+    const el = $(id), front = el.querySelector(".front"), back = el.querySelector(".back");
+    const { r: storyR, opacity } = storyRect(i, Math.min(t, T.fly + i * .1));
+    const f0 = T.fly + i * .1, f1 = f0 + 1.3;
+    const fp = seg(t, f0, f1, eio);
+    let r = t < f0 ? storyR : (fp < 1 ? lerpR(storyR, { ...L[0][id], r: 0, s: 1 }, fp) : boardPos(id, t));
+    place(el, r);
+    el.style.opacity = opacity;
+    el.style.borderRadius = lerp(22, 14, fp) + "px";
+    front.style.opacity = 1 - seg(t, f0 + .1, f0 + .6, (x) => x);
+    back.style.opacity = seg(t, f0 + .3, f0 + .9, (x) => x);
+    if (t >= f0) back.innerHTML = CONTENT[id](t);
+    shade(el, id, t, r.lift || 0);
+  });
+  // CRM-9 is new work: it appears when Claude starts it
+  const el = $("k9");
+  const a = seg(t, T.m1[0] + .2, T.m1[1] + .2);
+  const r = boardPos("k9", t);
+  place(el, { ...r, x: r.x + (1 - a) * 40, s: lerp(.96, r.s, a) });
+  el.style.opacity = a;
+  el.style.borderRadius = "14px";
+  el.querySelector(".back").innerHTML = CONTENT.k9(t);
+  shade(el, "k9", t, r.lift || 0);
+}
+function shade(el, id, t, lift) {
+  const ring = (FLASH[id] || []).reduce((m, c) => (t >= c ? Math.max(m, 1 - seg(t, c, c + 1.1, (x) => x)) : m), 0);
+  el.style.zIndex = lift > 0 ? 3 : 1;
+  el.style.boxShadow = `0 0 0 ${3 * ring}px color-mix(in srgb, var(--accent) ${Math.round(ring * 55)}%, transparent), 0 ${22 * lift}px 44px -16px rgba(0,0,0,${.28 * lift}), var(--shadow)`;
+}
+
+function board(t) {
+  const a = seg(t, T.winIn, T.winIn + .8);
+  const end = 1 - seg(t, T.eIn - .3, T.eIn + .3, eio);
+  $("board").style.opacity = Math.min(a, end);
+  $("board").style.visibility = a > 0 && end > 0 ? "visible" : "hidden";
+  const w = $("win");
+  w.style.left = WIN.x + "px"; w.style.top = WIN.y + (1 - a) * 30 + "px"; w.style.width = WIN.w + "px"; w.style.height = WIN.h + "px";
+  ["h-act", "h-park", "h-turn"].forEach((h, i) => {
+    const r = boardPos(h, t);
+    const p = seg(t, T.winIn + .9 + i * .15, T.winIn + 1.5 + i * .15);
+    const el = $(h);
+    el.style.opacity = p;
+    el.style.transform = `translate(${r.x + 2}px, ${r.y}px)`;
+  });
+  const st = t >= 24.65 ? S[3] : t >= 22.4 ? S[2] : t >= 17.55 ? S[1] : S[0];
+  $("c-act").textContent = st.act.length; $("c-park").textContent = st.park.length; $("c-turn").textContent = st.turn.length;
+  const pulse = (t * 1.2) % 1;
+  $("live").style.boxShadow = t > T.dIn ? `0 0 0 ${pulse * 9}px color-mix(in srgb, var(--done) ${Math.round((1 - pulse) * 45)}%, transparent)` : "none";
+}
+
+const LINES = [
+  { at: 14.3, html: (t) => `<span class="d">~/code/nimbus-crm ❯</span> ${typed("claude", t, 14.3, 16)}`, type: [14.3, 14.7] },
+  { at: 14.9, html: () => `<span class="d">⎿</span> <span class="a">Clipped board:</span> Nimbus CRM · 1 active, 1 parked` },
+  { at: 15.3, html: () => `` },
+  { at: 15.6, html: (t) => `<span class="a">›</span> <span class="w">${typed("import contacts from a CSV file", t, 15.6, 26)}</span>`, type: [15.6, 16.9] },
+  { at: 17.2, html: () => `<span class="g">⏺ Board:</span> added CRM-9 Import contacts from CSV` },
+  { at: 18.2, html: () => `<span class="d">⏺</span> Wrote src/import/parse.ts` },
+  { at: 19.0, html: () => `<span class="d">⏺</span> Mapped CSV columns to contact fields` },
+  { at: 19.6, html: () => `` },
+  { at: 19.9, html: (t) => `<span class="a">›</span> <span class="w">${typed("wait, email sync is broken. fix that first", t, 19.9, 28)}</span>`, type: [19.9, 21.6] },
+  { at: 21.9, html: () => `<span class="o">⏺ Board:</span> parked CRM-9 · merge not written` },
+  { at: 23.4, html: () => `<span class="d">⏺</span> Fixed the Gmail pagination retry` },
+  { at: 24.3, html: () => `<span class="p">⏺ Board:</span> CRM-7 → your turn` },
+];
+const lineEls = LINES.map(() => { const d = document.createElement("div"); d.className = "ln"; $("lines").appendChild(d); return d; });
+function sceneD(t) {
+  if (!layer($("sD"), t, T.dIn, T.eIn + .3)) return;
+  rise($("dCopy"), t, T.dIn, .8);
+  rise($("term"), t, T.dIn + .1, .8, 30);
+  rise($("dcap"), t, 25.3, .7, 14);
+  let last = -1;
+  LINES.forEach((l, i) => {
+    const on = t >= l.at;
+    lineEls[i].innerHTML = on ? l.html(t) : "";
+    lineEls[i].style.opacity = on ? seg(t, l.at, l.at + .25) : 0;
+    if (on) last = i;
+  });
+  const typing = LINES.some((l) => l.type && t >= l.type[0] && t < l.type[1]);
+  if (last >= 0 && (typing || Math.floor(t * 2.2) % 2 === 0)) lineEls[last].innerHTML += '<span class="cur"></span>';
+}
+
+function sceneE(t) {
+  if (!layer($("sE"), t, T.eIn, DURATION + 10)) return;
+  rise($("eBrand"), t, T.eIn + .2);
+  rise($("eH"), t, T.eIn + .5, .8, 36);
+  rise($("eCmd"), t, T.eIn + 1.4, .7);
+  rise($("ePts"), t, T.eIn + 2.0, .7);
+}
+
+function seek(t) { sceneA(t); sceneB(t); board(t); cards(t); sceneD(t); sceneE(t); }
+window.DURATION = DURATION;
+window.seek = seek;
+
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $("film").style.transform = s < 1 ? `scale(${s})` : "none";
+}
+window.ready = (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { measure(); seek(0); return true; });
+
+if (!location.search.includes("render")) {
+  addEventListener("resize", fit); fit();
+  window.ready.then(() => {
+    const t0 = performance.now();
+    const loop = (now) => { seek(((now - t0) / 1000) % (DURATION + 1)); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+}
+</script>
+</body>
+</html>

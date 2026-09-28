@@ -1,0 +1,12 @@
+# Voiceover for clipped-intro — start time (s) | line
+# Current take: Kokoro-82M (local, offline), voice af_heart. Music: original bed synthesised locally, ducked under the voice.
+# Phonemes come from misaki; "plugin" is pronounced by hand (plˈʌɡɪn).
+0.2  | Every project starts clean. A few sessions later, it's scattered across five chats.
+5.5  | By Friday? Chaos.
+8.0  | Clipped is a plugin for Claude Code that keeps a board of your work, while you build.
+13.0 | As you work, Claude writes it down.
+15.8 | Ask for a feature, and a card appears, and ticks off its steps.
+20.0 | Switch to a bug, and the half-done work is parked, with a note on where you stopped.
+25.2 | Nothing is done until you say so.
+28.0 | Install once. Code as usual. Never lose a thought.
+31.6 | Clipped. Free, open source, and waiting for you on GitHub.

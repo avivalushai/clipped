@@ -276,22 +276,24 @@ footer { padding: 48px 0; color: var(--faint); font-size: 14px; }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 footer a { color: var(--muted); text-underline-offset: 3px; }
 
-/* the story: five steps that tilt a little more each time, until it's chaos */
-.story { padding-bottom: 48px; }
-.story-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gap); }
-.story-steps li > div { height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 14px; box-shadow: var(--shadow); transform: rotate(var(--r)); transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
-.story-steps li:hover > div { transform: rotate(0deg); }
-.story-steps .n { display: block; font-family: var(--mono); font-size: 12px; color: var(--faint); margin-bottom: 6px; }
-.story-steps b { display: block; font-weight: 500; font-size: 16px; letter-spacing: -.015em; margin-bottom: 4px; }
-.story-steps p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
-.story-steps .chaos > div { border-color: color-mix(in srgb, var(--parked) 45%, var(--line)); background: color-mix(in srgb, var(--parked) 7%, var(--surface)); }
-.story-steps .chaos .n, .story-steps .chaos b { color: var(--parked); }
-.story-steps .chaos b { font-size: 19px; line-height: 1.1; }
-.story-turn { margin: 36px 0 0; text-align: center; font-size: 15px; color: var(--muted); }
-.story-turn span { font-family: var(--mono); color: var(--accent); margin-left: 4px; }
-@media (max-width: 960px) { .story-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .story-steps .chaos { grid-column: 1 / -1; } }
-@media (max-width: 600px) { .story-steps { grid-template-columns: minmax(0, 1fr); } .story-steps li > div { transform: rotate(calc(var(--r) * .5)); } }
-@media (prefers-reduced-motion: reduce) { .story-steps li > div { transition: none; } }
+/* the intro video: a poster with one play button; native controls appear once it plays */
+.stage.video-stage { padding: clamp(12px, 5vw, 64px); }
+.intro-frame { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #f7f7f4; border: 1px solid var(--line-2); box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .25); }
+.intro-frame video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.play { position: absolute; left: 50%; bottom: 11%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; font-weight: 500; color: #fff; background: #1d1c18; border: 0; border-radius: 999px; padding: 8px 18px 8px 8px; cursor: pointer; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .45); transition: transform .2s cubic-bezier(.2, .8, .2, 1), background-color .15s ease; }
+.play:hover { background: #000; transform: translateX(-50%) scale(1.03); }
+.play:active { transform: translateX(-50%) scale(.98); }
+.play .ic { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #fff; color: #1d1c18; }
+.play .ic svg { width: 14px; height: 14px; margin-left: 2px; }
+.play .len { font-family: var(--mono); font-size: 12.5px; font-weight: 400; opacity: .65; }
+.intro-frame.playing .play { display: none; }
+.play { white-space: nowrap; }
+@media (max-width: 600px) { .play { bottom: 7%; padding: 4px 12px 4px 4px; gap: 8px; } .play .ic { width: 26px; height: 26px; } .play .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+.watch { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 14px; font-weight: 500; color: var(--ink); text-decoration: none; }
+.watch svg { width: 11px; height: 11px; color: var(--accent); }
+.watch:hover { text-decoration: underline; text-underline-offset: 3px; }
+.board-shot { margin-top: var(--section); }
+@media (prefers-reduced-motion: reduce) { .play { transition: none; } }
 
 /* rules: what gets caught, and what counts as what */
 .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -374,6 +376,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
       </div>
       <ul class="points" data-t="points"></ul>
     </div>
+    <a class="watch" href="#intro" id="watch"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.5v9l7.5-4.5z" fill="currentColor"/></svg>Watch the 36-second intro</a>
     </div>
 
     <figure class="peek" aria-label="An example Clipped board for a made-up CRM project">
@@ -412,27 +415,17 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
     </figure>
   </div>
 
-  <div class="wrap story" aria-labelledby="story-title">
-    <p class="eyebrow" id="story-title">Every project, eventually</p>
-    <ol class="story-steps">
-      <li class="rv" style="--r: 0deg"><div><span class="n">01</span><b>You start building.</b><p>One chat, one clear idea.</p></div></li>
-      <li class="rv" style="--r: -.6deg"><div><span class="n">02</span><b>A few more sessions.</b><p>A feature here, a fix there, a pivot in between.</p></div></li>
-      <li class="rv" style="--r: 1.2deg"><div><span class="n">03</span><b>Questions and research.</b><p>Answers you'll need again, spread over five chats.</p></div></li>
-      <li class="rv" style="--r: -2deg"><div><span class="n">04</span><b>Nothing written down.</b><p>It all lives in the scroll-back.</p></div></li>
-      <li class="rv chaos" style="--r: 3.2deg"><div><span class="n">05</span><b>Chaos.</b><p>What was half done? What did you decide? Which chat was it in?</p></div></li>
-    </ol>
-    <p class="story-turn rv">Clipped writes it down as you go, so step 5 never comes <span aria-hidden="true">↓</span></p>
-  </div>
-
-  <div class="wrap rv">
-    <div class="stage shot-stage">
-      <div class="window">
-        <div class="chrome"><i></i><i></i><i></i><span>localhost:4747</span></div>
-        <img class="img-light" src="img/board-light.png" width="2416" height="1880" alt="The Clipped board: a table of cards with status, progress and next step, grouped by In progress, Parked and Your turn.">
-        <img class="img-dark" src="img/board.png" width="2416" height="1880" alt="" aria-hidden="true">
+  <div class="wrap rv" id="intro">
+    <div class="stage video-stage">
+      <div class="intro-frame">
+        <video id="intro-video" preload="none" playsinline poster="video/intro-poster.jpg" width="1920" height="1080" aria-label="A 36-second intro to Clipped, with narration">
+          <source src="video/intro.mp4" type="video/mp4">
+          <track kind="captions" src="video/intro.vtt" srclang="en" label="English">
+        </video>
+        <button class="play" id="intro-play" type="button"><span class="ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 3.5v9l7.5-4.5z" fill="currentColor"/></svg></span><span class="lbl">Watch the intro</span> <span class="len">0:36</span></button>
       </div>
     </div>
-    <p class="caption">This project's own board. Type <code>board ui</code> and it opens in your browser, updating live while Claude works.</p>
+    <p class="caption">From chat chaos to a board that keeps itself, in 36 seconds. Sound on.</p>
   </div>
 
   <section class="wrap" id="problem">
@@ -601,6 +594,16 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
         <img class="img-dark" src="img/card.png" width="960" height="1370" alt="" aria-hidden="true">
       </div>
     </div>
+    <div class="rv board-shot">
+      <div class="stage shot-stage">
+        <div class="window">
+          <div class="chrome"><i></i><i></i><i></i><span>localhost:4747</span></div>
+          <img class="img-light" src="img/board-light.png" width="2416" height="1880" alt="The Clipped board: a table of cards with status, progress and next step, grouped by In progress, Parked and Your turn." loading="lazy">
+          <img class="img-dark" src="img/board.png" width="2416" height="1880" alt="" aria-hidden="true" loading="lazy">
+        </div>
+      </div>
+      <p class="caption">This project's own board. Type <code>board ui</code> and it opens in your browser, updating live while Claude works.</p>
+    </div>
   </section>
 
   <section class="wrap" id="limits">
@@ -744,6 +747,16 @@ document.querySelectorAll(".copy").forEach((b) => {
     setTimeout(() => { b.classList.remove("done"); b.innerHTML = copyIcon + "<span>Copy</span>"; }, 1600);
   });
 });
+
+// Intro video: starts with sound on a click; the native controls take over from there.
+const intro = document.getElementById("intro-video");
+function playIntro() {
+  intro.controls = true;
+  intro.closest(".intro-frame").classList.add("playing");
+  intro.play().catch(() => {});
+}
+document.getElementById("intro-play").addEventListener("click", playIntro);
+document.getElementById("watch").addEventListener("click", playIntro);
 
 // Theme toggle (shares the key with the current page).
 document.getElementById("theme").addEventListener("click", () => {

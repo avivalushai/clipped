@@ -2238,7 +2238,7 @@
       "key": "LE-58",
       "title": "The website counts visits and install clicks in Amplitude",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "After deploy: open useclipped.vercel.app, click Copy on an install command, and see 'Install command copied' in Amplitude (EU) → Live events within a minute",
       "doneWhen": [],
       "steps": [],
@@ -2249,13 +2249,18 @@
       ],
       "links": [],
       "createdAt": "2026-09-28T14:13:27Z",
-      "updatedAt": "2026-09-28T14:13:27Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T14:29:58Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T14:13:27Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T14:29:58Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     }
