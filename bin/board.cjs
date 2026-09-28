@@ -216,6 +216,49 @@ var init_analytics = __esm({
   }
 });
 
+// cli/src/areas.ts
+function areaOfFile(areas, file) {
+  let best;
+  let len = -1;
+  for (const a of areas)
+    for (const p of a.paths)
+      if (covers(p, file) && p.length > len) {
+        best = a;
+        len = p.length;
+      }
+  return best;
+}
+function guessArea(file) {
+  const dirs = file.split("/").slice(0, -1);
+  const d = dirs.find((x) => !GENERIC.has(x.toLowerCase()) && !x.startsWith(".")) ?? dirs[0];
+  if (!d) return "";
+  const words = d.replace(/[-_]+/g, " ").trim();
+  return words.length <= 3 ? words.toUpperCase() : words[0].toUpperCase() + words.slice(1);
+}
+function areaOf(board2, f) {
+  if (f.area) return board2.areas.find((a) => a.name.toLowerCase() === f.area.toLowerCase())?.name ?? f.area;
+  const votes = /* @__PURE__ */ new Map();
+  for (const file of f.files) {
+    const name = areaOfFile(board2.areas, file)?.name ?? guessArea(file);
+    if (name) votes.set(name, (votes.get(name) ?? 0) + 1);
+  }
+  let best = "";
+  let n = 0;
+  for (const [name, c] of votes) if (c > n) [best, n] = [name, c];
+  return best;
+}
+function findArea(board2, name) {
+  return board2.areas.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
+}
+var GENERIC, covers;
+var init_areas = __esm({
+  "cli/src/areas.ts"() {
+    "use strict";
+    GENERIC = /* @__PURE__ */ new Set(["src", "app", "apps", "lib", "libs", "packages", "source", "components", "pages", "public", "test", "tests"]);
+    covers = (p, file) => file === p || file.startsWith(p.replace(/\/+$/, "") + "/");
+  }
+});
+
 // cli/src/features.ts
 function findFeature(board2, input) {
   const want = /^\d+$/.test(input) ? `${board2.project.key}-${input}` : input.toUpperCase();
@@ -362,6 +405,15 @@ function validateBoard(b) {
     err("features", "must be an array");
     return errs;
   }
+  const areaNames = /* @__PURE__ */ new Set();
+  if (!Array.isArray(b.areas)) err("areas", "must be an array");
+  else
+    b.areas.forEach((a, i) => {
+      if (!isObj(a) || !isStr(a.name) || !a.name.trim() || !Array.isArray(a.paths) || !a.paths.every(isStr))
+        return err(`areas[${i}]`, "must be { name: string, paths: string[] }");
+      if (areaNames.has(a.name.toLowerCase())) err(`areas[${i}].name`, `duplicate area ${a.name}`);
+      areaNames.add(a.name.toLowerCase());
+    });
   const projectKey = isObj(b.project) && isStr(b.project.key) ? b.project.key : null;
   const seen = /* @__PURE__ */ new Set();
   b.features.forEach((f, i) => {
@@ -383,6 +435,8 @@ function validateBoard(b) {
     if (!Array.isArray(f.doneWhen) || !f.doneWhen.every(isStr)) err(`${p}.doneWhen`, "must be an array of strings");
     if (!Array.isArray(f.files) || !f.files.every(isStr)) err(`${p}.files`, "must be an array of strings");
     if (!Array.isArray(f.links) || !f.links.every(isStr)) err(`${p}.links`, "must be an array of strings");
+    if (!isStr(f.area)) err(`${p}.area`, "must be a string");
+    else if (f.area && !areaNames.has(f.area.toLowerCase())) err(`${p}.area`, `no area ${f.area} on this board`);
     if (!Array.isArray(f.steps)) err(`${p}.steps`, "must be an array");
     else
       f.steps.forEach((s2, j) => {
@@ -435,14 +489,15 @@ function emptyBoard(name, key) {
     nextNum: 1,
     nextNoteNum: 1,
     features: [],
-    notes: []
+    notes: [],
+    areas: []
   };
 }
 var SCHEMA_VERSION, STATUSES, TYPES, NOTE_KINDS, ACTORS, GRANULARITIES, KEY_RE, NOTE_ID_RE, ISO_RE, isObj, isStr, oneOf;
 var init_schema = __esm({
   "cli/src/schema.ts"() {
     "use strict";
-    SCHEMA_VERSION = 3;
+    SCHEMA_VERSION = 4;
     STATUSES = ["idea", "active", "parked", "review", "done"];
     TYPES = ["feature", "bug", "chore", "question"];
     NOTE_KINDS = ["brainstorm", "plan", "reference"];
@@ -568,6 +623,12 @@ var init_migrations = __esm({
         ...board2,
         features: (board2.features ?? []).map((f) => ({ ...f, links: f.links ?? [] })),
         notes: (board2.notes ?? []).map((n) => ({ ...n, considered: n.considered ?? "" }))
+      }),
+      // v3 → v4: the board names the areas of the product; a card can be put in one by hand.
+      3: (board2) => ({
+        ...board2,
+        features: (board2.features ?? []).map((f) => ({ ...f, area: f.area ?? "" })),
+        areas: board2.areas ?? []
       })
     };
     MigrationError = class extends Error {
@@ -927,6 +988,7 @@ function applyPatch(ctx, p, key, patch) {
     for (const l of after) if (!before.includes(l)) argv.push("--link", l);
     for (const l of before) if (!after.includes(l)) argv.push("--unlink", l);
   }
+  if (patch.area !== void 0) argv.push("--area", str(patch.area, "area") || "auto");
   if (argv.length > 2) board(ctx, p, argv);
   if (patch.steps) {
     const before = feature(p, key).steps;
@@ -973,7 +1035,8 @@ function handleApi(ctx, req) {
   }
   if (seg.length === 3 && seg[2] === "board") {
     if (method !== "GET") throw new HttpError(405, "use GET");
-    return loadBoard(p);
+    const b = loadBoard(p);
+    return { ...b, features: b.features.map((f) => ({ ...f, inArea: areaOf(b, f) })) };
   }
   if (seg[2] === "notes") {
     const b = req.body ?? {};
@@ -1025,6 +1088,7 @@ var init_api = __esm({
     init_cli();
     init_discover();
     init_sessions();
+    init_areas();
     init_projects();
     HttpError = class extends Error {
       constructor(status, message) {
@@ -1353,7 +1417,8 @@ function listCmd(ctx, { opts }) {
 function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const f = findFeature(board2, need(pos, 0, "card key (e.g. LOOP-3)"));
-  emit(ctx, opts, f, formatDetail(ctx, f));
+  const area3 = areaOf(board2, f);
+  emit(ctx, opts, { ...f, inArea: area3 }, [formatDetail(ctx, f), ...area3 ? [`Area: ${area3}${f.area ? "" : " (from its files)"}`] : []]);
 }
 function context(ctx, { opts }) {
   const loc = findBoard(ctx.cwd);
@@ -1455,6 +1520,19 @@ function addLinks(f, xs) {
   f.links.push(...added);
   return [`Proof: ${added.join(", ")}`];
 }
+function setArea(b, f, arg) {
+  const name = arg.trim();
+  if (!name || /^auto$/i.test(name)) {
+    if (!f.area) return "";
+    f.area = "";
+    return "Area: from its files";
+  }
+  let a = findArea(b, name);
+  if (!a) b.areas.push(a = { name, paths: [] });
+  if (f.area === a.name) return "";
+  f.area = a.name;
+  return `Area: ${a.name}`;
+}
 function add(ctx, { pos, opts }) {
   const title = need(pos, 0, `title (e.g. board add "Export loop as WAV")`).trim();
   if (!title) throw new UserError("title can't be empty");
@@ -1475,12 +1553,14 @@ function add(ctx, { pos, opts }) {
       steps: list(opts, "step").map((text) => ({ text, done: false })),
       files: projectFiles(loc.root, ctx.cwd, list(opts, "file")),
       links: linksOf(list(opts, "link")),
+      area: "",
       createdAt: at,
       updatedAt: at,
       updatedBy: by,
       log: [{ at, by, text: status === "idea" ? "Created" : `Created \u2014 ${status}` }]
     };
     if (status === "parked" && !note3.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
+    if (str2(opts, "area")) setArea(b, f2, str2(opts, "area"));
     b.nextNum++;
     b.features.push(f2);
     return f2;
@@ -1496,9 +1576,9 @@ function update(ctx, { pos, opts }) {
   const note3 = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
-  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length);
+  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length) || str2(opts, "area") !== void 0;
   if (!status && !type && title === void 0 && note3 === void 0 && !doneWhen.length && !edits)
-    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file or --link)");
+    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file, --link or --area)");
   const f = mutateBoard(requireBoard(ctx), (b) => {
     const f2 = findFeature(b, keyArg);
     const logs = [];
@@ -1526,6 +1606,7 @@ function update(ctx, { pos, opts }) {
       logs.push(`Removed files: ${dropped.join(", ")}`);
     }
     logs.push(...addLinks(f2, list(opts, "link")));
+    if (str2(opts, "area") !== void 0) logs.push(setArea(b, f2, str2(opts, "area")));
     const unlink = linksOf(list(opts, "unlink")).filter((x) => f2.links.includes(x));
     if (unlink.length) {
       f2.links = f2.links.filter((x) => !unlink.includes(x));
@@ -1540,8 +1621,9 @@ function update(ctx, { pos, opts }) {
       }
       if (f2.status === "parked" && !f2.note.trim()) throw new UserError("a parked card needs a note");
     }
-    for (const l of logs) stamp(ctx, f2, by, l);
-    if (!logs.length) stamp(ctx, f2, by);
+    const said = logs.filter(Boolean);
+    for (const l of said) stamp(ctx, f2, by, l);
+    if (!said.length) stamp(ctx, f2, by);
     return f2;
   });
   emit(ctx, opts, f, `Updated ${formatLine(f)}`);
@@ -1619,6 +1701,7 @@ function merge(ctx, { pos, opts }) {
     into2.log = [...into2.log, ...from2.log].sort((x, y) => x.at.localeCompare(y.at));
     if (Date.parse(from2.createdAt) < Date.parse(into2.createdAt)) into2.createdAt = from2.createdAt;
     stamp(ctx, into2, by, `Merged in ${from2.key} \u201C${from2.title}\u201D`);
+    if (!into2.area && from2.area) into2.area = from2.area;
     b.features = b.features.filter((f) => f !== from2);
     return { from: from2, into: into2 };
   });
@@ -1893,6 +1976,59 @@ function telemetry(ctx, { pos, opts }) {
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous)."
   ]);
 }
+function area2(ctx, { pos, opts }) {
+  const sub = (pos[0] ?? "list").toLowerCase();
+  const loc = requireBoard(ctx);
+  if (sub === "list" || sub === "ls") {
+    const b = readBoard(loc.file);
+    const count = (name2) => b.features.filter((f) => areaOf(b, f) === name2).length;
+    const named = b.areas.map((a) => ({ ...a, cards: count(a.name) }));
+    const guessed = [...new Set(b.features.map((f) => areaOf(b, f)))].filter((n) => n && !findArea(b, n));
+    const lines = [
+      ...named.map((a) => `${a.name} \u2014 ${a.cards} card${a.cards === 1 ? "" : "s"}${a.paths.length ? ` \xB7 ${a.paths.join(", ")}` : ""}`),
+      ...guessed.map((n) => `${n} \u2014 ${count(n)} card${count(n) === 1 ? "" : "s"} (from folder names; name it with board area add)`)
+    ];
+    return emit(ctx, opts, { areas: named, fromFolders: guessed }, lines.length ? lines : ["No areas yet."]);
+  }
+  const name = need(pos, 1, `area name (e.g. board area ${sub} "Invoices")`).trim();
+  if (!name) throw new UserError("an area needs a name");
+  if (sub === "add" || sub === "update") {
+    const add2 = projectFiles(loc.root, ctx.cwd, list(opts, "path"));
+    const drop = projectFiles(loc.root, ctx.cwd, list(opts, "unpath"));
+    const a = mutateBoard(loc, (b) => {
+      let a2 = findArea(b, name);
+      if (!a2) b.areas.push(a2 = { name, paths: [] });
+      for (const p of add2) if (!a2.paths.includes(p)) a2.paths.push(p);
+      a2.paths = a2.paths.filter((p) => !drop.includes(p));
+      return a2;
+    });
+    return emit(ctx, opts, a, `Area ${a.name}${a.paths.length ? `: ${a.paths.join(", ")}` : ""}`);
+  }
+  if (sub === "rename") {
+    const to = need(pos, 2, `new name (board area rename "Old" "New")`).trim();
+    if (!to) throw new UserError("an area needs a name");
+    const a = mutateBoard(loc, (b) => {
+      const a2 = findArea(b, name);
+      if (!a2) throw new UserError(`no area ${name}`);
+      if (findArea(b, to) && findArea(b, to) !== a2) throw new UserError(`there's already an area ${to} \u2014 merge by moving its folders`);
+      for (const f of b.features) if (f.area === a2.name) f.area = to;
+      a2.name = to;
+      return a2;
+    });
+    return emit(ctx, opts, a, `Area renamed to ${a.name}`);
+  }
+  if (sub === "rm" || sub === "delete") {
+    const a = mutateBoard(loc, (b) => {
+      const a2 = findArea(b, name);
+      if (!a2) throw new UserError(`no area ${name}`);
+      for (const f of b.features) if (f.area === a2.name) f.area = "";
+      b.areas = b.areas.filter((x) => x !== a2);
+      return a2;
+    });
+    return emit(ctx, opts, a, `Area ${a.name} removed \u2014 its cards go back to their folders`);
+  }
+  throw new UserError(`unknown: board area ${sub} \u2014 use list, add, rename or rm`);
+}
 var import_node_child_process, import_node_fs12, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
@@ -1902,6 +2038,7 @@ var init_commands = __esm({
     import_node_path11 = __toESM(require("node:path"), 1);
     init_account();
     init_analytics();
+    init_areas();
     init_context();
     init_features();
     init_fsutil();
@@ -1940,7 +2077,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.6.0");
+    ctx.out("0.7.0");
     return 0;
   }
   const command = COMMANDS[name];
@@ -1992,13 +2129,13 @@ var init_cli = __esm({
       list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: listCmd },
       show: { usage: "show LOOP-3", options: {}, run: show },
       add: {
-        usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]...`,
-        options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many },
+        usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]... [--area "Name"]`,
+        options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many, area: s },
         run: add
       },
       update: {
-        usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]...",
-        options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many },
+        usage: 'update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]... [--area "Name"|auto]',
+        options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many, area: s },
         run: update
       },
       step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: step },
@@ -2020,6 +2157,11 @@ var init_cli = __esm({
         run: note2
       },
       delete: { usage: "delete LOOP-3", options: {}, run: remove },
+      area: {
+        usage: `area list \xB7 area add "Invoices" --path app/invoices... \xB7 area rename "Old" "New" \xB7 area rm "Name" \xB7 area update "Name" --unpath dir`,
+        options: { path: many, unpath: many },
+        run: area2
+      },
       touch: { usage: "touch <file>... [--card LOOP-3]", options: { card: s }, run: touch },
       context: { usage: "context", options: {}, run: context },
       ui: { usage: "ui [--port 4747] [--no-open]", options: { port: s, "no-open": flag }, run: ui },

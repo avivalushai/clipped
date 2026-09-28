@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { SCHEMA_VERSION } from "../src/schema.js";
 import { deriveKey, prettyName } from "../src/commands.js";
 import { sandbox, withBoard } from "./helpers.js";
 
@@ -11,13 +12,14 @@ describe("board init", () => {
     expect(r.code).toBe(0);
     expect(r.out).toContain("Created board Looper (LOOP)");
     expect(sb.read()).toEqual({
-      schemaVersion: 3,
+      schemaVersion: SCHEMA_VERSION,
       project: { name: "Looper", key: "LOOP" },
       settings: { granularity: "normal" },
       nextNum: 1,
       nextNoteNum: 1,
       features: [],
       notes: [],
+      areas: [],
     });
     expect(fs.readFileSync(path.join(sb.root, ".board/.gitignore"), "utf8")).toContain("*.lock");
     expect(sb.registry()).toEqual([{ path: sb.root, name: "Looper", key: "LOOP", addedAt: "2026-09-20T10:00:00Z" }]);

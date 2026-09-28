@@ -25,6 +25,8 @@ board review LE-3 [--check "What to check"] [--link url|commit]...   # review = 
 board done LE-3
 board merge LE-15 --into LE-3
 board rename "Clipped"                         # the project's name; the key stays
+board area list · area add "Invoices" --path app/invoices... · area rename "Old" "New" · area rm "Name"
+board update LE-3 --area "Invoices"|auto       # put one card in an area by hand; auto = back to its files
 
 board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided
@@ -99,6 +101,23 @@ as usual.
 Files attach themselves as you edit, but only to a card they plausibly belong
 to. When you know which card the work is for, say so: `board touch <file>
 --card LE-3`, or `board update LE-3 --file <file>`.
+
+## Areas
+
+Every card shows the **area** of the product it's in — a page, a surface, a
+package — worked out from its files. Until an area is named, the card's top
+folder stands in (`ui/` → "UI"), shown dashed on the board. Name areas so the
+board reads like the product, not the repo:
+
+- When a folder holds work the user would call by one name, name it once:
+  `board area add "Invoices" --path app/invoices`. Use their words ("Checkout"),
+  not the folder's. Several paths can share an area; the most specific path wins.
+- `board area list` shows what's named and what's still only a folder guess.
+  Name an area when three or more cards sit under a guess.
+- A card whose files mislead (a settings change for the invoice PDF) →
+  `board update LE-3 --area "Invoice PDF"`.
+- Don't create areas for one-off folders, and don't file cards by hand when
+  their files already say where they belong. The user only corrects.
 
 ## What is a feature?
 

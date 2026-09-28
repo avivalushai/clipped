@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 66,
+  "nextNum": 74,
   "features": [
     {
       "key": "LE-1",
@@ -331,10 +331,12 @@
         "cli/test/server.test.ts",
         "cli/src/commands.ts",
         "cli/src/cli.ts",
-        "cli/test/sessions.test.ts"
+        "cli/test/sessions.test.ts",
+        "cli/src/areas.ts",
+        "cli/test/structure.test.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-28T14:57:43Z",
+      "updatedAt": "2026-09-28T15:25:51Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2496,9 +2498,11 @@
         "ui/index.html",
         "cli/test/sessions.test.ts"
       ],
-      "links": [],
+      "links": [
+        "53633d7"
+      ],
       "createdAt": "2026-09-28T14:59:27Z",
-      "updatedAt": "2026-09-28T14:59:44Z",
+      "updatedAt": "2026-09-28T15:00:45Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2520,11 +2524,324 @@
           "at": "2026-09-28T14:59:44Z",
           "by": "claude",
           "text": "Note: Open localhost:4747 → under each project title: N sessions · X h active · Y h open · last …; hover each for what it means"
+        },
+        {
+          "at": "2026-09-28T15:00:45Z",
+          "by": "claude",
+          "text": "Proof: 53633d7"
+        }
+      ]
+    },
+    {
+      "key": "LE-66",
+      "title": "A builder cut of the real-product video",
+      "type": "feature",
+      "status": "review",
+      "note": "Watch clipped-builder.mp4 and pick the ending line",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Builder voiceover and on-screen lines",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": true
+        }
+      ],
+      "files": [
+        "video/real/voiceover-builder.txt"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T15:06:12Z",
+      "updatedAt": "2026-09-28T15:11:03Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:06:12Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T15:06:17Z",
+          "by": "claude",
+          "text": "Step done: Builder voiceover and on-screen lines"
+        },
+        {
+          "at": "2026-09-28T15:11:03Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-28T15:11:03Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-builder.mp4 and pick the ending line"
+        }
+      ]
+    },
+    {
+      "key": "LE-67",
+      "title": "Your third sentence asks a question. How should the video answer it?",
+      "type": "question",
+      "status": "done",
+      "note": "What Clipped does today (Recommended) — Honest answer with the real UI: small work becomes steps inside a card, related work is matched by shared files and merged, notes link to the cards they led to. Nothing shown that doesn't exist.. Other options: Concept of a new feature · End on the question",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T15:18:52Z",
+      "updatedAt": "2026-09-28T15:18:52Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T15:18:52Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T15:18:52Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-68",
+      "title": "A video on keeping nested and related features organized",
+      "type": "feature",
+      "status": "review",
+      "note": "Watch clipped-organized.mp4 and say what to change",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Problem: flat list, nesting, cross-links, the question",
+          "done": true
+        },
+        {
+          "text": "Answer with the real UI: steps, merge, linked plan",
+          "done": true
+        },
+        {
+          "text": "Voice and music",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": true
+        }
+      ],
+      "files": [
+        "video/real/clipped-organized.html",
+        "video/real/events-organized.json"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T15:26:32Z",
+      "updatedAt": "2026-09-28T15:33:01Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:26:32Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T15:26:41Z",
+          "by": "claude",
+          "text": "Step done: Problem: flat list, nesting, cross-links, the question"
+        },
+        {
+          "at": "2026-09-28T15:26:41Z",
+          "by": "claude",
+          "text": "Step done: Answer with the real UI: steps, merge, linked plan"
+        },
+        {
+          "at": "2026-09-28T15:26:41Z",
+          "by": "claude",
+          "text": "Step done: Voice and music"
+        },
+        {
+          "at": "2026-09-28T15:33:01Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-28T15:33:01Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-organized.mp4 and say what to change"
+        }
+      ]
+    },
+    {
+      "key": "LE-69",
+      "title": "Each card shows the area of the product its files are in",
+      "type": "feature",
+      "status": "review",
+      "note": "Open localhost:4748 (Ledgerly demo): Area column on every grouping (dashed = guessed from folders); Group by Area; open a card and change its Area",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "cli/src/areas.ts",
+        "cli/src/schema.ts",
+        "cli/src/migrations.ts",
+        "cli/src/commands.ts",
+        "cli/src/cli.ts",
+        "server/src/api.ts",
+        "ui/index.html",
+        "cli/test/structure.test.ts"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T15:32:37Z",
+      "updatedAt": "2026-09-28T15:50:06Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:32:37Z",
+          "by": "claude",
+          "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T15:37:10Z",
+          "by": "claude",
+          "text": "Note: Open localhost:4748 (Ledgerly demo). Group by Status: flat rows, children tagged 'Part of …', parents say 'N parts', Area column. Group by Area: parents fold with their cards under them."
+        },
+        {
+          "at": "2026-09-28T15:50:06Z",
+          "by": "claude",
+          "text": "Renamed from “Cards nest under a parent and group by the area their files are in”"
+        },
+        {
+          "at": "2026-09-28T15:50:06Z",
+          "by": "claude",
+          "text": "Note: Open localhost:4748 (Ledgerly demo): Area column on every grouping (dashed = guessed from folders); Group by Area; open a card and change its Area"
+        }
+      ]
+    },
+    {
+      "key": "LE-70",
+      "title": "Features nested under a parent, and grouped by page or area",
+      "type": "feature",
+      "status": "idea",
+      "note": "Decide: a parent field on cards, or grouping by shared files/pages",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T15:33:09Z",
+      "updatedAt": "2026-09-28T15:33:09Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:33:09Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-71",
+      "title": "Cards can sit under a bigger card (parent), shown only when grouped by area",
+      "type": "feature",
+      "status": "idea",
+      "note": "Held back to keep it simple: people confused 'part of' with 'area'. Built once and removed (line-under-title and column variants both tried).",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T15:50:06Z",
+      "updatedAt": "2026-09-28T15:50:06Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:50:06Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-72",
+      "title": "What should be different in the new version of the \"organized\" video?",
+      "type": "question",
+      "status": "done",
+      "note": "Different story — New angle and visuals, e.g. a builder's real week of features, with a fresh set of real UI captures.. Other options: Builder cut (Recommended) · Short social cut · Vertical 9:16",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T15:50:38Z",
+      "updatedAt": "2026-09-28T15:50:38Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T15:50:38Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T15:50:38Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-73",
+      "title": "A week-in-the-life video: one feature across five days",
+      "type": "feature",
+      "status": "active",
+      "note": "4K render running, then send",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Week strip: one page, four chats",
+          "done": true
+        },
+        {
+          "text": "Capture the week from the committed build",
+          "done": true
+        },
+        {
+          "text": "Voice and music",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": false
+        }
+      ],
+      "files": [
+        "video/real/clipped-week.html",
+        "video/real/events-week.json"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T15:57:30Z",
+      "updatedAt": "2026-09-28T15:57:38Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T15:57:30Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T15:57:37Z",
+          "by": "claude",
+          "text": "Step done: Week strip: one page, four chats"
+        },
+        {
+          "at": "2026-09-28T15:57:37Z",
+          "by": "claude",
+          "text": "Step done: Capture the week from the committed build"
+        },
+        {
+          "at": "2026-09-28T15:57:38Z",
+          "by": "claude",
+          "text": "Step done: Voice and music"
         }
       ]
     }
   ],
-  "nextNoteNum": 7,
+  "nextNoteNum": 8,
   "notes": [
     {
       "id": "LE-N1",
@@ -2626,6 +2943,22 @@
       "cards": [],
       "createdAt": "2026-09-28T14:13:27Z",
       "updatedAt": "2026-09-28T14:13:27Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N7",
+      "kind": "brainstorm",
+      "title": "Organizing features that nest, share a page, or share a component",
+      "body": "Separate the kinds of relation instead of forcing one tree. (1) Part of: a card has at most one parent, two levels deep (parent → cards → steps); a step that grows gets promoted to a card. (2) Area: where it lives (a page, surface, or package), several cards per area, inferred by Claude from the files it touches, renameable. (3) Links: uses / blocks / related, many-to-many; a shared component is its own card that others use. Views: group by area or parent, parent rows roll up children's progress, a focus view per parent or area. Claude files new cards under the active parent and sets area from files; the user only corrects.\n\nWho does what. Claude: create areas from files and name them; file each new card under the active parent and into an area; promote a step that grows into a child card; link cards that touch the same component; keep parent progress and 'can't be Done with open children'; flag drift ('this area has 14 cards, split it?'). Automatic, no Claude needed: rollups, grouping, 'used by N'. The user: rename or merge areas once; drag a card to another parent or area when Claude guessed wrong; decide what counts as a big parent (the product's shape); answer the occasional 'split this?' question. Never: create areas, tag cards, or file things by hand.",
+      "considered": "One strict tree (Jira epics) forces a choice between 'lives on Settings' and 'part of Billing'. Tags alone go stale and don't roll up. A free graph is expressive but unreadable in a list. Deep nesting turns into filing work.",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-67",
+        "LE-69"
+      ],
+      "createdAt": "2026-09-28T15:07:28Z",
+      "updatedAt": "2026-09-28T15:32:47Z",
       "updatedBy": "claude"
     }
   ]

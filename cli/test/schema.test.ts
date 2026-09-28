@@ -12,6 +12,7 @@ const feature = (over: Record<string, unknown> = {}) => ({
   steps: [{ text: "IndexedDB schema", done: true }],
   files: ["src/store/library.ts"],
   links: [],
+  area: "",
   createdAt: "2026-09-18T10:00:00Z",
   updatedAt: "2026-09-20T14:12:00Z",
   updatedBy: "claude",

@@ -17,6 +17,12 @@ export const MIGRATIONS: Record<number, Migration> = {
     features: ((board.features as Record<string, unknown>[]) ?? []).map((f) => ({ ...f, links: f.links ?? [] })),
     notes: ((board.notes as Record<string, unknown>[]) ?? []).map((n) => ({ ...n, considered: n.considered ?? "" })),
   }),
+  // v3 → v4: the board names the areas of the product; a card can be put in one by hand.
+  3: (board) => ({
+    ...board,
+    features: ((board.features as Record<string, unknown>[]) ?? []).map((f) => ({ ...f, area: f.area ?? "" })),
+    areas: board.areas ?? [],
+  }),
 };
 
 export class MigrationError extends Error {}

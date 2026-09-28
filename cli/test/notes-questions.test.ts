@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { SCHEMA_VERSION } from "../src/schema.js";
 import { migrate } from "../src/migrations.js";
 import { validateBoard } from "../src/schema.js";
 import { withBoard } from "./helpers.js";
@@ -144,7 +145,7 @@ describe("schemaVersion 2", () => {
       ],
     };
     const { board, from, to, migrated } = migrate(v1 as any);
-    expect({ from, to, migrated }).toEqual({ from: 1, to: 3, migrated: true });
+    expect({ from, to, migrated }).toEqual({ from: 1, to: SCHEMA_VERSION, migrated: true });
     expect(board).toMatchObject({ nextNoteNum: 1, notes: [] });
     expect(validateBoard(board)).toEqual([]);
   });
@@ -158,7 +159,7 @@ describe("schemaVersion 2", () => {
     fs.writeFileSync(file, JSON.stringify(v1));
 
     expect(sb.board("list").code).toBe(0);
-    expect(sb.read().schemaVersion).toBe(3);
+    expect(sb.read().schemaVersion).toBe(SCHEMA_VERSION);
     expect(JSON.parse(fs.readFileSync(file + ".v1.bak", "utf8")).schemaVersion).toBe(1);
   });
 

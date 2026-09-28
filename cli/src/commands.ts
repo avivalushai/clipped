@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { clearAuth, readAuth, readSettings, siteUrl, writeAuth, writeSettings } from "./account.js";
 import { track } from "./analytics.js";
+import { areaOf, findArea } from "./areas.js";
 import { type Ctx, UserError, actor, nowIso } from "./context.js";
 import {
   activeFeature,
@@ -165,7 +166,8 @@ export function listCmd(ctx: Ctx, { opts }: Args) {
 export function show(ctx: Ctx, { pos, opts }: Args) {
   const board = readBoard(requireBoard(ctx).file);
   const f = findFeature(board, need(pos, 0, "card key (e.g. LOOP-3)"));
-  emit(ctx, opts, f, formatDetail(ctx, f));
+  const area = areaOf(board, f);
+  emit(ctx, opts, { ...f, inArea: area }, [formatDetail(ctx, f), ...(area ? [`Area: ${area}${f.area ? "" : " (from its files)"}`] : [])]);
 }
 
 /** After a fortnight, a card I opened and nobody checked has stopped being news. */
@@ -292,6 +294,21 @@ function addLinks(f: Feature, xs: string[]): string[] {
   return [`Proof: ${added.join(", ")}`];
 }
 
+/** Put a card in a named area, creating the area if it's new. "auto" goes back to its files. */
+function setArea(b: Board, f: Feature, arg: string): string {
+  const name = arg.trim();
+  if (!name || /^auto$/i.test(name)) {
+    if (!f.area) return "";
+    f.area = "";
+    return "Area: from its files";
+  }
+  let a = findArea(b, name);
+  if (!a) b.areas.push((a = { name, paths: [] }));
+  if (f.area === a.name) return "";
+  f.area = a.name;
+  return `Area: ${a.name}`;
+}
+
 export function add(ctx: Ctx, { pos, opts }: Args) {
   const title = need(pos, 0, `title (e.g. board add "Export loop as WAV")`).trim();
   if (!title) throw new UserError("title can't be empty");
@@ -313,12 +330,14 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
       steps: list(opts, "step").map((text) => ({ text, done: false })),
       files: projectFiles(loc.root, ctx.cwd, list(opts, "file")),
       links: linksOf(list(opts, "link")),
+      area: "",
       createdAt: at,
       updatedAt: at,
       updatedBy: by,
       log: [{ at, by, text: status === "idea" ? "Created" : `Created — ${status}` }],
     };
     if (status === "parked" && !note.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
+    if (str(opts, "area")) setArea(b, f, str(opts, "area")!);
     b.nextNum++;
     b.features.push(f);
     return f;
@@ -335,9 +354,9 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
   const note = theLine(opts);
   const doneWhen = list(opts, "done-when");
   if (title === "") throw new UserError("title can't be empty");
-  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length);
+  const edits = ["file", "unfile", "link", "unlink"].some((k) => list(opts, k).length) || str(opts, "area") !== undefined;
   if (!status && !type && title === undefined && note === undefined && !doneWhen.length && !edits)
-    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file or --link)");
+    throw new UserError("nothing to update (use --title, --note, --status, --type, --done-when, --file, --link or --area)");
 
   const f = mutateBoard(requireBoard(ctx), (b) => {
     const f = findFeature(b, keyArg);
@@ -367,6 +386,7 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
       logs.push(`Removed files: ${dropped.join(", ")}`);
     }
     logs.push(...addLinks(f, list(opts, "link")));
+    if (str(opts, "area") !== undefined) logs.push(setArea(b, f, str(opts, "area")!));
     const unlink = linksOf(list(opts, "unlink")).filter((x) => f.links.includes(x));
     if (unlink.length) {
       f.links = f.links.filter((x) => !unlink.includes(x));
@@ -381,8 +401,9 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
       }
       if (f.status === "parked" && !f.note.trim()) throw new UserError("a parked card needs a note");
     }
-    for (const l of logs) stamp(ctx, f, by, l);
-    if (!logs.length) stamp(ctx, f, by);
+    const said = logs.filter(Boolean);
+    for (const l of said) stamp(ctx, f, by, l);
+    if (!said.length) stamp(ctx, f, by);
     return f;
   });
   emit(ctx, opts, f, `Updated ${formatLine(f)}`);
@@ -474,6 +495,7 @@ export function merge(ctx: Ctx, { pos, opts }: Args) {
     into.log = [...into.log, ...from.log].sort((x, y) => x.at.localeCompare(y.at));
     if (Date.parse(from.createdAt) < Date.parse(into.createdAt)) into.createdAt = from.createdAt;
     stamp(ctx, into, by, `Merged in ${from.key} “${from.title}”`);
+    if (!into.area && from.area) into.area = from.area;
     b.features = b.features.filter((f) => f !== from);
     return { from, into };
   });
@@ -807,4 +829,64 @@ export function telemetry(ctx: Ctx, { pos, opts }: Args) {
       : "Telemetry off — nothing is sent.",
     auth ? `Signed in as ${auth.email ?? auth.userId}` : "Not signed in (events would be anonymous).",
   ]);
+}
+
+// --- areas -----------------------------------------------------------------
+
+/** board area list | add "Name" --path dir... | rename "Old" "New" | rm "Name" [--unpath dir]... */
+export function area(ctx: Ctx, { pos, opts }: Args) {
+  const sub = (pos[0] ?? "list").toLowerCase();
+  const loc = requireBoard(ctx);
+
+  if (sub === "list" || sub === "ls") {
+    const b = readBoard(loc.file);
+    const count = (name: string) => b.features.filter((f) => areaOf(b, f) === name).length;
+    const named = b.areas.map((a) => ({ ...a, cards: count(a.name) }));
+    const guessed = [...new Set(b.features.map((f) => areaOf(b, f)))].filter((n) => n && !findArea(b, n));
+    const lines = [
+      ...named.map((a) => `${a.name} — ${a.cards} card${a.cards === 1 ? "" : "s"}${a.paths.length ? ` · ${a.paths.join(", ")}` : ""}`),
+      ...guessed.map((n) => `${n} — ${count(n)} card${count(n) === 1 ? "" : "s"} (from folder names; name it with board area add)`),
+    ];
+    return emit(ctx, opts, { areas: named, fromFolders: guessed }, lines.length ? lines : ["No areas yet."]);
+  }
+
+  const name = need(pos, 1, `area name (e.g. board area ${sub} "Invoices")`).trim();
+  if (!name) throw new UserError("an area needs a name");
+
+  if (sub === "add" || sub === "update") {
+    const add = projectFiles(loc.root, ctx.cwd, list(opts, "path"));
+    const drop = projectFiles(loc.root, ctx.cwd, list(opts, "unpath"));
+    const a = mutateBoard(loc, (b) => {
+      let a = findArea(b, name);
+      if (!a) b.areas.push((a = { name, paths: [] }));
+      for (const p of add) if (!a.paths.includes(p)) a.paths.push(p);
+      a.paths = a.paths.filter((p) => !drop.includes(p));
+      return a;
+    });
+    return emit(ctx, opts, a, `Area ${a.name}${a.paths.length ? `: ${a.paths.join(", ")}` : ""}`);
+  }
+  if (sub === "rename") {
+    const to = need(pos, 2, `new name (board area rename "Old" "New")`).trim();
+    if (!to) throw new UserError("an area needs a name");
+    const a = mutateBoard(loc, (b) => {
+      const a = findArea(b, name);
+      if (!a) throw new UserError(`no area ${name}`);
+      if (findArea(b, to) && findArea(b, to) !== a) throw new UserError(`there's already an area ${to} — merge by moving its folders`);
+      for (const f of b.features) if (f.area === a.name) f.area = to;
+      a.name = to;
+      return a;
+    });
+    return emit(ctx, opts, a, `Area renamed to ${a.name}`);
+  }
+  if (sub === "rm" || sub === "delete") {
+    const a = mutateBoard(loc, (b) => {
+      const a = findArea(b, name);
+      if (!a) throw new UserError(`no area ${name}`);
+      for (const f of b.features) if (f.area === a.name) f.area = "";
+      b.areas = b.areas.filter((x) => x !== a);
+      return a;
+    });
+    return emit(ctx, opts, a, `Area ${a.name} removed — its cards go back to their folders`);
+  }
+  throw new UserError(`unknown: board area ${sub} — use list, add, rename or rm`);
 }

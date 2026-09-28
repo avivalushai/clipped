@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { SCHEMA_VERSION } from "../src/schema.js";
 import { handleApi } from "../../server/src/api.js";
 import { projectId, repoUrl } from "../../server/src/projects.js";
 import { migrate } from "../src/migrations.js";
@@ -62,7 +63,7 @@ describe("schema v3", () => {
         createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-20T10:00:00Z", updatedBy: "claude" }],
     };
     const { board, from, to } = migrate(v2);
-    expect({ from, to }).toEqual({ from: 2, to: 3 });
+    expect({ from, to }).toEqual({ from: 2, to: SCHEMA_VERSION });
     expect((board.features as any[])[0].links).toEqual([]);
     expect((board.notes as any[])[0].considered).toBe("");
     expect(validateBoard(board)).toEqual([]);
@@ -73,7 +74,7 @@ describe("schema v3", () => {
     const b = sb.read();
     sb.write({ ...b, schemaVersion: 2, notes: [] });
     sb.json("add", "Save loops");
-    expect(sb.read()).toMatchObject({ schemaVersion: 3, features: [{ links: [] }] });
+    expect(sb.read()).toMatchObject({ schemaVersion: SCHEMA_VERSION, features: [{ links: [] }] });
   });
 });
 

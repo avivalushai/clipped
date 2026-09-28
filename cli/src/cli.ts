@@ -26,13 +26,13 @@ const COMMANDS: Record<string, Command> = {
   list: { usage: "list [--status parked[,review]] [--type bug|question] [--all]", options: { status: s, type: s, all: flag }, run: cmd.listCmd },
   show: { usage: "show LOOP-3", options: {}, run: cmd.show },
   add: {
-    usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]...`,
-    options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many },
+    usage: `add "Title" [--status active] [--type bug] [--next "what comes next"] [--step "..."]... [--done-when "..."]... [--file path]... [--link url]... [--area "Name"]`,
+    options: { status: s, type: s, next: s, stopped: s, check: s, note: s, step: many, "done-when": many, file: many, link: many, area: s },
     run: cmd.add,
   },
   update: {
-    usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]...",
-    options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many },
+    usage: "update LOOP-3 [--title ...] [--next ...] [--status ...] [--type ...] [--done-when ...]... [--file path]... [--unfile path]... [--link url|commit]... [--unlink ...]... [--area \"Name\"|auto]",
+    options: { title: s, note: s, next: s, stopped: s, check: s, status: s, type: s, "done-when": many, file: many, unfile: many, link: many, unlink: many, area: s },
     run: cmd.update,
   },
   step: { usage: `step LOOP-3 "Render buffer"|2 [--done|--undone|--remove]`, options: { done: flag, undone: flag, remove: flag }, run: cmd.step },
@@ -53,6 +53,11 @@ const COMMANDS: Record<string, Command> = {
     run: cmd.note,
   },
   delete: { usage: "delete LOOP-3", options: {}, run: cmd.remove },
+  area: {
+    usage: `area list · area add "Invoices" --path app/invoices... · area rename "Old" "New" · area rm "Name" · area update "Name" --unpath dir`,
+    options: { path: many, unpath: many },
+    run: cmd.area,
+  },
   touch: { usage: "touch <file>... [--card LOOP-3]", options: { card: s }, run: cmd.touch },
   context: { usage: "context", options: {}, run: cmd.context },
   ui: { usage: "ui [--port 4747] [--no-open]", options: { port: s, "no-open": flag }, run: cmd.ui },
@@ -81,7 +86,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.6.0");
+    ctx.out("0.7.0");
     return 0;
   }
   const command = COMMANDS[name];

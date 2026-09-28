@@ -67,12 +67,16 @@ describe("GET /api/projects", () => {
 });
 
 describe("GET /api/projects/:id/board", () => {
-  it("serves board.json as-is", async () => {
+  it("serves board.json, with each card's area worked out", async () => {
     const sb = seeded();
+    sb.board("area", "add", "Library", "--path", "src/library");
+    sb.board("update", "APP-1", "--file", "src/library/save.ts");
     const { call, id } = await serve(sb);
     const { status, body } = await call(`/api/projects/${id}/board`);
     expect(status).toBe(200);
-    expect(body).toEqual(sb.read());
+    const stored = sb.read();
+    expect({ ...body, features: body.features.map(({ inArea, ...f }: any) => f) }).toEqual(stored);
+    expect(body.features.map((f: any) => f.inArea)).toEqual(["Library", "", ""]);
   });
 
   it("404s for an unknown project or route", async () => {

@@ -6,6 +6,7 @@ import type { Ctx } from "../../cli/src/context.js";
 import type { Feature, Note, Step } from "../../cli/src/schema.js";
 import { discoverProjects, isKnownProject } from "./discover.js";
 import { sessionStats } from "./sessions.js";
+import { areaOf } from "../../cli/src/areas.js";
 import { type Project, findProject, listProjects, loadBoard, summarize } from "./projects.js";
 
 export class HttpError extends Error {
@@ -62,6 +63,8 @@ export interface FeaturePatch {
   doneWhen?: string[];
   steps?: Step[];
   links?: string[];
+  /** An area name, or "" to go back to the card's files. */
+  area?: string;
 }
 
 /** Turn a patch into board commands: field edits first, then step diffs. */
@@ -79,6 +82,7 @@ function applyPatch(ctx: Ctx, p: Project, key: string, patch: FeaturePatch): Fea
     for (const l of after) if (!before.includes(l)) argv.push("--link", l);
     for (const l of before) if (!after.includes(l)) argv.push("--unlink", l);
   }
+  if (patch.area !== undefined) argv.push("--area", str(patch.area, "area") || "auto");
   if (argv.length > 2) board<Feature>(ctx, p, argv);
 
   if (patch.steps) {
@@ -149,7 +153,9 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
   // GET /api/projects/:id/board
   if (seg.length === 3 && seg[2] === "board") {
     if (method !== "GET") throw new HttpError(405, "use GET");
-    return loadBoard(p);
+    // Each card's area is worked out here, so the UI groups the same way the CLI does.
+    const b = loadBoard(p);
+    return { ...b, features: b.features.map((f) => ({ ...f, inArea: areaOf(b, f) })) };
   }
 
   // POST /api/projects/:id/notes · PATCH|DELETE /api/projects/:id/notes/:id

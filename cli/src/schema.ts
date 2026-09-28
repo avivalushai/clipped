@@ -1,6 +1,6 @@
 // board.json schema (SPEC §3) and a dependency-free validator.
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const STATUSES = ["idea", "active", "parked", "review", "done"] as const;
 export const TYPES = ["feature", "bug", "chore", "question"] as const;
@@ -36,6 +36,8 @@ export interface Feature {
   files: string[];
   /** Where to see the work: a commit, a PR, a page. What "what to check" points at. */
   links: string[];
+  /** An area named by hand ("" = worked out from the card's files). */
+  area: string;
   createdAt: string;
   updatedAt: string;
   updatedBy: Actor;
@@ -62,6 +64,16 @@ export interface Note {
   updatedBy: Actor;
 }
 
+/**
+ * A part of the product — a page, a surface, a package — and the folders it
+ * covers. A card lands in an area through its files, so renaming an area once
+ * moves every card in it.
+ */
+export interface Area {
+  name: string;
+  paths: string[];
+}
+
 export interface Board {
   schemaVersion: number;
   project: { name: string; key: string };
@@ -70,6 +82,7 @@ export interface Board {
   nextNoteNum: number;
   features: Feature[];
   notes: Note[];
+  areas: Area[];
 }
 
 export const KEY_RE = /^[A-Z][A-Z0-9]{1,5}$/;
@@ -109,6 +122,16 @@ export function validateBoard(b: unknown): string[] {
     return errs;
   }
 
+  const areaNames = new Set<string>();
+  if (!Array.isArray(b.areas)) err("areas", "must be an array");
+  else
+    b.areas.forEach((a, i) => {
+      if (!isObj(a) || !isStr(a.name) || !a.name.trim() || !Array.isArray(a.paths) || !a.paths.every(isStr))
+        return err(`areas[${i}]`, "must be { name: string, paths: string[] }");
+      if (areaNames.has(a.name.toLowerCase())) err(`areas[${i}].name`, `duplicate area ${a.name}`);
+      areaNames.add(a.name.toLowerCase());
+    });
+
   const projectKey = isObj(b.project) && isStr(b.project.key) ? b.project.key : null;
   const seen = new Set<string>();
   b.features.forEach((f, i) => {
@@ -132,6 +155,8 @@ export function validateBoard(b: unknown): string[] {
     if (!Array.isArray(f.doneWhen) || !f.doneWhen.every(isStr)) err(`${p}.doneWhen`, "must be an array of strings");
     if (!Array.isArray(f.files) || !f.files.every(isStr)) err(`${p}.files`, "must be an array of strings");
     if (!Array.isArray(f.links) || !f.links.every(isStr)) err(`${p}.links`, "must be an array of strings");
+    if (!isStr(f.area)) err(`${p}.area`, "must be a string");
+    else if (f.area && !areaNames.has(f.area.toLowerCase())) err(`${p}.area`, `no area ${f.area} on this board`);
 
     if (!Array.isArray(f.steps)) err(`${p}.steps`, "must be an array");
     else
@@ -195,5 +220,6 @@ export function emptyBoard(name: string, key: string): Board {
     nextNoteNum: 1,
     features: [],
     notes: [],
+    areas: [],
   };
 }
