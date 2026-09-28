@@ -169,8 +169,8 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 tbody tr{cursor:pointer}
 tbody tr:hover td{background:var(--sunk)}
-tr.grp td{background:var(--ground);cursor:default;font-size:12px;font-weight:600;color:var(--muted);padding:6px 12px}
-tr.grp:hover td{background:var(--ground)}
+tr.grp td{background:var(--ground);cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);padding:6px 12px;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}
+tr.grp:hover td{background:var(--sunk);color:var(--ink)}
 .key{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
 .summ .t{font-weight:500}
 .summ .n{font-size:12.5px;color:var(--muted);margin-top:2px;max-width:48ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -300,7 +300,10 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 .grid tr.is-parked td:first-child{box-shadow:inset 3px 0 0 var(--s-parked)}
 .grid tr.is-done .cell-in.title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
 .grid tr.is-idea .prog,.grid tr.is-idea .steps{opacity:.3}
-.grp-toggle{background:none;border:0;cursor:pointer;color:var(--muted);font-size:11px;padding:0 6px 0 0;line-height:1}
+.grp-toggle{display:inline-grid;place-items:center;width:24px;height:24px;margin:0 4px 0 -4px;vertical-align:middle;background:none;border:0;border-radius:6px;cursor:pointer;color:var(--muted);padding:0}
+.grp-toggle svg{transition:transform .15s ease}
+.grp-toggle[aria-expanded="false"] svg{transform:rotate(-90deg)}
+tr.grp:hover .grp-toggle{color:var(--ink);background:var(--line)}
 .grp-peek{color:var(--muted);font-weight:400;margin-left:10px;font-size:12px}
 .cell-in{width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:5px;min-width:0;text-overflow:ellipsis}
 .cell-in:hover{border-color:var(--line)}
@@ -901,6 +904,7 @@ function renderNotesPage(isHome){
 
 /* ---------- table ---------- */
 /* A row is for opening. A cell becomes a field only after its pencil is clicked. */
+const CHEVRON=`<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const COPYICON=`<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="8.5" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
 const PENCIL=`<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M11.5 1.6 14.4 4.5 5.9 13H3v-2.9zM12.9.2a1 1 0 0 1 1.4 0l1.5 1.5a1 1 0 0 1 0 1.4l-1 1L11.9 1.2z"/></svg>`;
 function editableCell({id,k,attr,value,ph,cls,label,shown}){
@@ -954,7 +958,7 @@ function renderTable(fs,isHome){
   let rows=composerRow(cols,isHome);
   for(const g of groupsOf(sortFs(fs),isHome)){
     const shut=g.id&&(P.collapsed||[]).includes(g.id);
-    if(g.id) rows+=`<tr class="grp"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}">${shut?'▸':'▾'}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
+    if(g.id) rows+=`<tr class="grp" data-grprow="${g.id}"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}" aria-label="${shut?'Show':'Hide'} this group">${CHEVRON}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
     if(shut) continue;
     for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
   }
@@ -1168,8 +1172,10 @@ function bindPage(){
   if($('groupSel')) $('groupSel').onchange=e=>{P.group=e.target.value;savePrefs();render()};
   if($('densSel')) $('densSel').onchange=e=>{P.density=e.target.value;savePrefs();render()};
   $('hideDone').onchange=e=>{P.hideDone=e.target.checked;savePrefs();render()};
-  document.querySelectorAll('[data-grp]').forEach(b=>b.onclick=()=>{const id=b.dataset.grp;
-    P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render()});
+  /* The whole group row opens and closes it; the chevron is the keyboard's way in. */
+  document.querySelectorAll('tr[data-grprow]').forEach(tr=>tr.onclick=()=>{const id=tr.dataset.grprow;
+    P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render();
+    document.querySelector(`[data-grp="${id}"]`)?.focus({preventScroll:true})});
   document.querySelectorAll('[data-col]').forEach(c=>c.onchange=()=>{const id=c.dataset.col;P.hidden=c.checked?P.hidden.filter(x=>x!==id):[...P.hidden,id];savePrefs();render();document.querySelector('details.cols')?.setAttribute('open','')});
   $('newBtn').onclick=()=>{if(P.mode!=='table'){P.mode='table';savePrefs();render()}$('cTitle').focus()};
 

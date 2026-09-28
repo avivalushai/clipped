@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 57,
+  "nextNum": 58,
   "features": [
     {
       "key": "LE-1",
@@ -2075,7 +2075,7 @@
       "title": "A short video that explains the product",
       "type": "feature",
       "status": "active",
-      "note": "Watch the video and say what to change",
+      "note": "Listen to the voiceover; decide on a better voice",
       "doneWhen": [],
       "steps": [
         {
@@ -2096,7 +2096,7 @@
       ],
       "links": [],
       "createdAt": "2026-09-28T12:08:34Z",
-      "updatedAt": "2026-09-28T12:09:50Z",
+      "updatedAt": "2026-09-28T12:41:19Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2118,6 +2118,21 @@
           "at": "2026-09-28T12:09:50Z",
           "by": "claude",
           "text": "Note: Watch the video and say what to change"
+        },
+        {
+          "at": "2026-09-28T12:27:15Z",
+          "by": "claude",
+          "text": "Note: 4K render running; then send both files"
+        },
+        {
+          "at": "2026-09-28T12:32:34Z",
+          "by": "claude",
+          "text": "Note: Watch v2 and say what to change"
+        },
+        {
+          "at": "2026-09-28T12:41:19Z",
+          "by": "claude",
+          "text": "Note: Listen to the voiceover; decide on a better voice"
         }
       ]
     },
@@ -2140,6 +2155,29 @@
       "log": [
         {
           "at": "2026-09-28T12:11:57Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-57",
+      "title": "Group rows fold from anywhere on the row",
+      "type": "feature",
+      "status": "review",
+      "note": "In the table, click anywhere on a group row (In progress, Your turn…) to fold it; the chevron is bigger and a folded row's preview stays on one line",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T12:35:56Z",
+      "updatedAt": "2026-09-28T12:35:56Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T12:35:56Z",
           "by": "claude",
           "text": "Created — review"
         }
