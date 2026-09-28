@@ -1832,17 +1832,18 @@
       "title": "A second landing page to compare against the first",
       "type": "feature",
       "status": "review",
-      "note": "Aviv reviews landing/v4.html (title B, rules section, live dot); then decide whether it replaces index.html",
+      "note": "Aviv merges the branch and deploys landing/ — index.html is the new page",
       "doneWhen": [],
       "steps": [],
       "files": [
         "landing/v2.html",
         "landing/v3.html",
-        "landing/v4.html"
+        "landing/v4.html",
+        "landing/index.html"
       ],
       "links": [],
       "createdAt": "2026-09-28T10:08:05Z",
-      "updatedAt": "2026-09-28T11:00:52Z",
+      "updatedAt": "2026-09-28T11:09:24Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -1879,6 +1880,21 @@
           "at": "2026-09-28T11:00:52Z",
           "by": "claude",
           "text": "Note: Aviv reviews landing/v4.html (title B, rules section, live dot); then decide whether it replaces index.html"
+        },
+        {
+          "at": "2026-09-28T11:08:20Z",
+          "by": "claude",
+          "text": "Note: Aviv deploys landing/ (index.html is now the new page); v2–v4 are drafts to delete or keep"
+        },
+        {
+          "at": "2026-09-28T11:09:24Z",
+          "by": "claude",
+          "text": "Files: landing/index.html"
+        },
+        {
+          "at": "2026-09-28T11:09:24Z",
+          "by": "claude",
+          "text": "Note: Aviv merges the branch and deploys landing/ — index.html is the new page"
         }
       ]
     },

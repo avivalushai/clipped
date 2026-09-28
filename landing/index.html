@@ -3,58 +3,379 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clipped — what did you and Claude decide last week?</title>
-<meta name="description" content="A Claude Code plugin that keeps a feature board for each project: what's in progress, what you left halfway, what's done. Local files, no account.">
+<title>Clipped — never lose that idea again</title>
+<meta name="description" content="A Claude Code plugin that keeps a board for each project: what's in progress, what you left halfway, what you decided. Local files, no account.">
 <script>try { const t = localStorage.getItem("clipped.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7f4;
+  --surface: #ffffff;
+  --inset: #f1f1ed;
+  --ink: #1d1c18;
+  --muted: #6b6a63;
+  --faint: #75736b;
+  --line: rgba(29, 28, 24, .08);
+  --line-2: rgba(29, 28, 24, .14);
+  --accent: #2f5bff;
+  --active: #0e9fc2; --parked: #d9831f; --review: #7c5cf0; --done: #1fa56b;
+  --term-bg: #16161a; --term-ink: #d6d6dc; --term-dim: #85858f;
+  --shadow: 0 1px 2px rgba(29, 28, 24, .05), 0 2px 8px -2px rgba(29, 28, 24, .06);
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* one layout system for the whole page */
+  --page: 1200px;
+  --gutter: 24px;
+  --gap: 16px;
+  --section: 88px;
+  --grid: rgb(20 35 70 / .06);
+  --vis: 248px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --surface: #17171a; --inset: #1e1e22;
+    --ink: #ecebe6; --muted: #9b9a94; --faint: #8a8984;
+    --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .13);
+    --accent: #7d96ff;
+    --active: #2cc1e4; --parked: #f3a64c; --review: #a88bff; --done: #3fd08f;
+    --term-bg: #0a0a0c; --grid: rgb(255 255 255 / .045);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --surface: #17171a; --inset: #1e1e22;
+  --ink: #ecebe6; --muted: #9b9a94; --faint: #8a8984;
+  --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .13);
+  --accent: #7d96ff;
+  --active: #2cc1e4; --parked: #f3a64c; --review: #a88bff; --done: #3fd08f;
+  --term-bg: #0a0a0c; --grid: rgb(255 255 255 / .045);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+@media (max-width: 860px) { :root { --section: 72px; --vis: 224px; } }
+@media (max-width: 600px) { :root { --gutter: 16px; --section: 64px; } }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+code { font-family: var(--mono); font-size: .92em; }
+img { display: block; max-width: 100%; height: auto; }
+.wrap { max-width: calc(var(--page) + 2 * var(--gutter)); margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
+body::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1100px; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* theme-aware images */
+.img-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .img-light { display: none; } :root:not([data-theme="light"]) .img-dark { display: block; } }
+:root[data-theme="dark"] .img-light { display: none; }
+:root[data-theme="dark"] .img-dark { display: block; }
+
+/* nav */
+.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid transparent; transition: border-color .2s ease; }
+.top.scrolled { border-bottom-color: var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; text-decoration: none; letter-spacing: -.01em; }
+.brand svg { width: 20px; height: 20px; }
+.top nav { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+.top nav a { color: var(--muted); text-decoration: none; transition: color .15s ease; }
+.top nav a:hover { color: var(--ink); }
+.top nav .nav-cta { color: var(--bg); background: var(--ink); padding: 7px 14px; border-radius: 999px; font-weight: 500; }
+.top nav .nav-cta:hover { color: var(--bg); opacity: .88; }
+.theme-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); cursor: pointer; padding: 0; }
+.theme-btn:hover { color: var(--ink); }
+.theme-btn svg { width: 15px; height: 15px; }
+.theme-btn .sun { display: none; }
+:root[data-theme="dark"] .theme-btn .sun { display: block; } :root[data-theme="dark"] .theme-btn .moon { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .theme-btn .sun { display: block; } :root:not([data-theme="light"]) .theme-btn .moon { display: none; } }
+@media (max-width: 760px) { .top nav .hide-m { display: none; } .top nav { gap: 14px; } }
+
+/* hero */
+.hero { padding-top: 80px; padding-bottom: 72px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 56px; align-items: center; }
+@media (max-width: 960px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 48px; padding-top: 48px; padding-bottom: 56px; } }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 12px 5px 6px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); text-decoration: none; margin-bottom: 28px; max-width: 100%; }
+.pill b { font-weight: 500; font-family: var(--mono); font-size: 11.5px; color: var(--ink); background: var(--inset); padding: 2px 8px; border-radius: 999px; flex: none; }
+.pill b { display: inline-flex; align-items: center; gap: 7px; }
+.live { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--done); flex: none; }
+.live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--done); animation: live 2s cubic-bezier(.2, .8, .2, 1) infinite; }
+@keyframes live { from { transform: scale(1); opacity: .6; } to { transform: scale(2.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .live::after { animation: none; opacity: 0; } .live { box-shadow: 0 0 0 3px color-mix(in srgb, var(--done) 20%, transparent); } }
+.pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill:hover { border-color: var(--faint); }
+h1 { font-weight: 500; font-size: clamp(40px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -.045em; margin: 0 0 24px; text-wrap: balance; }
+h1.long { font-size: clamp(36px, 4.1vw, 54px); }
+h1:has(.rot) { text-wrap: wrap; }
+h1 .dim { color: var(--faint); }
+@media (max-width: 480px) {
+  h1 { font-size: 31px; } h1 .rot { font-size: .64em; }
+  .install-top .tabs button { padding: 5px 8px; font-size: 12.5px; white-space: nowrap; }
+  .install-top .btn-ghost { padding: 0 12px; font-size: 12.5px; height: 34px; }
+  .install-top .btn-ghost .long { display: none; } .install-top .btn-ghost .short { display: inline; }
+}
+.rot { --c: var(--accent); display: inline-grid; grid-template-columns: minmax(0, 1fr); justify-items: center; align-items: center; text-align: center; vertical-align: baseline; font-family: var(--mono); font-weight: 500; font-size: .8em; letter-spacing: -.04em; height: 1.36em; border-radius: .22em; background: color-mix(in srgb, var(--c) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 22%, transparent); overflow: hidden; overflow-x: visible; overflow-y: clip; transition: width .5s cubic-bezier(.2, .8, .2, 1), background-color .5s ease, box-shadow .5s ease; }
+.rot span { grid-area: 1 / 1; white-space: nowrap; padding: 0 .28em; line-height: 1.36em; transform: translateY(100%); opacity: 0; transition: transform .55s cubic-bezier(.2, .8, .2, 1), opacity .4s ease; }
+.rot span.on { transform: translateY(0); opacity: 1; }
+.rot span.out { transform: translateY(-100%); opacity: 0; }
+.lede { font-size: clamp(17px, 1.5vw, 19px); color: var(--muted); max-width: 52ch; margin: 0 0 36px; text-wrap: pretty; }
+
+/* install box (Clerk-style) */
+.install { max-width: 640px; margin: 0 auto; }
+.hero .install { margin: 0; max-width: none; }
+.hero .points { justify-content: flex-start; }
+.install-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.install-top .tabs { margin-bottom: 0; }
+.btn-ghost { flex: none; display: inline-flex; align-items: center; gap: 7px; font-weight: 500; font-size: 13.5px; height: 36px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color .15s ease, background-color .15s ease; }
+.btn-ghost:hover { border-color: var(--faint); background: var(--surface); }
+.btn-ghost .k { font-family: var(--mono); opacity: .6; }
+.btn-ghost .short { display: none; }
+
+/* the original hero picture: an example board */
+.peek { margin: 0; min-width: 0; }
+.peek .window { border-radius: 14px; border-bottom: 1px solid var(--line-2); box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .22), var(--shadow); }
+.peek-body { padding: 16px; display: grid; gap: 8px; background: var(--inset); }
+.peek-group { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.peek-group:first-child { margin-top: 0; }
+.peek-group span:last-child { color: var(--faint); }
+.peek-group .dot { background: var(--c); }
+.peek-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; box-shadow: var(--shadow); }
+.peek-top { display: flex; align-items: baseline; gap: 10px; }
+.peek-top code { font-size: 12px; color: var(--faint); flex: none; }
+.peek-top b { font-weight: 500; font-size: 14.5px; flex: 1; min-width: 0; }
+.peek-n { font-family: var(--mono); font-size: 12px; color: var(--faint); flex: none; }
+.peek-card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.peek-card p span { font-family: var(--mono); font-size: 12px; color: var(--c); margin-right: 6px; }
+.peek-card > b { font-weight: 500; font-size: 14px; line-height: 1.35; }
+.peek-bar { height: 4px; border-radius: 4px; background: var(--line-2); overflow: hidden; }
+.peek-bar::before { content: ""; display: block; height: 100%; width: var(--p); background: var(--c); border-radius: inherit; }
+.peek-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.peek-kind { font-family: var(--mono); font-size: 11.5px !important; text-transform: uppercase; letter-spacing: .06em; color: var(--c) !important; }
+.peek .caption { text-align: left; }
+.tabs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--inset); border: 1px solid var(--line); margin-bottom: 12px; }
+.tabs button { font: inherit; font-size: 13px; color: var(--muted); background: none; border: 0; padding: 5px 13px; border-radius: 999px; cursor: pointer; transition: color .15s ease, background-color .15s ease; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 0 0 1px var(--line); }
+.cmd { display: flex; align-items: center; gap: 12px; text-align: left; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px 6px 6px 18px; box-shadow: var(--shadow); }
+.cmd + .cmd { margin-top: 8px; }
+.cmd .p { font-family: var(--mono); font-size: 14px; color: var(--faint); user-select: none; }
+.cmd code { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; padding: 9px 0; }
+.cmd code::-webkit-scrollbar { display: none; }
+.cmd code .hl { color: var(--accent); }
+.copy { flex: none; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; color: var(--muted); background: var(--inset); border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; cursor: pointer; transition: color .15s ease, background-color .15s ease; }
+.copy:hover { color: var(--ink); }
+.copy svg { width: 14px; height: 14px; }
+.copy.done { color: var(--done); }
+.panel[hidden] { display: none; }
+.points { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; list-style: none; padding: 0; margin: 18px 0 0; font-size: 13.5px; color: var(--muted); }
+.points li { display: inline-flex; align-items: center; gap: 7px; }
+.points svg { width: 14px; height: 14px; color: var(--done); flex: none; }
+
+/* product frame (Cursor-style) */
+.stage { position: relative; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background:
+  radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--parked) 22%, transparent), transparent 60%),
+  radial-gradient(110% 90% at 90% 10%, color-mix(in srgb, var(--review) 20%, transparent), transparent 60%),
+  radial-gradient(100% 80% at 50% 110%, color-mix(in srgb, var(--active) 18%, transparent), transparent 60%),
+  var(--inset); }
+.stage.shot-stage { padding: clamp(16px, 5vw, 64px) clamp(16px, 5vw, 64px) 0; }
+.window { border-radius: 12px 12px 0 0; overflow: hidden; background: var(--surface); border: 1px solid var(--line-2); border-bottom: 0; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .25); }
+.chrome { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+.chrome i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.chrome span { flex: 1; text-align: center; font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-right: 42px; }
+.caption { font-size: 13px; color: var(--faint); text-align: center; margin: 14px 0 0; }
+
+/* sections: every heading sits on the same left edge */
+section { padding-top: var(--section); }
+.head { max-width: 680px; margin-bottom: 36px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .02em; margin: 0 0 14px; display: inline-flex; align-items: center; gap: 8px; }
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+h2 { font-weight: 500; font-size: clamp(30px, 3.8vw, 46px); line-height: 1.08; letter-spacing: -.035em; margin: 0 0 16px; text-wrap: balance; }
+.head p { color: var(--muted); font-size: 17px; margin: 0; text-wrap: pretty; }
+h3 { font-size: 16.5px; font-weight: 500; letter-spacing: -.01em; margin: 0 0 6px; }
+
+/* the grid: three equal columns everywhere, one column on phones */
+.grid { display: grid; gap: var(--gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.span2 { grid-column: span 2; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } .span2 { grid-column: auto; } }
+
+/* cards (Cal-style): same inset, same preview height, text fills the rest */
+.card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 8px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.card .vis { min-width: 0; height: var(--vis); background: var(--inset); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: hidden; }
+.card .txt { flex: 1; padding: 20px 16px 16px; }
+.card .txt p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* before/after bubbles */
+.bubble { width: 100%; font-size: 14.5px; line-height: 1.45; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--muted); }
+.bubble.with { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.bubble small { display: block; font-family: var(--mono); font-size: 11px; color: var(--faint); margin-bottom: 4px; letter-spacing: .02em; }
+.bubble.with small { color: var(--accent); }
+
+/* mini UI inside cards */
+.mini { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); font-size: 13.5px; }
+.mini .row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.mini .row:first-child { border-top: 0; }
+.mini .id { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+.mini .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .row svg { width: 14px; height: 14px; flex: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--inset); color: var(--muted); white-space: nowrap; }
+.mini .note { padding: 0 12px 12px 30px; margin-top: -4px; color: var(--muted); font-size: 12.5px; }
+.mini .note b { font-weight: 500; color: var(--parked); font-family: var(--mono); font-size: 11.5px; margin-right: 4px; }
+.prog { height: 4px; border-radius: 4px; background: var(--inset); overflow: hidden; width: 44px; flex: none; }
+.prog i { display: block; height: 100%; border-radius: 4px; }
+.term { width: 100%; background: var(--term-bg); color: var(--term-ink); border-radius: 12px; padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+.term .d { color: var(--term-dim); } .term .a { color: #8da2ff; } .term .o { color: #f3a64c; } .term .g { color: #3fd08f; } .term .c { color: #2cc1e4; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 300px; }
+.chips span { font-size: 13.5px; padding: 7px 13px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.chips span.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.big { font-size: 64px; font-weight: 500; letter-spacing: -.05em; line-height: 1; text-align: center; }
+.big small { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: 0; color: var(--faint); margin-top: 12px; }
+
+/* numbered steps: same columns as the cards below them */
+.steps { list-style: none; padding: 0; margin: 0 0 var(--gap); counter-reset: s; }
+.steps li { counter-increment: s; border-top: 1px solid var(--line-2); padding: 20px 16px 8px 0; }
+.steps li::before { content: "0" counter(s); display: block; font-family: var(--mono); font-size: 12px; color: var(--accent); margin-bottom: 12px; }
+.steps p { margin: 0; color: var(--muted); font-size: 15px; }
+@media (max-width: 860px) { .steps { gap: 0; } }
+
+/* board split: text in column 1, screenshot across 2 and 3 */
+.split { align-items: center; }
+.split .copyblock { padding-right: 24px; }
+@media (max-width: 860px) { .split .copyblock { padding-right: 0; } }
+.feat { list-style: none; margin: 32px 0 0; padding: 0; }
+.feat li { padding: 16px 0; border-top: 1px solid var(--line); }
+.feat b { font-weight: 500; display: block; margin-bottom: 3px; }
+.feat span { color: var(--muted); font-size: 15px; }
+.split .h2 { margin-bottom: 0; }
+.shot { border-radius: 20px; padding: 32px 32px 0; background: var(--inset); border: 1px solid var(--line); overflow: hidden; }
+.shot img { border-radius: 10px 10px 0 0; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .3); height: 520px; width: 100%; object-fit: cover; object-position: top; }
+@media (max-width: 600px) { .shot { padding: 16px 16px 0; } .shot img { height: 380px; } }
+
+/* faq: heading in column 1, questions across 2 and 3 */
+.faq-head { margin: 0; }
+.faq details { border-top: 1px solid var(--line-2); }
+.faq details:last-child { border-bottom: 1px solid var(--line-2); }
+.faq summary { list-style: none; cursor: pointer; padding: 20px 0; display: flex; justify-content: space-between; gap: 20px; font-weight: 500; font-size: 16.5px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-weight: 400; color: var(--faint); font-size: 20px; line-height: 1; transition: transform .25s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 0 0 22px; color: var(--muted); max-width: 64ch; }
+
+/* final */
+.final { margin-top: var(--section); text-align: center; padding: 72px var(--gutter); }
+.final h2 { margin: 0 auto 12px; max-width: 20ch; }
+.final > p { color: var(--muted); margin: 0 auto 32px; max-width: 52ch; }
+.final .points { color: var(--ink); }
+
+footer { padding: 48px 0; color: var(--faint); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+footer a { color: var(--muted); text-underline-offset: 3px; }
+
+/* the story: five steps that tilt a little more each time, until it's chaos */
+.story { padding-bottom: 48px; }
+.story-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gap); }
+.story-steps li > div { height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 14px; box-shadow: var(--shadow); transform: rotate(var(--r)); transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+.story-steps li:hover > div { transform: rotate(0deg); }
+.story-steps .n { display: block; font-family: var(--mono); font-size: 12px; color: var(--faint); margin-bottom: 6px; }
+.story-steps b { display: block; font-weight: 500; font-size: 16px; letter-spacing: -.015em; margin-bottom: 4px; }
+.story-steps p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+.story-steps .chaos > div { border-color: color-mix(in srgb, var(--parked) 45%, var(--line)); background: color-mix(in srgb, var(--parked) 7%, var(--surface)); }
+.story-steps .chaos .n, .story-steps .chaos b { color: var(--parked); }
+.story-steps .chaos b { font-size: 19px; line-height: 1.1; }
+.story-turn { margin: 36px 0 0; text-align: center; font-size: 15px; color: var(--muted); }
+.story-turn span { font-family: var(--mono); color: var(--accent); margin-left: 4px; }
+@media (max-width: 960px) { .story-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .story-steps .chaos { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .story-steps { grid-template-columns: minmax(0, 1fr); } .story-steps li > div { transform: rotate(calc(var(--r) * .5)); } }
+@media (prefers-reduced-motion: reduce) { .story-steps li > div { transition: none; } }
+
+/* rules: what gets caught, and what counts as what */
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 860px) { .grid.two { grid-template-columns: minmax(0, 1fr); } }
+.card .hdr { padding: 16px 16px 14px; }
+.card .hdr p { margin: 0; color: var(--muted); font-size: 15px; }
+.types { flex: 1; list-style: none; margin: 0; padding: 4px 18px; background: var(--inset); border-radius: 14px; }
+.types li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 2px 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.types li:first-child { border-top: 0; }
+.types li > :first-child { grid-row: span 2; justify-self: center; margin-top: 6px; }
+.types svg { width: 16px; height: 16px; margin-top: 3px !important; }
+.types b { font-weight: 500; }
+.types span { color: var(--muted); font-size: 14.5px; }
+.sub-h { font-size: 22px; font-weight: 500; letter-spacing: -.02em; margin: 56px 0 20px; }
+.callout { margin: var(--gap) 0 0; padding: 16px 20px; border: 1px dashed var(--line-2); border-radius: 14px; color: var(--muted); font-size: 15px; }
+.callout b { color: var(--ink); font-weight: 500; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.rv { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1; transform: none; transition: none; }
+  .rot, .rot span { transition: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
 </head>
 <body>
 
-<header class="top">
+<header class="top" id="top">
   <div class="wrap">
-    <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Clipped</a>
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Clipped
+    </a>
     <nav aria-label="Sections">
-      <a href="#how">How it works</a>
-      <a href="#board">The board</a>
-      <a href="#does">What it does</a>
-      <a href="#privacy">Privacy</a>
-      <a href="#faq">FAQ</a>
-      <a href="install.html">Install guide</a>
-      <button class="theme-btn" id="theme" type="button" aria-label="Switch to light mode">
+      <a class="hide-m" href="#how">How it works</a>
+      <a class="hide-m" href="#rules">What we catch</a>
+      <a class="hide-m" href="#board">The board</a>
+      <a class="hide-m" href="#limits">Privacy</a>
+      <a class="hide-m" href="#faq">FAQ</a>
+      <a class="hide-m" href="https://github.com/avivalushai/clipped">GitHub</a>
+      <button class="theme-btn" id="theme" type="button" aria-label="Switch theme">
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
-      <a class="gh" href="https://github.com/avivalushai/clipped">GitHub</a>
+      <a class="nav-cta" href="#install">Install</a>
     </nav>
   </div>
 </header>
 
-<div class="wrap">
 <main>
-  <div class="hero">
-    <div>
-      <p class="badge"><span class="live" aria-hidden="true"></span><span class="bi"><b>clipped</b> v0.6.0</span><span class="sep">·</span><span class="bi">plugin for Claude Code</span><span class="sep m-hide">·</span><span class="bi m-hide">MIT</span><span class="sep m-hide">·</span><span class="bi m-hide">local-only</span></p>
-      <h1>What did you and Claude<br><span class="h1-dim">decide last week?</span></h1>
-      <p class="tagline">
-        Clipped keeps track of your <span class="rot" aria-hidden="true"><span class="rot-chip"><span class="rot-txt">features</span><span class="rot-caret"></span></span></span><span class="sr-only">features, half-done work, questions, brainstorms, plans and decisions</span> <span class="tagline-2">so nothing gets lost while you work.</span>
-      </p>
-      <p class="lede">
-        A session with Claude gets a lot done: a half-built feature, a decision, a "let's come back to this".
-        A week later it's buried in the chat. Clipped writes it down as you go, on a board Claude keeps for you.
-      </p>
-      <div class="cta">
-        <button class="btn" id="add-now" type="button" aria-expanded="false" aria-controls="quick-install">Install it</button>
-        <a class="btn ghost" href="#runs">See what it installs <span class="k" aria-hidden="true">↓</span></a>
-        <a class="btn ghost" href="https://github.com/avivalushai/clipped">Read the source <span class="k" aria-hidden="true">↗</span></a>
+  <div class="wrap hero">
+    <div class="hero-copy">
+    <a class="pill" href="https://github.com/avivalushai/clipped"><b><i class="live" aria-hidden="true"></i>v0.6.0</b><span data-t="pill"></span></a>
+    <h1 id="h1"></h1>
+    <p class="lede" data-t="lede"></p>
+    <div class="install" id="install">
+      <div class="install-top">
+      <div class="tabs" role="tablist" aria-label="Install method">
+        <button role="tab" aria-selected="true" aria-controls="p-shell" id="t-shell">Terminal</button>
+        <button role="tab" aria-selected="false" aria-controls="p-slash" id="t-slash">Claude Code</button>
+        <button role="tab" aria-selected="false" aria-controls="p-ask" id="t-ask">Ask Claude</button>
       </div>
+      <a class="btn-ghost" href="https://github.com/avivalushai/clipped"><span class="long">Read the source</span><span class="short">Source</span> <span class="k" aria-hidden="true">↗</span></a>
+      </div>
+      <div class="panel" role="tabpanel" id="p-shell" aria-labelledby="t-shell">
+        <div class="cmd"><span class="p">$</span><code>claude plugin marketplace add <span class="hl">avivalushai/clipped</span> &amp;&amp; claude plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+      </div>
+      <div class="panel" role="tabpanel" id="p-slash" aria-labelledby="t-slash" hidden>
+        <div class="cmd"><span class="p">1</span><code>/plugin marketplace add <span class="hl">avivalushai/clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+        <div class="cmd"><span class="p">2</span><code>/plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+      </div>
+      <div class="panel" role="tabpanel" id="p-ask" aria-labelledby="t-ask" hidden>
+        <div class="cmd"><span class="p">›</span><code>Install the Clipped plugin from <span class="hl">avivalushai/clipped</span></code><button class="copy" type="button" aria-label="Copy prompt"></button></div>
+      </div>
+      <ul class="points" data-t="points"></ul>
+    </div>
     </div>
 
     <figure class="peek" aria-label="An example Clipped board for a made-up CRM project">
       <div class="window">
-        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">board · nimbus-crm</span></div>
+        <div class="chrome"><i></i><i></i><i></i><span>board · nimbus-crm</span></div>
         <div class="peek-body">
           <p class="peek-group"><span class="dot" style="--c: var(--parked)"></span>Parked <span>2</span></p>
           <div class="peek-card">
@@ -86,390 +407,258 @@
       </div>
       <figcaption class="caption">An example board on a made-up project.</figcaption>
     </figure>
-
-    <div class="quick" id="quick-install" hidden>
-      <div class="options">
-        <div class="option">
-          <h2>Type two commands</h2>
-          <p class="note">Inside Claude Code, not in your shell.</p>
-          <ol class="steps" role="list">
-            <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-            <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
-            <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
-          </ol>
-        </div>
-        <div class="option">
-          <h2>Or ask Claude to do it</h2>
-          <p class="note">Paste this into Claude Code, in the desktop app, terminal or editor.</p>
-          <ol class="steps" role="list">
-            <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-            <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
-            <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and start working.</span></li>
-          </ol>
-        </div>
-      </div>
-      <p class="note">Either way, you need Node 20 or newer. <a href="install.html">Step-by-step guide</a> · <a href="#install">Your first ten minutes</a></p>
-    </div>
   </div>
 
-  <section id="familiar">
-    <p class="eyebrow">Sound familiar?</p>
-    <h2>Where did that go?</h2>
-    <div class="familiar">
-      <div class="q">
-        <p class="ask">You open a project after two weeks. What was half done?</p>
-        <p class="ans"><b>With Clipped</b>Every parked card has a note saying where you stopped and what's next.</p>
-      </div>
-      <div class="q">
-        <p class="ask">Why did you pick that approach? It's 400 messages up, in a chat you closed.</p>
-        <p class="ans"><b>With Clipped</b>Decisions, brainstorms and plans get their own tabs, linked to the work they led to.</p>
-      </div>
-      <div class="q">
-        <p class="ask">A new session starts and Claude remembers nothing about yesterday.</p>
-        <p class="ans"><b>With Clipped</b>Every session opens with a short brief: what's in progress, parked, and waiting for you.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="how">
-    <p class="eyebrow">How it works</p>
-    <h2>So, what does Clipped actually do?</h2>
-    <p class="sub">The short version, without the technical parts.</p>
-    <div class="does-grid">
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>
-        <h3>You install it once</h3>
-        <p>Two commands inside Claude Code. Nothing to set up per project. In a project without a board, Claude asks once before starting one.</p>
-      </div>
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg></span>
-        <h3>Every session starts with a recap</h3>
-        <p>When you open Claude Code in a project, Claude reads that project's board first: what's in progress, what's parked, and what's waiting for you.</p>
-      </div>
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
-        <h3>Claude notices what you're doing</h3>
-        <p>Building a feature, fixing a bug, asking a question, thinking out loud. Claude recognizes which one it is and writes it on the board right away.</p>
-      </div>
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span>
-        <h3>It remembers where you stopped</h3>
-        <p>When you switch topics or call it a day, the card is parked with a short note on where you left off and what comes next.</p>
-      </div>
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>
-        <h3>You stay in charge</h3>
-        <p>When Claude isn't sure, a card lands in Your turn. It only moves to Done when you say so, or when the work is merged or deployed. You can change anything on the board yourself.</p>
-      </div>
-      <div class="does-item">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-        <h3>It stays on your computer</h3>
-        <p>The board is a single file inside your project. Nothing is uploaded, and there is no account.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="board">
-    <p class="eyebrow">The board</p>
-    <h2>One board per project, kept by Claude</h2>
-    <p class="sub">Type <code>board ui</code> and it opens in your browser. It updates live while Claude works.</p>
-    <figure style="margin:0">
-      <div class="window">
-        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">localhost:4747</span></div>
-        <img class="only-dark" src="img/board.png" width="1208" height="940" alt="The Clipped board for this project in Board view: columns for Idea, In progress, Parked, Your turn and Done, each card showing its next step, progress and that Claude made the last change.">
-        <img class="only-light" src="img/board-light.png" width="1208" height="940" loading="lazy" alt="The Clipped board for this project in Board view: columns for Idea, In progress, Parked, Your turn and Done, each card showing its next step, progress and that Claude made the last change.">
-      </div>
-      <figcaption class="caption">This project's own board (folder path shortened). "Claude" on a card means Claude made the last change, not me.</figcaption>
-    </figure>
-
-    <div class="anatomy">
-      <div class="window">
-        <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">LE-4</span></div>
-        <img class="only-dark" src="img/card.png" width="480" height="685" alt="An open card: title, progress bar, status buttons, the next step, a checklist of steps with three of five done, and a Continue with Claude box.">
-        <img class="only-light" src="img/card-light.png" width="480" height="685" loading="lazy" alt="An open card: title, progress bar, status buttons, the next step, a checklist of steps with three of five done, and a Continue with Claude box.">
-      </div>
-      <div>
-        <h3 class="h3big">Open a card to see the whole piece of work</h3>
-        <dl class="parts">
-          <div style="--c: var(--active)"><dt>Status</dt><dd>Idea, In progress, Parked, Your turn or Done. Claude moves the card along as it works; the last two are yours. The header counts them: <b>88% complete</b> next to <b>17 waiting on you</b>, because a percentage that counts your queue as nearly done isn't telling you much.</dd></div>
-          <div style="--c: var(--parked)"><dt>Next step</dt><dd>What comes next. When a card is parked, this is where you stopped.</dd></div>
-          <div style="--c: var(--review)"><dt>Steps</dt><dd>A checklist Claude ticks off as it goes. The progress bar is counted from it.</dd></div>
-          <div style="--c: var(--accent)"><dt>Continue with Claude</dt><dd>A ready prompt with where you stopped, the remaining steps and the files involved. Paste it into a new session and carry on.</dd></div>
-          <div style="--c: var(--done)"><dt>Files and activity</dt><dd>Further down: every file edited for this card, and a log of every change with who made it.</dd></div>
-        </dl>
-      </div>
-    </div>
-
-    <h3 class="h3big tabs-title">Five tabs, so nothing lives only in the chat</h3>
-    <div class="window">
-      <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">localhost:4747 · brainstorms</span></div>
-      <img class="only-dark" src="img/tabs.png" width="1208" height="335" alt="The board's five tabs, Work, Questions, Brainstorms, Plans and References, with the Brainstorms tab open showing one brainstorm linked to card LE-15.">
-        <img class="only-light" src="img/tabs-light.png" width="1208" height="335" loading="lazy" alt="The board's five tabs, Work, Questions, Brainstorms, Plans and References, with the Brainstorms tab open showing one brainstorm linked to card LE-15.">
-    </div>
-    <div class="tab-list">
-      <div><b>Work <small>cards</small></b><span>Anything with a next step: features, bugs and chores. Each one is a card like the one above.</span></div>
-      <div><b>Questions <small>cards</small></b><span>Things to find out before you can decide. Claude writes down the answer. You decide when it's settled.</span></div>
-      <div><b>Brainstorms <small>notes</small></b><span>The thinking behind a decision, linked to the cards that came out of it.</span></div>
-      <div><b>Plans <small>notes</small></b><span>A spec or plan document. <code>/clipped:plan</code> turns it into cards that point back to it.</span></div>
-      <div><b>References <small>notes</small></b><span>Links and docs you'd otherwise scroll back through the chat to find.</span></div>
-    </div>
-    <p class="note">Switch between Table, Board and Timeline views. The sidebar lists every project on your machine that has a board.</p>
-  </section>
-
-  <section id="what">
-    <p class="eyebrow">The rules</p>
-    <h2>What counts as what</h2>
-    <p class="sub">One line sits under all of it: <b>work has a next step, notes don't.</b> Claude applies the rest for you — this is here for the day you disagree with a call it made, and want to know what it was aiming at.</p>
-
-    <div class="split">
-      <div class="panel">
-        <h3>Cards — things with a next step</h3>
-        <dl class="parts">
-          <div style="--c: var(--accent)"><dt>Feature</dt><dd>A user-visible outcome that takes more than one reply to build. If it lands in a single reply, it's a step inside another card, or nothing at all.</dd></div>
-          <div style="--c: var(--parked)"><dt>Bug</dt><dd>Something that used to work, or that you called broken. Same card, different label — it still needs a next step and an end.</dd></div>
-          <div style="--c: var(--faint)"><dt>Chore</dt><dd>Work with nothing for you to look at afterwards: a cleanup, a config change, a job to run. Unticked boxes in a plan usually land here.</dd></div>
-          <div style="--c: var(--review)"><dt>Question</dt><dd>Something to go and find out before you can decide — a price, a library, what a spec allows. Claude records what it found; deciding stays yours.</dd></div>
-        </dl>
-      </div>
-      <div class="panel">
-        <h3>Notes — the thinking around it</h3>
-        <dl class="parts">
-          <div style="--c: var(--active)"><dt>Brainstorm</dt><dd>A conversation that reached a decision. The body says what was decided, not everything that was said — one per conversation, linked to the cards it produced.</dd></div>
-          <div style="--c: var(--done)"><dt>Plan</dt><dd>A spec or plan document you wrote. The document keeps the reasoning; the board only tracks what came of it.</dd></div>
-          <div style="--c: var(--muted)"><dt>Reference</dt><dd>A link you'd look up twice, tied to the card it informed. Not every link that went past — only the ones that were actually used.</dd></div>
-        </dl>
-      </div>
-    </div>
-
-    <p class="note"><b>Idea is not a type — it's a status.</b> A feature, a bug, a chore and a question all start there when you mention them in passing: it means nobody has picked it up yet.</p>
-
-    <h3 class="h3big tabs-title">How it decides, each time you ask for something</h3>
-    <ol class="steps" role="list">
-      <li class="step"><span class="n">1</span><span class="text">Is this about a card that's already open — same topic, same files? Then it updates that card instead of opening another one.</span></li>
-      <li class="step"><span class="n">2</span><span class="text">Will it take more than one reply, or touch several files? That's a new card, named the way you'd say it, not the way the code is organised.</span></li>
-      <li class="step"><span class="n">3</span><span class="text">Anything smaller becomes a step on the card you're already on — or nothing at all.</span></li>
+  <div class="wrap story" aria-labelledby="story-title">
+    <p class="eyebrow" id="story-title">Every project, eventually</p>
+    <ol class="story-steps">
+      <li class="rv" style="--r: 0deg"><div><span class="n">01</span><b>You start building.</b><p>One chat, one clear idea.</p></div></li>
+      <li class="rv" style="--r: -.6deg"><div><span class="n">02</span><b>A few more sessions.</b><p>A feature here, a fix there, a pivot in between.</p></div></li>
+      <li class="rv" style="--r: 1.2deg"><div><span class="n">03</span><b>Questions and research.</b><p>Answers you'll need again, spread over five chats.</p></div></li>
+      <li class="rv" style="--r: -2deg"><div><span class="n">04</span><b>Nothing written down.</b><p>It all lives in the scroll-back.</p></div></li>
+      <li class="rv chaos" style="--r: 3.2deg"><div><span class="n">05</span><b>Chaos.</b><p>What was half done? What did you decide? Which chat was it in?</p></div></li>
     </ol>
-    <p class="note">Chat isn't recorded, and neither is a question Claude answers in the same breath. Brainstorming records nothing until the conversation lands on something concrete — then it offers the list once, in your words, and drops it if you say no. Ask for three things at once and you get three cards: the one being worked on is In progress, the rest wait in Idea.</p>
-  </section>
+    <p class="story-turn rv">Clipped writes it down as you go, so step 5 never comes <span aria-hidden="true">↓</span></p>
+  </div>
 
-  <section id="does">
-    <p class="eyebrow">What it is</p>
-    <h2>What it does, and what it doesn't</h2>
-    <p class="sub">I'd rather you know the limits before you install it.</p>
-    <div class="split">
-      <div class="panel yes">
-        <h3>It does</h3>
-        <ul>
-          <li><b>Keeps the board without being asked</b><span>Claude opens a card when real work starts, adds steps, and moves the card along as the work goes.</span></li>
-          <li><b>Remembers where you stopped</b><span>Parking a card needs a note saying where you stopped, so picking it up weeks later is cheap.</span></li>
-          <li><b>Briefs Claude at the start of every session</b><span>Claude already knows what's open, parked and waiting for you before you type anything.</span></li>
-          <li><b>Says which notes are its own guesses</b><span>A card only Claude ever touched is marked as its own, and after a fortnight unchecked it drops out of the brief entirely — so a wrong card can't quietly harden into a fact.</span></li>
-          <li><b>Shows every project in one place</b><span><code>board ui</code> opens a local page listing every repo that has a board, and it updates live.</span></li>
-          <li><b>Keeps notes you'd lose in the chat</b><span>Brainstorms, plans and references get their own tabs next to the cards.</span></li>
-        </ul>
-      </div>
-      <div class="panel no">
-        <h3>It doesn't</h3>
-        <ul>
-          <li><b>Close cards on a guess</b><span>When Claude isn't sure, a card lands in Your turn. It only moves to Done when you say so, or when the work is merged or deployed.</span></li>
-          <li><b>Touch your git</b><span>No commits, no pushes, no branches. It writes one file: <code>.board/board.json</code>.</span></li>
-          <li><b>Send your work anywhere</b><span>No account, no cloud copy. The board is a file in your repo. <a href="#privacy">Details below.</a></span></li>
-          <li><b>Leave boards everywhere</b><span>A project gets a board the first time something in it is worth keeping. Your home folder and hidden folders never get one.</span></li>
-          <li><b>Work for teams</b><span>It's for one person on one machine. There's no sharing, no sync and no assignees.</span></li>
-        </ul>
+  <div class="wrap rv">
+    <div class="stage shot-stage">
+      <div class="window">
+        <div class="chrome"><i></i><i></i><i></i><span>localhost:4747</span></div>
+        <img class="img-light" src="img/board-light.png" width="2416" height="1880" alt="The Clipped board: a table of cards with status, progress and next step, grouped by In progress, Parked and Your turn.">
+        <img class="img-dark" src="img/board.png" width="2416" height="1880" alt="" aria-hidden="true">
       </div>
     </div>
-  </section>
+    <p class="caption">This project's own board. Type <code>board ui</code> and it opens in your browser, updating live while Claude works.</p>
+  </div>
 
-  <section id="runs">
-    <p class="eyebrow">Under the hood</p>
-    <h2>What runs on your machine, and what Claude sees</h2>
-    <p class="sub">Three short hooks you can read, and the brief they put in front of Claude every time a session starts.</p>
-    <div class="runs-grid">
-      <div class="table-wrap runs-table">
-        <table>
-          <thead><tr><th>Hook</th><th>What happens</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><span class="ev">SessionStart</span><span class="when">a session starts</span></td>
-              <td>Reads the board and adds a short summary to Claude's context: what's parked and where you stopped, what's in progress, and the titles of everything waiting on you. Notes Claude wrote and you never checked are left out of it and marked as its own — see <a href="#trust">below</a>. About 440 tokens for this repo's 25 cards.</td>
-            </tr>
-            <tr>
-              <td><span class="ev">PostToolUse</span><span class="when">after Claude edits a file</span></td>
-              <td>Attaches the file path to the active card, but only when the file plausibly belongs there. No output and no extra tokens.</td>
-            </tr>
-            <tr>
-              <td><span class="ev">Stop</span><span class="when">Claude finishes a turn</span></td>
-              <td>If code changed but the board didn't, Claude is asked once to update it or say why not. This adds one short step to that turn at most, and never loops.</td>
-            </tr>
-            <tr>
-              <td><span class="ev">board ui</span><span class="when">only when you type it</span></td>
-              <td>Starts a local server on <code>localhost:4747</code> for the board page.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="note runs-note">
-        There's also a skill: the written rules Claude follows about when to open, update, park or close a card.
-        Read <a href="https://github.com/avivalushai/clipped/blob/main/skills/clipped/SKILL.md">the skill</a>
-        and <a href="https://github.com/avivalushai/clipped/tree/main/hooks">the hooks</a>.
-      </p>
-      <div class="window term-win runs-win">
-          <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="url">claude — ~/code/nimbus-crm</span></div>
-  <pre class="term" aria-label="An example Claude Code session on a made-up CRM project: the Clipped brief listing parked work, then a vague request landing on the right card"><span class="d">~/code/nimbus-crm</span> <span class="p">❯</span> claude
-<span class="d">⎿  SessionStart hook · clipped</span>
-<span class="h">Clipped board: Nimbus CRM (CRM) — 1 active, 2 parked</span>
-Parked:
-  <span class="o">CRM-3</span> Import contacts from CSV <span class="d">(1/3)</span>
-         <span class="d">stopped:</span> mapping done, merge not written <span class="d">(idle 16d)</span>
-  <span class="o">CRM-7</span> Email sync drops long threads <span class="d">(0/2)</span>
-         <span class="d">stopped:</span> Gmail pagination, no retry yet <span class="d">(idle 9d)</span>
-Active:
-  <span class="a">CRM-8</span> Drag a deal between pipeline stages <span class="d">(2/4)</span>
-         <span class="d">next:</span> keep the new order after a reload
-
-<span class="p">›</span> the csv import thing — let's finish it
-<span class="g">●</span> <span class="d">Read(src/import/mapping.ts)</span>
-<span class="g">●</span> <span class="d">Update(src/import/DedupeStep.tsx)</span>
-<span class="foot">Board: CRM-3 Import contacts from CSV → in progress · 2/3 steps</span>
-<span class="p">›</span> <span class="cur" aria-hidden="true"></span></pre>
+  <section class="wrap" id="problem">
+    <div class="head rv">
+      <p class="eyebrow" data-t="probEyebrow"></p>
+      <h2 data-t="probTitle"></h2>
+      <p data-t="probBody"></p>
+    </div>
+    <div class="grid">
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>You open a project after two weeks. What was half done?</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Every parked card says where you stopped and what's next.</div>
         </div>
-      <p class="caption runs-cap">An example session on a made-up project.</p>
-    </div>
-    <div class="runs-expl">
-      <h3>What Claude sees when a session starts</h3>
-        <p class="sub">The <code>SessionStart</code> hook puts a short brief in front of Claude before you type anything: what's parked and where it stopped, what's in progress, and the titles of everything waiting on you. A note Claude wrote that you never checked stays out of it — the card is named, the guess isn't repeated.</p>
-        <p class="sub">So when you say something vague like "the csv import thing", Claude knows which card you mean. It picks the work up there and ends its turn with one line saying what moved on the board.</p>
-    </div>
-  </section>
-
-  <section id="privacy">
-    <p class="eyebrow">Privacy</p>
-    <h2>What leaves your machine</h2>
-    <div class="callout">
-      <span class="big">0 bytes</span>
-      <div><b>Right now, nothing.</b><span>No account, no sign-in, and no server of mine is involved.</span></div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>File</th><th>What's in it</th></tr></thead>
-        <tbody>
-          <tr><td><code>.board/board.json</code></td><td>The cards and notes for that project. It lives in your repo, so you choose whether to commit it or add it to <code>.gitignore</code>.</td></tr>
-          <tr><td><code>~/.clipped/</code></td><td>The list of folders that have a board, so <code>board ui</code> can show them all, and your settings.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note">
-      To be exact: the code already contains usage counting (event names like <code>feature_added</code>, plus
-      numbers). It's inactive because there's no analytics project behind it. If I switch it on in a later
-      version, the release notes and the first run will say so. It will never include titles, notes, file paths
-      or project names, and <code>board telemetry off</code> stops it for good.
-    </p>
-  </section>
-
-  <section id="rough">
-    <p class="eyebrow">Honest status</p>
-    <h2>Where it's still rough</h2>
-    <p class="sub">It's early. I use it every day on three projects, and this is what still goes wrong.</p>
-    <ul class="rough">
-      <li><b>Sometimes it files work on the wrong card.</b><span>Claude can attach unrelated work to whichever card is open. The rules are better now but not perfect — which is why a card it wrote and you never checked is labelled as its guess rather than treated as fact.</span></li>
-      <li><b>Sometimes it forgets.</b><span>Mostly after small fixes. The end-of-turn nudge catches most cases.</span></li>
-      <li><b>It has opinions about what counts as a card.</b><span>A card is work with a next step, so one-line fixes stay off the board. That's deliberate, but you may disagree.</span></li>
-      <li><b>It only runs on macOS so far.</b><span>It should work on Linux. Windows is untested.</span></li>
-    </ul>
-  </section>
-
-  <section id="faq">
-    <p class="eyebrow">Questions</p>
-    <h2>Before you install</h2>
-    <div class="faq">
-      <details id="trust">
-        <summary>What if it writes down something wrong?</summary>
-        <p>Then you correct it, in the chat or on the board — and the design tries hard to stop that mistake feeding itself. The brief Claude reads at the start of a session carries titles, what's parked and where you stopped; it deliberately leaves out notes Claude wrote that nobody has checked, so its own guesses don't come back as project state. Anything it does carry that only Claude ever touched is labelled as its note, with an instruction to verify it against the repo before building on it. A card that stays unchecked for a fortnight drops out of the brief altogether and becomes a one-line count. And the rules it follows say that when today's work contradicts a card it wrote and you never confirmed, it fixes the card instead of building on it.</p>
-      </details>
-      <details>
-        <summary>Does it cost tokens?</summary>
-        <p>A little. The brief at the start of a session is about 150 tokens for a small board and about 600 for this repo's 43 cards, because it carries titles rather than every note. The end-of-turn nudge adds one short step only when the board fell behind.</p>
-      </details>
-      <details>
-        <summary>Does it matter what language or stack I use?</summary>
-        <p>No. The board tracks the work, not the code, so it works in any project Claude Code works in.</p>
-      </details>
-      <details>
-        <summary>Can I edit the board myself?</summary>
-        <p>Yes. Add, move or rewrite cards in the board page, or just tell Claude. Both write through the same code, so nothing gets out of sync.</p>
-      </details>
-      <details>
-        <summary>What if Claude puts something on the wrong card?</summary>
-        <p>Tell it, or fix it in the board page. Files can be detached from a card with <code>board update --unfile</code>. The rules get tighter every time I catch one of these.</p>
-      </details>
-      <details>
-        <summary>Should I commit <code>.board/board.json</code>?</summary>
-        <p>Your call. It's plain JSON. Commit it to keep the history with the code, or add it to <code>.gitignore</code> to keep it to yourself.</p>
-      </details>
-      <details>
-        <summary>Does it need an internet connection?</summary>
-        <p>No. The board, the page and the commands all run on your machine.</p>
-      </details>
-    </div>
-  </section>
-
-  <section id="install">
-    <p class="eyebrow">Try it</p>
-    <h2>Two ways to install</h2>
-    <p class="sub">You need Claude Code and Node 20 or newer. Both do exactly the same thing. First time with plugins? <a href="install.html">The install guide</a> walks through every screen, and what to do when something doesn't show up.</p>
-    <div class="cols">
-      <div>
-        <h3>Ask for it</h3>
-        <ol class="steps">
-          <li class="step"><span class="n">1</span><code class="say">Install the Clipped plugin from avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">2</span><span class="text">Approve the two commands Claude runs.</span></li>
-          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and work as usual.</span></li>
-        </ol>
-        <p class="note">Works wherever Claude Code runs — the desktop app, a terminal, your editor.</p>
+        <div class="txt"><h3>Half-done work</h3><p>Picking it up weeks later is cheap.</p></div>
       </div>
-      <div>
-        <h3>Type it yourself</h3>
-        <ol class="steps">
-          <li class="step"><span class="n">1</span><code>/plugin marketplace add avivalushai/clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">2</span><code>/plugin install clipped@clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">3</span><span class="text">Restart Claude Code, open a project and work as usual.</span></li>
-        </ol>
-        <p class="note">Inside Claude Code in a terminal or editor, not in your shell — the first line says where to look, the second installs from it. The desktop app has its own plugin menu: <a href="install.html#install">see the guide</a>. From a shell, one line does both: <code>claude plugin marketplace add avivalushai/clipped &amp;&amp; claude plugin install clipped@clipped</code></p>
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>Why did you pick that approach? It's 400 messages up.</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Decisions and brainstorms get their own tab, linked to the work.</div>
+        </div>
+        <div class="txt"><h3>Decisions</h3><p>The reasoning stays next to what it led to.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>A new session starts and Claude remembers nothing.</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Every session opens with a short brief of where things stand.</div>
+        </div>
+        <div class="txt"><h3>A fresh session</h3><p>Claude already knows what's open before you type.</p></div>
       </div>
     </div>
+  </section>
 
-    <div class="cols" style="margin-top: 32px">
-      <div>
-        <h3>Your first ten minutes</h3>
-        <ol class="steps" role="list">
-          <li class="step"><span class="n">1</span><code class="say">Set up a board for this project from my recent commits and open branches</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">2</span><span class="text">Written a spec? <code>/clipped:plan docs/plan.md</code> turns it into cards, and shows you the list before adding any.</span></li>
-          <li class="step"><span class="n">3</span><span class="text"><code>board ui</code> lists every project you've worked in with Claude Code. Click the ones worth a board.</span></li>
-        </ol>
-        <p class="note">All optional — the board fills as you work either way. This is how you start from what you already did.</p>
+  <section class="wrap" id="how">
+    <div class="head rv">
+      <p class="eyebrow">How it works</p>
+      <h2>How does it actually work?</h2>
+      <p>No setup per project and nothing new to learn. You keep working the way you do.</p>
+    </div>
+    <ol class="steps grid rv">
+      <li><h3>Connects once</h3><p>Two commands add a plugin to Claude Code: the rules Claude follows, and three small hooks. Nothing to set up per project.</p></li>
+      <li><h3>Listens and sorts</h3><p>As you work, Claude sorts what's happening into a feature, a bug, a question or a brainstorm. Small talk isn't recorded.</p></li>
+      <li><h3>Lands on your board</h3><p>Each project gets a board file in its own folder: what's in progress, what's parked halfway, what's waiting on you.</p></li>
+    </ol>
+    <div class="grid">
+      <div class="card span2 rv">
+        <div class="vis">
+<div class="term"><span class="d">~/code/nimbus-crm ❯</span> claude
+<span class="d">⎿ SessionStart hook · clipped</span>
+<span class="a">Clipped board:</span> Nimbus CRM — 1 active, 2 parked
+<span class="o">Parked:</span> CRM-3 Import contacts from CSV (1/3)
+  <span class="d">stopped: mapping done, merge not written</span>
+<span class="c">Active:</span> CRM-8 Drag a deal between stages (2/4)
+<span class="a">›</span> the csv import thing — let's finish it
+<span class="g">Board:</span> CRM-3 → in progress · 2/3 steps</div>
+        </div>
+        <div class="txt"><h3>Every session starts with a recap</h3><p>Claude reads the board before you type. So "the csv import thing" is enough.</p></div>
       </div>
-      <div>
-        <h3>Uninstall</h3>
-        <ol class="steps">
-          <li class="step"><span class="n">1</span><code>/plugin uninstall clipped@clipped</code><button class="copy" type="button">Copy</button></li>
-          <li class="step"><span class="n">2</span><span class="text">Optional: delete <code>.board/</code> in your projects and <code>~/.clipped/</code>.</span></li>
-        </ol>
-        <p class="note">Nothing else is left behind.</p>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--parked)"></span><span class="id">CRM-3</span><span class="t">Import contacts from CSV</span></div>
+            <div class="note"><b>stopped</b>mapping done, merge not written</div>
+          </div>
+        </div>
+        <div class="txt"><h3>It remembers where you stopped</h3><p>Switch topics or call it a day, and the card is parked with a note on what's next.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--active)"></span><span class="t">Drag deals between stages</span><span class="prog"><i style="width: 50%; background: var(--active)"></i></span></div>
+            <div class="row"><span class="dot" style="background: var(--review)"></span><span class="t">Dedupe on email or phone?</span><span class="tag">question</span></div>
+            <div class="row"><span class="dot" style="background: var(--done)"></span><span class="t">Pipeline view: board</span><span class="tag">decided</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>It notices what you're doing</h3><p>A feature, a bug, a question, thinking out loud. It writes it down right away.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--review)"></span><span class="t">Your turn</span><span class="tag">3</span></div>
+            <div class="row"><span class="id">LE-19</span><span class="t">A landing page to send friends</span></div>
+            <div class="row"><span class="id">LE-25</span><span class="t">An install guide page</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>You stay in charge</h3><p>Unsure? It lands in Your turn. Nothing is Done until you say so.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="chips"><span class="on">Work</span><span>Questions</span><span>Brainstorms</span><span>Plans</span><span>References</span></div>
+        </div>
+        <div class="txt"><h3>Nothing lives only in the chat</h3><p>Cards for work with a next step. Notes for the thinking around it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="rules">
+    <div class="head rv">
+      <p class="eyebrow">What we catch</p>
+      <h2>What counts as what</h2>
+      <p>One line sits under all of it: <b>work has a next step, notes don't.</b> Claude applies the rest for you. This is here for the day you disagree with a call it made.</p>
+    </div>
+
+    <div class="grid two">
+      <div class="card rv">
+        <div class="hdr"><h3>Gets written down</h3><p>Anything you'd want to find again next week.</p></div>
+        <ul class="types">
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><b>Work that takes more than one reply</b><span>A feature, a bug, a chore — named the way you'd say it.</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><b>Things you mention in passing</b><span>They wait in Idea until someone picks them up.</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><b>Decisions and the thinking behind them</b><span>A brainstorm that landed somewhere, a plan you wrote, a link you actually used.</span></li>
+        </ul>
+      </div>
+      <div class="card rv">
+        <div class="hdr"><h3>Left out on purpose</h3><p>So the board stays worth reading.</p></div>
+        <ul class="types">
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><b>Chat and quick answers</b><span>A question Claude answers in the same breath isn't recorded.</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><b>One-reply fixes</b><span>At most a step on the card you're already on.</span></li>
+          <li><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><b>Brainstorming that goes nowhere</b><span>When it lands on something, Claude offers the list once, in your words — and drops it if you say no.</span></li>
+        </ul>
       </div>
     </div>
 
-    <dl class="cmds">
-      <div><dt><code>/clipped:board</code></dt><dd>Open the board, or show where things stand</dd></div>
-      <div><dt><code>/clipped:park</code></dt><dd>Stop for now, with a note on where you stopped</dd></div>
-      <div><dt><code>/clipped:done</code></dt><dd>Mark a card finished</dd></div>
-      <div><dt><code>/clipped:question</code></dt><dd>Record a question that needs finding out</dd></div>
-      <div><dt><code>/clipped:plan</code></dt><dd>Turn a plan or spec document into cards</dd></div>
-    </dl>
-    <p class="note">You don't need any of these commands. Talking normally is enough.</p>
+    <div class="grid two" style="margin-top: var(--gap)">
+      <div class="card rv">
+        <div class="hdr"><h3>Cards — things with a next step</h3><p>They move from Idea to Done.</p></div>
+        <ul class="types">
+          <li><span class="dot" style="background: var(--accent)"></span><b>Feature</b><span>A user-visible outcome that takes more than one reply to build.</span></li>
+          <li><span class="dot" style="background: var(--parked)"></span><b>Bug</b><span>Something that used to work, or that you called broken.</span></li>
+          <li><span class="dot" style="background: var(--faint)"></span><b>Chore</b><span>Work with nothing to look at afterwards: a cleanup, a config change, a job to run.</span></li>
+          <li><span class="dot" style="background: var(--review)"></span><b>Question</b><span>Something to find out before you decide. Claude records what it found; deciding stays yours.</span></li>
+        </ul>
+      </div>
+      <div class="card rv">
+        <div class="hdr"><h3>Notes — the thinking around it</h3><p>Linked to the cards they led to.</p></div>
+        <ul class="types">
+          <li><span class="dot" style="background: var(--active)"></span><b>Brainstorm</b><span>A conversation that reached a decision. It says what was decided, not everything that was said.</span></li>
+          <li><span class="dot" style="background: var(--done)"></span><b>Plan</b><span>A spec or plan you wrote. The document keeps the reasoning; the board tracks what came of it.</span></li>
+          <li><span class="dot" style="background: var(--muted)"></span><b>Reference</b><span>A link you'd look up twice — only the ones that were actually used.</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="callout rv"><b>Idea is a status, not a type.</b> A feature, a bug, a chore and a question all start there when you mention them in passing. It means nobody has picked it up yet.</p>
+
+    <h3 class="sub-h rv">How it decides, each time you ask for something</h3>
+    <ol class="steps grid rv">
+      <li><h3>Is it already on the board?</h3><p>Same topic, same files as an open card? Then it updates that card instead of opening another one.</p></li>
+      <li><h3>Is it real work?</h3><p>More than one reply, or several files? That's a new card. Ask for three things and you get three cards.</p></li>
+      <li><h3>Anything smaller</h3><p>Becomes a step on the card you're already on — or nothing at all.</p></li>
+    </ol>
   </section>
+
+  <section class="wrap" id="board">
+    <div class="grid split">
+      <div class="copyblock rv">
+        <p class="eyebrow">The board</p>
+        <h2>Open a card, see the whole piece of work</h2>
+        <ul class="feat">
+          <li><b>Next step</b><span>When a card is parked, this is where you stopped.</span></li>
+          <li><b>Steps</b><span>A checklist Claude ticks off as it goes.</span></li>
+          <li><b>Continue with Claude</b><span>A ready prompt to paste into a new session.</span></li>
+          <li><b>Files and activity</b><span>Every file touched, and who changed what.</span></li>
+        </ul>
+      </div>
+      <div class="shot span2 rv">
+        <img class="img-light" src="img/card-light.png" width="960" height="1370" alt="A single card open: status, next step, a checklist of steps, and a Continue with Claude prompt.">
+        <img class="img-dark" src="img/card.png" width="960" height="1370" alt="" aria-hidden="true">
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="limits">
+    <div class="head rv">
+      <p class="eyebrow">What it is, and isn't</p>
+      <h2>I'd rather you know the limits before you install it</h2>
+    </div>
+    <div class="grid">
+      <div class="card rv">
+        <div class="vis"><div class="big">0 bytes<small>leave your machine</small></div></div>
+        <div class="txt"><h3>It stays on your computer</h3><p>No account, no sign-in, no server. Commit the board or <code>.gitignore</code> it — your call.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Keeps the board unasked</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Labels its own guesses</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Shows every project in one place</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>What it does</h3><p>A card only Claude ever touched is marked as its note, so a wrong guess can't harden into fact.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Touch your git</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Close cards on a guess</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Work for teams, yet</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>What it doesn't</h3><p>No commits or pushes. It writes one file: <code>.board/board.json</code>. One person, one machine.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="faq">
+    <div class="head rv">
+      <p class="eyebrow">Questions</p>
+      <h2>Before you install</h2>
+    </div>
+    <div class="faq rv">
+        <details><summary>What if it writes down something wrong?</summary><p>Correct it in the chat or on the board. The brief Claude reads at the start of a session leaves out notes it wrote that nobody checked, so its own guesses don't come back as project state. A card left unchecked for a fortnight drops out of the brief entirely.</p></details>
+        <details><summary>Does it cost tokens?</summary><p>A little. The session brief is a few hundred tokens — about 440 for this repo's 25 cards — because it carries titles, not every note. The end-of-turn nudge adds one short step only when the board fell behind.</p></details>
+        <details><summary>Does it matter what language or stack I use?</summary><p>No. The board tracks the work, not the code, so it works in any project Claude Code works in.</p></details>
+        <details><summary>Can I edit the board myself?</summary><p>Yes. Add, move or rewrite cards in the board page, or just tell Claude. Both write through the same code.</p></details>
+        <details><summary><span>Should I commit <code>.board/board.json</code>?</span></summary><p>Your call. It's plain JSON. Commit it to keep the history with the code, or add it to <code>.gitignore</code>.</p></details>
+        <details><summary>Does it need an internet connection?</summary><p>No. The board, the page and the commands all run on your machine.</p></details>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="final stage rv">
+      <h2 data-t="finalTitle"></h2>
+      <p data-t="finalBody"></p>
+      <div class="install">
+        <div class="cmd"><span class="p">$</span><code>claude plugin marketplace add <span class="hl">avivalushai/clipped</span> &amp;&amp; claude plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+        <ul class="points"><li><a href="install.html">Other ways to install</a></li><li><a href="https://github.com/avivalushai/clipped">Read the source</a></li></ul>
+      </div>
+    </div>
+  </div>
 </main>
-</div>
 
 <footer>
   <div class="wrap">
@@ -479,52 +668,95 @@ Active:
 </footer>
 
 <script>
-// Type the word in the tagline, like a terminal. Visitors who ask for less motion keep the first one.
-(() => {
-  const chip = document.querySelector(".rot-chip"), txt = document.querySelector(".rot-txt");
-  if (!chip || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const words = ["features", "half-done work", "questions", "brainstorms", "plans", "decisions"];
-  let w = 0, n = words[0].length, deleting = false;
-  const tick = () => {
-    const word = words[w];
-    if (!deleting && n === word.length) { deleting = true; return setTimeout(tick, 1700); }
-    if (deleting && n === 0) {
-      deleting = false; w = (w + 1) % words.length;
-      return setTimeout(tick, 220);
-    }
-    n += deleting ? -1 : 1;
-    txt.textContent = words[w].slice(0, n);
-    setTimeout(tick, deleting ? 32 : 70);
-  };
-  setTimeout(tick, 1700);
-})();
-const themeBtn = document.getElementById("theme");
-const syncThemeLabel = () => themeBtn.setAttribute("aria-label", document.documentElement.dataset.theme === "light" ? "Switch to dark mode" : "Switch to light mode");
-syncThemeLabel();
-themeBtn.addEventListener("click", () => {
-  const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("clipped.theme", next); } catch (e) {}
-  syncThemeLabel();
-});
-const addNow = document.getElementById("add-now"), quick = document.getElementById("quick-install");
-addNow.addEventListener("click", () => {
-  quick.hidden = !quick.hidden;
-  addNow.setAttribute("aria-expanded", String(!quick.hidden));
-  addNow.textContent = quick.hidden ? "Install it" : "Hide install steps";
-  if (!quick.hidden) {
-    const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    requestAnimationFrame(() => quick.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }));
-  }
-});
-document.querySelectorAll(".copy").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const text = btn.parentElement.querySelector("code").textContent;
-    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
-    catch { btn.textContent = "Select it"; }
-    setTimeout(() => (btn.textContent = "Copy"), 1400);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// The Story copy. {rot} in the title is where the changing word goes.
+const WORDS = [["idea", "--accent"], ["decision", "--review"], ["half-done feature", "--parked"], ["edge case", "--active"], ["research", "--done"]];
+const STORY = {
+  pill: "A plugin for Claude Code",
+  lede: "Clipped plugs into Claude Code and works as your silent product manager, sorting your research, questions and features onto an organized board as you go.",
+  points: ["Install once", "Code as usual", "Never lose a thought"],
+  probEyebrow: "You know the drill",
+  probTitle: "By Friday, your chat history looks like a crime scene",
+  probBody: "Session 1: architecture and research. Session 2: the core logic. Session 3: a quick fix because something broke. You know you discussed an incredible feature — but in which chat? Did you finish it? Did you leave an edge case behind?",
+  finalTitle: "Install once. Code forever. Never lose a thought.",
+  finalBody: "Clipped captures the debris of your development cycle, so the next session starts where the last one stopped.",
+};
+const TITLE = "Never lose that<br>{rot} again.";
+
+const tick = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const h1 = document.getElementById("h1");
+let rotTimer = null, rotFit = null;
+
+// Headline word: slide one up and out, the next up and in, and ease the chip to its width.
+function startRotation(words) {
+  const rot = h1.querySelector(".rot"), sr = h1.querySelector(".sr");
+  const spans = [...rot.children];
+  let i = 0;
+  rotFit = () => { rot.style.width = spans[i].getBoundingClientRect().width + "px"; rot.style.setProperty("--c", `var(${words[i][1]})`); };
+  rotFit();
+  if (reduce) return;
+  rotTimer = setInterval(() => {
+    const cur = spans[i]; i = (i + 1) % spans.length; const next = spans[i];
+    cur.classList.remove("on"); cur.classList.add("out");
+    next.classList.remove("out"); next.classList.add("on");
+    rotFit();
+    sr.textContent = words[i][0];
+    setTimeout(() => cur.classList.remove("out"), 600);
+  }, 2400);
+}
+
+function render() {
+  const spans = WORDS.map(([w, col], k) => `<span class="${k ? "" : "on"}" style="color: var(${col})">${esc(w)}</span>`).join("");
+  h1.innerHTML = TITLE.replace("{rot}", `<span class="rot" aria-hidden="true">${spans}</span><span class="sr">${esc(WORDS[0][0])}</span>`);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => startRotation(WORDS));
+  document.querySelectorAll("[data-t]").forEach((el) => {
+    const v = STORY[el.dataset.t];
+    if (Array.isArray(v)) el.innerHTML = v.map((p) => `<li>${tick}${esc(p)}</li>`).join("");
+    else el.textContent = v;
+  });
+}
+render();
+addEventListener("resize", () => rotFit && rotFit());
+
+// Install tabs.
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+tabs.forEach((t) => t.addEventListener("click", () => {
+  tabs.forEach((o) => {
+    const on = o === t;
+    o.setAttribute("aria-selected", on);
+    document.getElementById(o.getAttribute("aria-controls")).hidden = !on;
+  });
+}));
+
+// Copy buttons.
+const copyIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M3 10.5V4a1.5 1.5 0 0 1 1.5-1.5H11"/></svg>';
+document.querySelectorAll(".copy").forEach((b) => {
+  b.innerHTML = copyIcon + "<span>Copy</span>";
+  b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(b.previousElementSibling.textContent.trim()); } catch (e) { return; }
+    b.classList.add("done"); b.innerHTML = tick + "<span>Copied</span>";
+    setTimeout(() => { b.classList.remove("done"); b.innerHTML = copyIcon + "<span>Copy</span>"; }, 1600);
   });
 });
+
+// Theme toggle (shares the key with the current page).
+document.getElementById("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("clipped.theme", root.dataset.theme); } catch (e) {}
+});
+
+// Nav border once you scroll, and a gentle reveal for sections.
+const topBar = document.getElementById("top");
+addEventListener("scroll", () => topBar.classList.toggle("scrolled", scrollY > 8), { passive: true });
+if (reduce || !("IntersectionObserver" in window)) document.querySelectorAll(".rv").forEach((e) => e.classList.add("in"));
+else {
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rv").forEach((e) => io.observe(e));
+}
 </script>
 </body>
 </html>

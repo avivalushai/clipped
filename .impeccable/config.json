@@ -10,25 +10,25 @@
           "landing/install.html"
         ],
         "createdAt": "2026-09-27T11:08:29.027Z",
-        "reason": "Claude triage: both hits are intentional insets owned by children — the step-list rail's links carry 16px left padding, and table cells carry 16px/20px padding inside .table-wrap (same pattern as the landing page)"
+        "reason": "Claude triage: both hits are intentional insets owned by children \u2014 the step-list rail's links carry 16px left padding, and table cells carry 16px/20px padding inside .table-wrap (same pattern as the landing page)"
       },
       {
         "rule": "cramped-padding",
         "value": "*",
         "files": [
-          "landing/v2.html"
+          "landing/index.html"
         ],
-        "createdAt": "2026-09-28T10:08:53.894Z",
-        "reason": "Claude: flagged stage/window/chrome are a screenshot frame that bleeds to the edge by design; flagged li has border-top removed on :first-child, which the static check misses"
+        "createdAt": "2026-09-28T11:08:12.979Z",
+        "reason": "Claude: flagged stage/window/chrome are browser-window frames around screenshots and the example board (same page as v4)"
       },
       {
         "rule": "nested-cards",
         "value": "*",
         "files": [
-          "landing/v2.html"
+          "landing/index.html"
         ],
-        "createdAt": "2026-09-28T10:08:53.922Z",
-        "reason": "Aviv asked for Cal.com-style cards, which are a card with an inset visual panel"
+        "createdAt": "2026-09-28T11:08:13.004Z",
+        "reason": "Aviv asked for Cal.com-style cards and the original hero board; index.html is now v4"
       }
     ]
   }
