@@ -280,6 +280,13 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 /* ---------- spreadsheet table ---------- */
 .grid table{table-layout:fixed;min-width:1080px}
 .grid th,.grid td{border-right:1px solid var(--line)}
+.grid th{position:relative}
+.colgrip{position:absolute;top:0;right:-5px;width:10px;height:100%;cursor:col-resize;z-index:2;touch-action:none}
+.colgrip::after{content:"";position:absolute;top:22%;bottom:22%;left:4px;width:2px;border-radius:2px;background:transparent;transition:background-color .12s ease}
+.grid th:hover .colgrip::after{background:var(--line-2,var(--line))}
+.colgrip:hover::after,.colgrip.drag::after{background:var(--accent)}
+body.resizing,body.resizing *{cursor:col-resize!important;user-select:none!important}
+.colreset{display:block;margin-top:6px}
 .grid th:last-child,.grid td:last-child{border-right:0}
 .grid td{padding:6px 10px;height:44px}
 .grid tbody tr{cursor:default}
@@ -826,6 +833,7 @@ function renderPage(){
         <option value="compact" ${P.density==='compact'?'selected':''}>Compact</option></select></span>
       <details class="cols"><summary class="opt" style="padding-right:9px">Columns · ${visibleCols(isHome).length}</summary><div class="menu">
         ${COLS.filter(c=>!c.home||isHome).map(c=>`<label><input type="checkbox" data-col="${c.id}" ${!P.hidden.includes(c.id)?'checked':''} ${c.lock?'disabled':''}>${colLabel(c)}</label>`).join('')}
+        ${P.colW&&Object.keys(P.colW).length?`<button class="linkbtn colreset" id="colReset" type="button">Reset widths</button>`:''}
       </div></details>`:''}
       <label class="opt"><input type="checkbox" id="hideDone" ${P.hideDone?'checked':''}>Hide done</label>
     </div>
@@ -835,6 +843,9 @@ function renderPage(){
   h+= P.mode==='table'?renderTable(fs,isHome): P.mode==='board'?renderBoard(fs,isHome): renderTimeline(fs,isHome);
   return h;
 }
+/* Column widths the user dragged, per table kind; the default otherwise. */
+const cw=(map,c)=>(P[map]&&P[map][c.id])||c.w;
+const grip=(map,c)=>`<span class="colgrip" data-grip="${c.id}" data-map="${map}" title="Drag to resize · double-click to reset" aria-hidden="true"></span>`;
 const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&!P.hidden.includes(c.id));
 
 function groupsOf(fs,isHome){
@@ -896,9 +907,9 @@ function renderNotesPage(isHome){
   let rows=S.projects.length?noteComposer(cols,isHome):'';
   for(const n of ns) rows+=`<tr data-nrow="${n.id}">${cols.map(c=>noteCell(c,n,isHome)).join('')}</tr>`;
   if(!ns.length) rows+=`<tr><td colspan="${cols.length}" class="empty">${esc(NOTE_EMPTY[TAB().note])}</td></tr>`;
-  const minW=cols.reduce((a,c)=>a+c.w,0);
+  const minW=cols.reduce((a,c)=>a+cw('noteColW',c),0);
   return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
-    <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+    <thead><tr>${cols.map(c=>`<th style="width:${cw('noteColW',c)}px">${grip('noteColW',c)}${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint">Click a row to open it; hover a cell and click its pencil to edit it here. ${esc(NOTE_HINT[TAB().note])}</p>`;
 }
 
@@ -954,7 +965,7 @@ function composerRow(cols,isHome){
 }
 function renderTable(fs,isHome){
   const cols=visibleCols(isHome);
-  const th=c=>`<th style="${c.flex?`min-width:${c.w}px`:`width:${c.w}px`}">${c.id==='key'?`<input type="checkbox" class="rowsel" id="selAll" aria-label="Select all shown" ${fs.length&&fs.every(f=>sel.has(f.id))?'checked':''}>`:''}${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
+  const th=c=>`<th style="${c.flex&&!(P.colW&&P.colW[c.id])?`min-width:${c.w}px`:`width:${cw('colW',c)}px`}">${grip('colW',c)}${c.id==='key'?`<input type="checkbox" class="rowsel" id="selAll" aria-label="Select all shown" ${fs.length&&fs.every(f=>sel.has(f.id))?'checked':''}>`:''}${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
   let rows=composerRow(cols,isHome);
   for(const g of groupsOf(sortFs(fs),isHome)){
     const shut=g.id&&(P.collapsed||[]).includes(g.id);
@@ -963,7 +974,7 @@ function renderTable(fs,isHome){
     for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
   }
   if(!fs.length) rows+=`<tr><td colspan="${cols.length}" class="empty">Nothing here yet. Add one in the row above.</td></tr>`;
-  const minW=cols.reduce((a,c)=>a+c.w,0);
+  const minW=cols.reduce((a,c)=>a+cw('colW',c),0);
   return `${bulkBar()}<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint">Click a row to open its card. Hover a title or note and click its pencil to edit it here.</p>`;
 }
@@ -1125,13 +1136,35 @@ function bindNotes(p,isHome){
     const f=S.features.find(x=>x.id===b.dataset.card); if(!f) return;
     P.tab=f.type==='question'?'questions':'features'; filter='all'; savePrefs(); openId=f.id; render();
   });
-  bindPencils();
+  bindPencils(); bindGrips();
   document.querySelectorAll('tr[data-nrow]').forEach(tr=>tr.addEventListener('click',e=>{
     if(e.target.closest('input,select,button,textarea,label,a')) return;   // editing, not opening
     openNote=tr.dataset.nrow; renderDrawer();
   }));
 }
 
+/* Drag a header's right edge to resize its column; double-click to reset it.
+   Widths live with the other view prefs in this browser. */
+function bindGrips(){
+  document.querySelectorAll('.colgrip').forEach(g=>{
+    g.onpointerdown=e=>{
+      e.preventDefault(); e.stopPropagation();
+      const th=g.parentElement, table=th.closest('table'), map=g.dataset.map, id=g.dataset.grip;
+      const x0=e.clientX, w0=th.getBoundingClientRect().width, t0=parseFloat(table.style.minWidth)||table.getBoundingClientRect().width;
+      try{ g.setPointerCapture(e.pointerId) }catch(err){}
+      g.classList.add('drag'); document.body.classList.add('resizing');
+      /* On the window, not the grip: the pointer leaves a 10px grip at once. */
+      const move=ev=>{ const w=Math.max(56,Math.round(w0+ev.clientX-x0)); th.style.width=w+'px'; th.style.minWidth=''; table.style.minWidth=(t0+w-w0)+'px' };
+      const up=()=>{ removeEventListener('pointermove',move); removeEventListener('pointerup',up); removeEventListener('pointercancel',up);
+        g.classList.remove('drag'); document.body.classList.remove('resizing');
+        P[map]={...(P[map]||{}),[id]:Math.round(th.getBoundingClientRect().width)}; savePrefs() };
+      addEventListener('pointermove',move); addEventListener('pointerup',up); addEventListener('pointercancel',up);
+    };
+    g.onclick=e=>e.stopPropagation();
+    g.ondblclick=e=>{ e.stopPropagation(); const map=g.dataset.map; if(P[map]){ delete P[map][g.dataset.grip]; savePrefs(); render() } };
+  });
+  if($('colReset')) $('colReset').onclick=()=>{ P.colW={}; savePrefs(); render() };
+}
 function bindPencils(){
   document.querySelectorAll('[data-editcell]').forEach(b=>b.onclick=e=>{
     e.stopPropagation(); editCell=b.dataset.editcell; render();
@@ -1205,6 +1238,7 @@ function bindPage(){
       saveCard(f,{[k]:v}).then(ok=>ok&&toast('Saved'));
     });
   });
+  bindGrips();
   // selection and bulk actions
   document.querySelectorAll('input.rowsel[data-sel]').forEach(c=>c.onchange=()=>{c.checked?sel.add(c.dataset.sel):sel.delete(c.dataset.sel);render()});
   if($('selAll')) $('selAll').onchange=e=>{const ids=scopeFeatures().map(f=>f.id);if(e.target.checked) ids.forEach(i=>sel.add(i)); else ids.forEach(i=>sel.delete(i));render()};
