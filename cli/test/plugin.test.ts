@@ -1,23 +1,25 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type { Env } from "../src/context.js";
-import { sandbox, withBoard } from "./helpers.js";
+import { type Sandbox, sandbox, withBoard } from "./helpers.js";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (p: string) => fs.readFileSync(path.join(repo, p), "utf8");
 const readJson = (p: string) => JSON.parse(read(p));
 
 /** Run a hook script the way Claude Code does: JSON on stdin, JSON or nothing on stdout. */
+/** Runs a hook; `code` 2 with `err` is how the Stop hook keeps Claude going. */
 function runHook(script: string, input: unknown, env: Env = {}) {
-  const out = execFileSync(process.execPath, [path.join(repo, "hooks", script)], {
+  const r = spawnSync(process.execPath, [path.join(repo, "hooks", script)], {
     input: JSON.stringify(input),
     encoding: "utf8",
     env: { ...process.env, ...env } as NodeJS.ProcessEnv,
   });
-  return { raw: out, json: out.trim() ? JSON.parse(out) : null };
+  const out = r.stdout ?? "";
+  return { raw: out, json: out.trim() ? JSON.parse(out) : null, code: r.status, err: r.stderr ?? "" };
 }
 
 describe("plugin manifests", () => {
@@ -232,10 +234,10 @@ describe("hook behaviour", () => {
     runHook("post-tool-use.mjs", {
       session_id: "s4", cwd: sb.root, tool_name: "Write", tool_input: { file_path: path.join(sb.root, "notes.md") },
     }, env);
-    const blocked = stop().json;
-    expect(blocked.hookSpecificOutput).toMatchObject({ hookEventName: "Stop", decision: "block" });
-    expect(blocked.hookSpecificOutput.reason).toContain("board");
-    expect(stop().raw).toBe(""); // never twice for the same edit
+    const blocked = stop();
+    expect(blocked.code).toBe(2);
+    expect(blocked.err).toContain("Code changed but the Clipped board didn't");
+    expect(stop().code).toBe(0); // never twice for the same edit
   });
 
   it("Stop keeps quiet once the board has moved, and while a Stop hook is already blocking", () => {
@@ -250,6 +252,48 @@ describe("hook behaviour", () => {
     sb.board("update", "APP-1", "--note", "Wired the Save button"); // board moves after the edit
     expect(runHook("stop.mjs", { session_id: "s5", cwd: sb.root }, env).raw).toBe("");
     expect(runHook("stop.mjs", { session_id: "s5", cwd: sb.root, stop_hook_active: true }, env).raw).toBe("");
+  });
+
+  describe("Stop reads the reply for what it left behind", () => {
+    const setup = () => {
+      const sb = withBoard();
+      delete sb.env.CLIPPED_NOW; // compares board times against real stop times
+      return { sb, env: { CLAUDE_PLUGIN_DATA: sb.home } };
+    };
+    const stop = (sb: Sandbox, env: Env, session: string, reply: string, turn?: string) =>
+      runHook("stop.mjs", { hook_event_name: "Stop", session_id: session, cwd: sb.root, prompt_id: turn, last_assistant_message: reply }, env);
+
+    it("nudges once when the reply leaves the user a step and the board didn't move", () => {
+      const { sb, env } = setup();
+      const r = stop(sb, env, "t1", "Done. You'll need to add the Stripe keys in Vercel before it works.", "p1");
+      expect(r.code).toBe(2);
+      expect(r.err).toContain("a step only the user can do");
+      expect(r.err).toContain("Before you end a turn");
+      expect(stop(sb, env, "t1", "Nothing worth a row here.", "p1").code).toBe(0); // once per turn
+    });
+
+    it("names each kind it found", () => {
+      const { sb, env } = setup();
+      const r = stop(sb, env, "t2", "We decided to drop Safari 15. The export isn't tested yet.", "p1");
+      expect(r.code).toBe(2);
+      expect(r.err).toContain("something not done");
+      expect(r.err).toContain("a decision");
+    });
+
+    it("stays quiet for a plain reply, a reply with the Board footer, or a turn that moved the board", async () => {
+      const { sb, env } = setup();
+      expect(stop(sb, env, "t3", "All 194 tests pass.", "p1").code).toBe(0);
+      expect(stop(sb, env, "t3", "You'll need to restart it.\n\nBoard: APP-1 Save loops → review", "p2").code).toBe(0);
+      await new Promise((r) => setTimeout(r, 1100)); // card logs have second resolution
+      sb.board("add", "Restart the server", "--type", "chore");
+      expect(stop(sb, env, "t3", "You'll need to restart the server.", "p3").code).toBe(0);
+    });
+
+    it("without a turn id, never nudges twice in a row", () => {
+      const { sb, env } = setup();
+      expect(stop(sb, env, "t4", "You'll need to update the plugin.").code).toBe(2);
+      expect(stop(sb, env, "t4", "You'll need to update the plugin — nothing to record, it's done.").code).toBe(0);
+    });
   });
 
   it("survives junk input instead of breaking the session", () => {

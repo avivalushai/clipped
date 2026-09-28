@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 50,
+  "nextNum": 51,
   "features": [
     {
       "key": "LE-1",
@@ -1832,16 +1832,17 @@
       "title": "A second landing page to compare against the first",
       "type": "feature",
       "status": "review",
-      "note": "Aviv reviews landing/v3.html (v2 layout + original hero board, chip headline) and picks a copy version",
+      "note": "Aviv reviews landing/v4.html (title B, rules section, live dot); then decide whether it replaces index.html",
       "doneWhen": [],
       "steps": [],
       "files": [
         "landing/v2.html",
-        "landing/v3.html"
+        "landing/v3.html",
+        "landing/v4.html"
       ],
       "links": [],
       "createdAt": "2026-09-28T10:08:05Z",
-      "updatedAt": "2026-09-28T10:37:53Z",
+      "updatedAt": "2026-09-28T11:00:52Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -1863,6 +1864,47 @@
           "at": "2026-09-28T10:37:53Z",
           "by": "claude",
           "text": "Note: Aviv reviews landing/v3.html (v2 layout + original hero board, chip headline) and picks a copy version"
+        },
+        {
+          "at": "2026-09-28T10:52:25Z",
+          "by": "claude",
+          "text": "Files: landing/v4.html"
+        },
+        {
+          "at": "2026-09-28T10:52:25Z",
+          "by": "claude",
+          "text": "Note: Aviv picks a title (A–D) on landing/v4.html; then it replaces index.html"
+        },
+        {
+          "at": "2026-09-28T11:00:52Z",
+          "by": "claude",
+          "text": "Note: Aviv reviews landing/v4.html (title B, rules section, live dot); then decide whether it replaces index.html"
+        }
+      ]
+    },
+    {
+      "key": "LE-50",
+      "title": "End-of-turn hook catches what a reply leaves behind",
+      "type": "feature",
+      "status": "review",
+      "note": "In a real session, end a reply with 'you'll need to…' without touching the board: Claude should get one nudge to record it, and never loop",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "hooks/stop.mjs",
+        "cli/test/plugin.test.ts",
+        "skills/clipped/SKILL.md",
+        "SPEC.md"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T11:00:53Z",
+      "updatedAt": "2026-09-28T11:00:53Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T11:00:53Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }
