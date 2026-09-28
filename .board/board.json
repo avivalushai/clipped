@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 85,
+  "nextNum": 88,
   "features": [
     {
       "key": "LE-1",
@@ -336,10 +336,11 @@
         "cli/src/cli.ts",
         "cli/test/sessions.test.ts",
         "cli/src/areas.ts",
-        "cli/test/structure.test.ts"
+        "cli/test/structure.test.ts",
+        "cli/test/board-ui.test.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-28T15:25:51Z",
+      "updatedAt": "2026-09-28T17:15:13Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3402,10 +3403,12 @@
         "README.md",
         "landing/install.html"
       ],
-      "links": [],
+      "links": [
+        "5f22db4"
+      ],
       "area": "",
       "createdAt": "2026-09-28T17:04:34Z",
-      "updatedAt": "2026-09-28T17:04:34Z",
+      "updatedAt": "2026-09-28T17:05:29Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3417,6 +3420,98 @@
           "at": "2026-09-28T17:04:34Z",
           "by": "claude",
           "text": "Moved to review — Open http://clipped.localhost:4747 in Chrome and Safari: the board loads with your projects; localhost:4747 still works"
+        },
+        {
+          "at": "2026-09-28T17:05:29Z",
+          "by": "claude",
+          "text": "Proof: 5f22db4"
+        }
+      ]
+    },
+    {
+      "key": "LE-85",
+      "title": "How will users know how to open the board, and does the port change?",
+      "type": "question",
+      "status": "done",
+      "note": "Decided: build the fix. board ui reuses a running board, starts it in the background, remembers a fallback port, --stop stops it; the link shows at session start.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:08:01Z",
+      "updatedAt": "2026-09-28T17:16:38Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T17:08:01Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T17:08:01Z",
+          "by": "claude",
+          "text": "Moved to review — Today: /clipped:board or 'board ui' opens it and prints the address; nothing shows it later. Confirmed the port drifts: a second board ui started a new server on 4749 instead of reusing 4747, and a server started from Claude can die with the command. Proposed fix: board ui reuses a running board on 4747; remember a fallback port if another app holds 4747; run in the background with --stop; show the link at session start and in /clipped:board."
+        },
+        {
+          "at": "2026-09-28T17:16:38Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-86",
+      "title": "The board keeps one address: board ui reuses it and runs it in the background",
+      "type": "feature",
+      "status": "review",
+      "note": "Run /clipped:board twice: same link (clipped.localhost:4747), 'already running' the second time; close Claude and the link still opens; /clipped:board stop stops it",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "cli/src/commands.ts",
+        "server/src/server.ts",
+        "hooks/session-start.mjs",
+        "commands/board.md",
+        "cli/test/board-ui.test.ts"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:16:38Z",
+      "updatedAt": "2026-09-28T17:16:38Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T17:16:38Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T17:16:38Z",
+          "by": "claude",
+          "text": "Moved to review — Run /clipped:board twice: same link (clipped.localhost:4747), 'already running' the second time; close Claude and the link still opens; /clipped:board stop stops it"
+        }
+      ]
+    },
+    {
+      "key": "LE-87",
+      "title": "The Stop hook nudges at most once per turn",
+      "type": "feature",
+      "status": "review",
+      "note": "One shared per-turn guard in hooks/stop.mjs covers both checks; new test in cli/test/plugin.test.ts. Uncommitted.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:18:21Z",
+      "updatedAt": "2026-09-28T17:18:21Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T17:18:21Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }

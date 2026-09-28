@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { clearAuth, readAuth, readSettings, siteUrl, writeAuth, writeSettings } from "./account.js";
 import { track } from "./analytics.js";
@@ -556,22 +557,87 @@ export function remove(ctx: Ctx, { pos, opts }: Args) {
 }
 
 /** Start the local server and open the board. Imported lazily: the server imports the CLI back. */
-export function ui(ctx: Ctx, { opts }: Args) {
-  const port = str(opts, "port") ? Number(str(opts, "port")) : undefined;
-  if (port !== undefined && (!Number.isInteger(port) || port < 1 || port > 65535)) throw new UserError("--port must be a port number");
+/* The board is one small program per computer, on one port, running in the background.
+   `board ui` opens the one that's running, or starts it — it never starts a second copy,
+   so the address doesn't wander (4748, 4749…) and a bookmark keeps working. */
+const BOARD_PORT = 4747;
+const boardLink = (port: number) => `http://clipped.localhost:${port}`;
 
-  void import("../../server/src/server.js")
-    .then(({ listen, DEFAULT_PORT, boardUrl }) => listen(ctx, port ?? DEFAULT_PORT).then((r) => ({ url: boardUrl(r.url) })))
-    .then(({ url }) => {
-      const projects = readRegistry(ctx).length;
-      ctx.out(`Clipped → ${url}`);
-      ctx.out(`${projects} project${projects === 1 ? "" : "s"} · board data stays on this machine · Ctrl-C to stop`);
-      if (!opts["no-open"]) openBrowser(url);
-    })
-    .catch((e: Error) => {
-      ctx.err(`board: can't start the server: ${e.message}`);
-      process.exitCode = 1;
-    });
+/** What answers on a port: our board (with its pid), another app, or nothing. */
+async function probe(port: number): Promise<{ clipped: true; pid: number; version: string } | { clipped: false; busy: boolean }> {
+  try {
+    const r = await fetch(`http://127.0.0.1:${port}/api/hello`, { signal: AbortSignal.timeout(800) });
+    const b = (await r.json().catch(() => ({}))) as { app?: string; pid?: number; version?: string };
+    if (b.app === "clipped" && typeof b.pid === "number") return { clipped: true, pid: b.pid, version: b.version ?? "" };
+    // A board from before 0.7.2 has no /api/hello, but it does list projects. It's ours: reuse it.
+    const older = await fetch(`http://127.0.0.1:${port}/api/projects`, { signal: AbortSignal.timeout(800) }).catch(() => null);
+    if (older?.ok && Array.isArray(await older.json().catch(() => null))) return { clipped: true, pid: 0, version: "older" };
+    return { clipped: false, busy: true };
+  } catch (e) {
+    // Refused = free. Anything else (a timeout, a non-HTTP app) = something is there.
+    const code = (e as { cause?: { code?: string } }).cause?.code;
+    return { clipped: false, busy: code !== "ECONNREFUSED" };
+  }
+}
+
+export function ui(ctx: Ctx, { opts }: Args) {
+  const asked = str(opts, "port") ? Number(str(opts, "port")) : undefined;
+  if (asked !== undefined && (!Number.isInteger(asked) || asked < 1 || asked > 65535)) throw new UserError("--port must be a port number");
+  const fail = (e: Error) => {
+    ctx.err(`board: ${e.message}`);
+    process.exitCode = 1;
+  };
+
+  // The background copy itself: serve on exactly this port until stopped.
+  if (opts.foreground) {
+    void import("../../server/src/server.js")
+      .then(({ listen }) => listen(ctx, asked ?? BOARD_PORT, { tries: 0 }))
+      .then(({ url }) => ctx.out(`Clipped → ${url.replace("//localhost:", "//clipped.localhost:")} · Ctrl-C to stop`))
+      .catch((e: Error) => fail(new Error(`can't start the board: ${e.message}`)));
+    return;
+  }
+
+  void (async () => {
+    const settings = readSettings(ctx);
+    const home = asked ?? settings.port ?? BOARD_PORT;
+
+    if (opts.stop) {
+      const found = await probe(home);
+      if (!found.clipped) return ctx.out(`No board running on ${home}.`);
+      if (!found.pid) return ctx.out(`The board on ${home} is from an older version and can't be stopped this way — close the terminal it runs in, or restart the computer.`);
+      process.kill(found.pid);
+      return ctx.out(`Stopped the board on ${home}.`);
+    }
+
+    // Our board already running? Open it. Otherwise find the first port that's free or ours.
+    let port = home;
+    let found = await probe(port);
+    for (let i = 0; !found.clipped && found.busy && i < 20; i++) found = await probe(++port);
+    if (!found.clipped && found.busy) throw new Error(`ports ${home}–${port} are all taken by other apps; try board ui --port <n>`);
+    if (port !== home && asked === undefined) {
+      writeSettings(ctx, { ...settings, port }); // remember it, so the address is the same next time
+    }
+
+    if (!found.clipped) {
+      const child = spawn(process.execPath, [...process.execArgv, process.argv[1]!, "ui", "--foreground", "--port", String(port)], {
+        detached: true,
+        stdio: "ignore",
+        env: process.env,
+        cwd: os.homedir(),
+      });
+      child.unref();
+      for (let i = 0; i < 40 && !(await probe(port)).clipped; i++) await new Promise((r) => setTimeout(r, 100));
+      if (!(await probe(port)).clipped) throw new Error("the board didn't start — run board ui --foreground to see why");
+    }
+
+    const url = boardLink(port);
+    const projects = readRegistry(ctx).length;
+    ctx.out(`Clipped → ${url}`);
+    ctx.out(
+      `${projects} project${projects === 1 ? "" : "s"} · board data stays on this machine · ${found.clipped ? "already running" : "runs in the background"} · board ui --stop to stop`,
+    );
+    if (!opts["no-open"]) openBrowser(url);
+  })().catch(fail);
 }
 
 function openBrowser(url: string): void {

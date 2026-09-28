@@ -1,6 +1,7 @@
 import path from "node:path";
 import { parseArgs, type ParseArgsConfig } from "node:util";
 import * as cmd from "./commands.js";
+import { VERSION } from "./version.js";
 import { type Ctx, UserError } from "./context.js";
 
 type OptSpec = NonNullable<ParseArgsConfig["options"]>;
@@ -60,7 +61,7 @@ const COMMANDS: Record<string, Command> = {
   },
   touch: { usage: "touch <file>... [--card LOOP-3]", options: { card: s }, run: cmd.touch },
   context: { usage: "context", options: {}, run: cmd.context },
-  ui: { usage: "ui [--port 4747] [--no-open]", options: { port: s, "no-open": flag }, run: cmd.ui },
+  ui: { usage: "ui [--port 4747] [--no-open] [--stop]", options: { port: s, "no-open": flag, stop: flag, foreground: flag }, run: cmd.ui },
   login: { usage: "login [--no-open]", options: { "no-open": flag }, run: cmd.login },
   logout: { usage: "logout", options: {}, run: cmd.logout },
   telemetry: { usage: "telemetry [off|on|status]", options: {}, run: cmd.telemetry },
@@ -86,7 +87,7 @@ export function run(argv: string[], ctx: Ctx): number {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.7.1");
+    ctx.out(VERSION);
     return 0;
   }
   const command = COMMANDS[name];

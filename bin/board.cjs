@@ -126,7 +126,8 @@ function readSettings(ctx) {
   const settings = {
     installId: typeof raw.installId === "string" && raw.installId ? raw.installId : import_node_crypto.default.randomUUID(),
     telemetry: raw.telemetry !== false,
-    ...raw.toldAboutTelemetry ? { toldAboutTelemetry: true } : {}
+    ...raw.toldAboutTelemetry ? { toldAboutTelemetry: true } : {},
+    ...Number.isInteger(raw.port) && raw.port > 0 ? { port: raw.port } : {}
   };
   if (raw.installId !== settings.installId) writeSettings(ctx, settings);
   return settings;
@@ -1175,12 +1176,19 @@ var init_watch = __esm({
   }
 });
 
+// cli/src/version.ts
+var VERSION;
+var init_version = __esm({
+  "cli/src/version.ts"() {
+    "use strict";
+    VERSION = "0.7.2";
+  }
+});
+
 // server/src/server.ts
 var server_exports = {};
 __export(server_exports, {
-  BOARD_HOST: () => BOARD_HOST,
   DEFAULT_PORT: () => DEFAULT_PORT,
-  boardUrl: () => boardUrl,
   createServer: () => createServer,
   listen: () => listen
 });
@@ -1252,6 +1260,7 @@ data: ${JSON.stringify(data)}
         return void res.end();
       }
       if (!ALLOWED_HOST.test(req.headers.host ?? "")) return json(res, 403, { error: "loopback only" });
+      if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });
       if (urlPath === "/api/events") {
         res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
         clients.add(res);
@@ -1300,7 +1309,7 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, BOARD_HOST, boardUrl, MIME, json;
+var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
@@ -1310,11 +1319,10 @@ var init_server = __esm({
     import_node_url = require("node:url");
     init_api();
     init_watch();
+    init_version();
     DEFAULT_PORT = 4747;
     ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?clipped\.dev$/;
     ALLOWED_HOST = /^(localhost|clipped\.localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
-    BOARD_HOST = "clipped.localhost";
-    boardUrl = (url) => url.replace("//localhost:", `//${BOARD_HOST}:`);
     MIME = {
       ".html": "text/html; charset=utf-8",
       ".js": "text/javascript; charset=utf-8",
@@ -1724,11 +1732,11 @@ function touch(ctx, { pos, opts }) {
   if (!rels.length) return nothing("no files inside the project");
   const target = str2(opts, "card");
   const board2 = readBoard(loc.file);
-  const probe = target ? findFeature(board2, target) : activeFeature(board2);
-  if (!probe) return nothing("no active card");
+  const probe2 = target ? findFeature(board2, target) : activeFeature(board2);
+  if (!probe2) return nothing("no active card");
   const wanted = (f, r) => !f.files.includes(r) && (!!target || fileFits(f, r));
-  if (!rels.some((r) => wanted(probe, r)))
-    return nothing(rels.every((r) => probe.files.includes(r)) ? "already attached" : "no card these files belong to");
+  if (!rels.some((r) => wanted(probe2, r)))
+    return nothing(rels.every((r) => probe2.files.includes(r)) ? "already attached" : "no card these files belong to");
   const by = actor(ctx, str2(opts, "by"));
   const res = mutateBoard(loc, (b) => {
     const f = target ? findFeature(b, target) : activeFeature(b);
@@ -1750,18 +1758,66 @@ function remove(ctx, { pos, opts }) {
   });
   emit(ctx, opts, f, `Deleted ${f.key} ${f.title}`);
 }
+async function probe(port) {
+  try {
+    const r = await fetch(`http://127.0.0.1:${port}/api/hello`, { signal: AbortSignal.timeout(800) });
+    const b = await r.json().catch(() => ({}));
+    if (b.app === "clipped" && typeof b.pid === "number") return { clipped: true, pid: b.pid, version: b.version ?? "" };
+    const older = await fetch(`http://127.0.0.1:${port}/api/projects`, { signal: AbortSignal.timeout(800) }).catch(() => null);
+    if (older?.ok && Array.isArray(await older.json().catch(() => null))) return { clipped: true, pid: 0, version: "older" };
+    return { clipped: false, busy: true };
+  } catch (e) {
+    const code = e.cause?.code;
+    return { clipped: false, busy: code !== "ECONNREFUSED" };
+  }
+}
 function ui(ctx, { opts }) {
-  const port = str2(opts, "port") ? Number(str2(opts, "port")) : void 0;
-  if (port !== void 0 && (!Number.isInteger(port) || port < 1 || port > 65535)) throw new UserError("--port must be a port number");
-  void Promise.resolve().then(() => (init_server(), server_exports)).then(({ listen: listen2, DEFAULT_PORT: DEFAULT_PORT2, boardUrl: boardUrl2 }) => listen2(ctx, port ?? DEFAULT_PORT2).then((r) => ({ url: boardUrl2(r.url) }))).then(({ url }) => {
+  const asked = str2(opts, "port") ? Number(str2(opts, "port")) : void 0;
+  if (asked !== void 0 && (!Number.isInteger(asked) || asked < 1 || asked > 65535)) throw new UserError("--port must be a port number");
+  const fail = (e) => {
+    ctx.err(`board: ${e.message}`);
+    process.exitCode = 1;
+  };
+  if (opts.foreground) {
+    void Promise.resolve().then(() => (init_server(), server_exports)).then(({ listen: listen2 }) => listen2(ctx, asked ?? BOARD_PORT, { tries: 0 })).then(({ url }) => ctx.out(`Clipped \u2192 ${url.replace("//localhost:", "//clipped.localhost:")} \xB7 Ctrl-C to stop`)).catch((e) => fail(new Error(`can't start the board: ${e.message}`)));
+    return;
+  }
+  void (async () => {
+    const settings = readSettings(ctx);
+    const home = asked ?? settings.port ?? BOARD_PORT;
+    if (opts.stop) {
+      const found2 = await probe(home);
+      if (!found2.clipped) return ctx.out(`No board running on ${home}.`);
+      if (!found2.pid) return ctx.out(`The board on ${home} is from an older version and can't be stopped this way \u2014 close the terminal it runs in, or restart the computer.`);
+      process.kill(found2.pid);
+      return ctx.out(`Stopped the board on ${home}.`);
+    }
+    let port = home;
+    let found = await probe(port);
+    for (let i = 0; !found.clipped && found.busy && i < 20; i++) found = await probe(++port);
+    if (!found.clipped && found.busy) throw new Error(`ports ${home}\u2013${port} are all taken by other apps; try board ui --port <n>`);
+    if (port !== home && asked === void 0) {
+      writeSettings(ctx, { ...settings, port });
+    }
+    if (!found.clipped) {
+      const child = (0, import_node_child_process.spawn)(process.execPath, [...process.execArgv, process.argv[1], "ui", "--foreground", "--port", String(port)], {
+        detached: true,
+        stdio: "ignore",
+        env: process.env,
+        cwd: import_node_os3.default.homedir()
+      });
+      child.unref();
+      for (let i = 0; i < 40 && !(await probe(port)).clipped; i++) await new Promise((r) => setTimeout(r, 100));
+      if (!(await probe(port)).clipped) throw new Error("the board didn't start \u2014 run board ui --foreground to see why");
+    }
+    const url = boardLink(port);
     const projects = readRegistry(ctx).length;
     ctx.out(`Clipped \u2192 ${url}`);
-    ctx.out(`${projects} project${projects === 1 ? "" : "s"} \xB7 board data stays on this machine \xB7 Ctrl-C to stop`);
+    ctx.out(
+      `${projects} project${projects === 1 ? "" : "s"} \xB7 board data stays on this machine \xB7 ${found.clipped ? "already running" : "runs in the background"} \xB7 board ui --stop to stop`
+    );
     if (!opts["no-open"]) openBrowser(url);
-  }).catch((e) => {
-    ctx.err(`board: can't start the server: ${e.message}`);
-    process.exitCode = 1;
-  });
+  })().catch(fail);
 }
 function openBrowser(url) {
   const cmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
@@ -2033,12 +2089,13 @@ function area2(ctx, { pos, opts }) {
   }
   throw new UserError(`unknown: board area ${sub} \u2014 use list, add, rename or rm`);
 }
-var import_node_child_process, import_node_fs12, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, wait;
+var import_node_child_process, import_node_fs12, import_node_os3, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, BOARD_PORT, boardLink, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
     import_node_child_process = require("node:child_process");
     import_node_fs12 = __toESM(require("node:fs"), 1);
+    import_node_os3 = __toESM(require("node:os"), 1);
     import_node_path11 = __toESM(require("node:path"), 1);
     init_account();
     init_analytics();
@@ -2058,6 +2115,8 @@ var init_commands = __esm({
     park = statusCommand("parked");
     review = statusCommand("review");
     done = statusCommand("done");
+    BOARD_PORT = 4747;
+    boardLink = (port) => `http://clipped.localhost:${port}`;
     wait = (ms) => new Promise((r) => setTimeout(r, ms));
   }
 });
@@ -2081,7 +2140,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.7.1");
+    ctx.out(VERSION);
     return 0;
   }
   const command = COMMANDS[name];
@@ -2118,6 +2177,7 @@ var init_cli = __esm({
     import_node_path12 = __toESM(require("node:path"), 1);
     import_node_util = require("node:util");
     init_commands();
+    init_version();
     init_context();
     GLOBAL = {
       json: { type: "boolean" },
@@ -2168,7 +2228,7 @@ var init_cli = __esm({
       },
       touch: { usage: "touch <file>... [--card LOOP-3]", options: { card: s }, run: touch },
       context: { usage: "context", options: {}, run: context },
-      ui: { usage: "ui [--port 4747] [--no-open]", options: { port: s, "no-open": flag }, run: ui },
+      ui: { usage: "ui [--port 4747] [--no-open] [--stop]", options: { port: s, "no-open": flag, stop: flag, foreground: flag }, run: ui },
       login: { usage: "login [--no-open]", options: { "no-open": flag }, run: login },
       logout: { usage: "logout", options: {}, run: logout },
       telemetry: { usage: "telemetry [off|on|status]", options: {}, run: telemetry }

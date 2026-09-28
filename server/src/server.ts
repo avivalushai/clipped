@@ -27,10 +27,7 @@ const ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/
     and it's the address the board opens at. Other *.localhost names stay out. */
 const ALLOWED_HOST = /^(localhost|clipped\.localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
-/** The address people see: a name, not an IP, and still this machine. Only for
-    showing and opening — scripts use plain localhost, which resolves everywhere. */
-export const BOARD_HOST = "clipped.localhost";
-export const boardUrl = (url: string) => url.replace("//localhost:", `//${BOARD_HOST}:`);
+import { VERSION } from "../../cli/src/version.js";
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -118,6 +115,9 @@ export function createServer(ctx: Ctx, options: ServerOptions = {}) {
         return void res.end();
       }
       if (!ALLOWED_HOST.test(req.headers.host ?? "")) return json(res, 403, { error: "loopback only" });
+
+      // So `board ui` can tell its own board from some other app on the port, and stop it.
+      if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });
 
       if (urlPath === "/api/events") {
         res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });

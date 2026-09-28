@@ -11,6 +11,7 @@ describe("the landing page", () => {
   it("shows the version the plugin actually ships", () => {
     const version = JSON.parse(read("package.json")).version;
     expect(JSON.parse(read(".claude-plugin/plugin.json")).version).toBe(version);
+    expect(read("cli/src/version.ts")).toContain(`"${version}"`);
     // The badge has moved between redesigns; look for the version inside the header pill.
     const html = read("landing/index.html");
     const badge = /class="(?:pill|badge)"[\s\S]{0,300}?\bv(\d+\.\d+\.\d+)\b/.exec(html)?.[1];

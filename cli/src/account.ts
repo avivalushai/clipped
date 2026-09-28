@@ -15,6 +15,8 @@ export interface Settings {
   installId: string;
   telemetry: boolean;
   toldAboutTelemetry?: boolean;
+  /** The board's port, when 4747 belonged to another app the first time. */
+  port?: number;
 }
 
 export interface Auth {
@@ -45,6 +47,7 @@ export function readSettings(ctx: Ctx): Settings {
     installId: typeof raw.installId === "string" && raw.installId ? raw.installId : crypto.randomUUID(),
     telemetry: raw.telemetry !== false,
     ...(raw.toldAboutTelemetry ? { toldAboutTelemetry: true } : {}),
+    ...(Number.isInteger(raw.port) && (raw.port as number) > 0 ? { port: raw.port } : {}),
   };
   if (raw.installId !== settings.installId) writeSettings(ctx, settings);
   return settings;
