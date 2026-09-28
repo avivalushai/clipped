@@ -319,6 +319,8 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
   html { scroll-behavior: auto; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@amplitude/analytics-browser@2.47.1/lib/scripts/amplitude-min.js" defer></script>
+<script src="analytics.js" defer></script>
 </head>
 <body>
 
@@ -632,6 +634,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
         <div class="txt"><h3>What it doesn't</h3><p>No commits or pushes. It writes one file: <code>.board/board.json</code>. One person, one machine.</p></div>
       </div>
     </div>
+      <p class="callout rv">This website counts page views and button clicks with Amplitude, without cookies or IP addresses. <b>The plugin itself sends nothing.</b></p>
   </section>
 
   <section class="wrap" id="faq">

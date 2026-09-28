@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 58,
+  "nextNum": 59,
   "features": [
     {
       "key": "LE-1",
@@ -2074,8 +2074,8 @@
       "key": "LE-55",
       "title": "A short video that explains the product",
       "type": "feature",
-      "status": "active",
-      "note": "Listen to the voiceover; decide on a better voice",
+      "status": "review",
+      "note": "Open landing/index.html, play the intro, then commit and deploy",
       "doneWhen": [],
       "steps": [
         {
@@ -2088,15 +2088,21 @@
         },
         {
           "text": "User watches it and asks for changes",
-          "done": false
+          "done": true
+        },
+        {
+          "text": "Video on the landing page, click to play with captions",
+          "done": true
         }
       ],
       "files": [
-        "video/clipped-intro.html"
+        "video/clipped-intro.html",
+        "landing/index.html",
+        "landing/video/intro.mp4"
       ],
       "links": [],
       "createdAt": "2026-09-28T12:08:34Z",
-      "updatedAt": "2026-09-28T12:41:19Z",
+      "updatedAt": "2026-09-28T14:11:29Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2133,6 +2139,51 @@
           "at": "2026-09-28T12:41:19Z",
           "by": "claude",
           "text": "Note: Listen to the voiceover; decide on a better voice"
+        },
+        {
+          "at": "2026-09-28T12:53:39Z",
+          "by": "claude",
+          "text": "Note: Pick the female or male voice"
+        },
+        {
+          "at": "2026-09-28T12:58:40Z",
+          "by": "claude",
+          "text": "Note: Watch the final cut; commit or drop video/"
+        },
+        {
+          "at": "2026-09-28T14:03:18Z",
+          "by": "claude",
+          "text": "Note: Listen to the music version; tune or keep"
+        },
+        {
+          "at": "2026-09-28T14:11:15Z",
+          "by": "claude",
+          "text": "Step done: User watches it and asks for changes"
+        },
+        {
+          "at": "2026-09-28T14:11:22Z",
+          "by": "claude",
+          "text": "Step added: add"
+        },
+        {
+          "at": "2026-09-28T14:11:29Z",
+          "by": "claude",
+          "text": "Step removed: add"
+        },
+        {
+          "at": "2026-09-28T14:11:29Z",
+          "by": "claude",
+          "text": "Step added (done): Video on the landing page, click to play with captions"
+        },
+        {
+          "at": "2026-09-28T14:11:29Z",
+          "by": "claude",
+          "text": "Files: landing/index.html, landing/video/intro.mp4"
+        },
+        {
+          "at": "2026-09-28T14:11:29Z",
+          "by": "claude",
+          "text": "Moved to review — Open landing/index.html, play the intro, then commit and deploy"
         }
       ]
     },
@@ -2182,9 +2233,34 @@
           "text": "Created — review"
         }
       ]
+    },
+    {
+      "key": "LE-58",
+      "title": "The website counts visits and install clicks in Amplitude",
+      "type": "feature",
+      "status": "review",
+      "note": "After deploy: open useclipped.vercel.app, click Copy on an install command, and see 'Install command copied' in Amplitude (EU) → Live events within a minute",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/analytics.js",
+        "landing/index.html",
+        "landing/install.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T14:13:27Z",
+      "updatedAt": "2026-09-28T14:13:27Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T14:13:27Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
     }
   ],
-  "nextNoteNum": 6,
+  "nextNoteNum": 7,
   "notes": [
     {
       "id": "LE-N1",
@@ -2273,6 +2349,19 @@
       ],
       "createdAt": "2026-09-27T17:35:59Z",
       "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N6",
+      "kind": "reference",
+      "title": "Amplitude for the website",
+      "body": "EU project; key in landing/analytics.js (a public browser key). Tracks page views plus: Install method chosen, Install command copied, Install button clicked, Install guide opened, GitHub clicked, FAQ opened — each with page and a short label. No cookies (localStorage), IP addresses off, nothing sent from localhost (events go to window.__events there).",
+      "considered": "",
+      "url": "https://app.eu.amplitude.com",
+      "file": "",
+      "cards": [],
+      "createdAt": "2026-09-28T14:13:27Z",
+      "updatedAt": "2026-09-28T14:13:27Z",
       "updatedBy": "claude"
     }
   ]
