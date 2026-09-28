@@ -1831,7 +1831,7 @@
       "key": "LE-49",
       "title": "A second landing page to compare against the first",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Aviv merges the branch and deploys landing/ — index.html is the new page",
       "doneWhen": [],
       "steps": [],
@@ -1843,7 +1843,7 @@
       ],
       "links": [],
       "createdAt": "2026-09-28T10:08:05Z",
-      "updatedAt": "2026-09-28T11:09:24Z",
+      "updatedAt": "2026-09-28T11:11:53Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -1895,6 +1895,11 @@
           "at": "2026-09-28T11:09:24Z",
           "by": "claude",
           "text": "Note: Aviv merges the branch and deploys landing/ — index.html is the new page"
+        },
+        {
+          "at": "2026-09-28T11:11:53Z",
+          "by": "claude",
+          "text": "Done"
         }
       ]
     },
