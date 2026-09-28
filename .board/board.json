@@ -515,13 +515,13 @@
       "key": "LE-11",
       "title": "Set the GitHub repo website once the site is deployed",
       "type": "feature",
-      "status": "idea",
+      "status": "done",
       "note": "Due now: the site is live at https://useclipped.vercel.app",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-28T09:51:03Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -543,9 +543,21 @@
           "at": "2026-09-27T17:35:59Z",
           "by": "claude",
           "text": "Note: Due now: the site is live at https://useclipped.vercel.app"
+        },
+        {
+          "at": "2026-09-28T09:51:03Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-28T09:51:03Z",
+          "by": "claude",
+          "text": "Proof: https://github.com/avivalushai/clipped"
         }
       ],
-      "links": []
+      "links": [
+        "https://github.com/avivalushai/clipped"
+      ]
     },
     {
       "key": "LE-12",
