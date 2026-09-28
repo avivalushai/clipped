@@ -1707,22 +1707,38 @@
       "key": "LE-45",
       "title": "Landing version badge is typed by hand",
       "type": "chore",
-      "status": "idea",
-      "note": "Read the version from package.json at build time, or add a test that fails when they differ",
+      "status": "review",
+      "note": "cli/test/landing.test.ts fails when the landing badge, package.json and plugin.json disagree; bump all three together",
       "doneWhen": [],
       "steps": [],
       "files": [
-        "landing/index.html"
+        "landing/index.html",
+        "cli/test/landing.test.ts"
       ],
       "links": [],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-28T10:25:39Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-28T10:25:01Z",
+          "by": "claude",
+          "text": "Started — A test that fails when the landing badge and package.json disagree"
+        },
+        {
+          "at": "2026-09-28T10:25:39Z",
+          "by": "claude",
+          "text": "Files: cli/test/landing.test.ts"
+        },
+        {
+          "at": "2026-09-28T10:25:39Z",
+          "by": "claude",
+          "text": "Moved to review — cli/test/landing.test.ts fails when the landing badge, package.json and plugin.json disagree; bump all three together"
         }
       ]
     },
@@ -1794,7 +1810,7 @@
       "title": "A second landing page to compare against the first",
       "type": "feature",
       "status": "review",
-      "note": "Aviv compares landing/v2.html with landing/index.html and picks one, or keeps parts of each",
+      "note": "Aviv picks one of the four copy versions (?copy=sharp|story|short) and the page replaces index.html",
       "doneWhen": [],
       "steps": [],
       "files": [
@@ -1802,13 +1818,18 @@
       ],
       "links": [],
       "createdAt": "2026-09-28T10:08:05Z",
-      "updatedAt": "2026-09-28T10:08:05Z",
+      "updatedAt": "2026-09-28T10:22:48Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T10:08:05Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T10:22:48Z",
+          "by": "claude",
+          "text": "Note: Aviv picks one of the four copy versions (?copy=sharp|story|short) and the page replaces index.html"
         }
       ]
     }
