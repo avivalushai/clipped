@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 79,
+  "nextNum": 83,
   "features": [
     {
       "key": "LE-1",
@@ -2975,18 +2975,20 @@
       "key": "LE-75",
       "title": "The menu folds to a rail from a click on its empty space",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Click empty space in the left menu: it folds at once (no jump), normal cursor; click the rail again: it opens",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "4c2aeeb"
+      ],
       "area": "Skills",
       "createdAt": "2026-09-28T16:18:17Z",
-      "updatedAt": "2026-09-28T16:25:12Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:33:28Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:18:17Z",
@@ -3012,6 +3014,16 @@
           "at": "2026-09-28T16:25:12Z",
           "by": "claude",
           "text": "Moved to review — Click empty space in the left menu: it folds at once (no jump), normal cursor; click the rail again: it opens"
+        },
+        {
+          "at": "2026-09-28T16:32:12Z",
+          "by": "claude",
+          "text": "Proof: 4c2aeeb"
+        },
+        {
+          "at": "2026-09-28T16:33:28Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3019,18 +3031,20 @@
       "key": "LE-76",
       "title": "Filter the table by one or more areas from an Area chip",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Area chip reads 'Area All' with nothing ticked, the area's name with one, 'N areas' with more; ticking filters the table",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "4c2aeeb"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:18:17Z",
-      "updatedAt": "2026-09-28T16:30:41Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:33:28Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:18:17Z",
@@ -3051,6 +3065,16 @@
           "at": "2026-09-28T16:30:41Z",
           "by": "claude",
           "text": "Moved to review — Area chip reads 'Area All' with nothing ticked, the area's name with one, 'N areas' with more; ticking filters the table"
+        },
+        {
+          "at": "2026-09-28T16:32:12Z",
+          "by": "claude",
+          "text": "Proof: 4c2aeeb"
+        },
+        {
+          "at": "2026-09-28T16:33:28Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3058,18 +3082,20 @@
       "key": "LE-77",
       "title": "Card titles wrap onto three lines in the card panel; the menu drops its footer",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Open a card with a long title: it wraps (up to 3 lines); Enter saves. No Live chip or text at the bottom of the menu",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "4c2aeeb"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:25:12Z",
-      "updatedAt": "2026-09-28T16:25:12Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:33:28Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:25:12Z",
@@ -3080,6 +3106,16 @@
           "at": "2026-09-28T16:25:12Z",
           "by": "claude",
           "text": "Moved to review — Open a card with a long title: it wraps (up to 3 lines); Enter saves. No Live chip or text at the bottom of the menu"
+        },
+        {
+          "at": "2026-09-28T16:32:12Z",
+          "by": "claude",
+          "text": "Proof: 4c2aeeb"
+        },
+        {
+          "at": "2026-09-28T16:33:28Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3087,18 +3123,20 @@
       "key": "LE-78",
       "title": "Row icons stay inside their cell; the page background stays put while the table scrolls",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Hover a row with a long title: pencil and copy stay in the Card column. Scroll down: the grid background doesn't move",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "4c2aeeb"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:30:41Z",
-      "updatedAt": "2026-09-28T16:30:41Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:33:28Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:30:41Z",
@@ -3109,6 +3147,162 @@
           "at": "2026-09-28T16:30:41Z",
           "by": "claude",
           "text": "Moved to review — Hover a row with a long title: pencil and copy stay in the Card column. Scroll down: the grid background doesn't move"
+        },
+        {
+          "at": "2026-09-28T16:32:12Z",
+          "by": "claude",
+          "text": "Proof: 4c2aeeb"
+        },
+        {
+          "at": "2026-09-28T16:33:28Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-79",
+      "title": "The table's header row stays on screen while you scroll",
+      "type": "feature",
+      "status": "review",
+      "note": "Scroll a long table: the header row stays at the table's top, solid, with no wobble",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:38:56Z",
+      "updatedAt": "2026-09-28T16:41:36Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Moved to review — Scroll down a long table: KEY / CARD / STATUS stay at the top of the screen, and stop at the table's end"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Moved to review — Scroll a long table: the header row stays at the table's top, solid, with no wobble"
+        }
+      ]
+    },
+    {
+      "key": "LE-80",
+      "title": "The new-card row opens only from + New card",
+      "type": "feature",
+      "status": "review",
+      "note": "Click + New card: the new row opens; click it again: it closes",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:38:56Z",
+      "updatedAt": "2026-09-28T16:41:36Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Moved to review — No '+ New' row until you click + New card; Esc or leaving it empty closes it"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Moved to review — Click + New card: the new row opens; click it again: it closes"
+        }
+      ]
+    },
+    {
+      "key": "LE-81",
+      "title": "Search opens from a button next to the Area chip",
+      "type": "feature",
+      "status": "review",
+      "note": "The magnifier sits left of the Area chip; click it (or /) to search",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:38:56Z",
+      "updatedAt": "2026-09-28T16:41:36Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Moved to review — Click the magnifier after the Area chip (or press /): it opens into a search box; empty + click away closes it"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T16:41:36Z",
+          "by": "claude",
+          "text": "Moved to review — The magnifier sits left of the Area chip; click it (or /) to search"
+        }
+      ]
+    },
+    {
+      "key": "LE-82",
+      "title": "Table polish: no hint line, centred All projects icon, one-line area headings",
+      "type": "feature",
+      "status": "review",
+      "note": "No 'Click a row…' line under the table; the All projects icon is centred; area group headings keep the badge on the same line",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:38:56Z",
+      "updatedAt": "2026-09-28T16:38:56Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:38:56Z",
+          "by": "claude",
+          "text": "Moved to review — No 'Click a row…' line under the table; the All projects icon is centred; area group headings keep the badge on the same line"
         }
       ]
     }

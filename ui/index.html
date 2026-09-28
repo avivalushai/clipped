@@ -23,6 +23,7 @@
   --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-card:14px; --r-panel:16px; --r-ctl:10px;
   --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --searchicon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.6' fill='none' stroke='%238A8984' stroke-width='1.6'/%3E%3Cpath d='M10.4 10.4 14 14' stroke='%238A8984' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -132,6 +133,17 @@ section{margin-bottom:32px}
 .btn.danger{color:var(--danger)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .search{border:1px solid var(--line-2);background:var(--surface);padding:7px 14px;border-radius:999px;width:190px;max-width:100%}
+.searchctl{display:inline-flex;align-items:center}
+.searchctl .sbtn{width:32px;padding:0;justify-content:center;cursor:pointer;color:var(--muted)}
+.searchctl .sbtn:hover{color:var(--ink)}
+.searchctl.open .sbtn{display:none}
+.searchctl .search{height:32px;padding:0 14px 0 34px;width:220px;background:var(--surface) no-repeat 12px 50%/14px 14px;background-image:var(--searchicon);animation:search-in .18s cubic-bezier(.2,.8,.2,1)}
+@keyframes search-in{from{width:32px;opacity:.4}}
+@media (prefers-reduced-motion:reduce){.searchctl .search{animation:none}}
+/* The table box is its own scroll area, no taller than the window, so its header row
+   can stick with plain CSS — moving it by script lagged a frame behind the scroll. */
+.tbl-wrap.grid{overflow:auto;max-height:calc(100vh - 24px);overscroll-behavior-y:auto}
+.grid thead th{position:sticky;top:0;z-index:4;background:var(--surface);box-shadow:inset 0 -1px 0 var(--line)}
 .tabs{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .tabs button{border:0;background:none;padding:5px 13px;border-radius:999px;transition:color .15s ease,background-color .15s ease;font-weight:500;color:var(--muted)}
 .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06),0 0 0 1px var(--line)}
@@ -287,7 +299,7 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 /* ---------- spreadsheet table ---------- */
 .grid table{table-layout:fixed;min-width:1080px}
 .grid th,.grid td{border-right:1px solid var(--line)}
-.grid th{position:relative}
+.grid th{position:sticky}
 .colgrip{position:absolute;top:0;right:-5px;width:10px;height:100%;cursor:col-resize;z-index:2;touch-action:none}
 .colgrip::after{content:"";position:absolute;top:22%;bottom:22%;left:4px;width:2px;border-radius:2px;background:transparent;transition:background-color .12s ease}
 .grid th:hover .colgrip::after{background:var(--line-2,var(--line))}
@@ -351,6 +363,7 @@ select.status option{color:var(--ink);background:var(--surface);text-transform:n
 .keybtn:hover{color:var(--accent)}
 .projcell{display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pkey.sm{width:18px;height:18px;font-size:9px;border-radius:5px;flex:none}
+tr.grp td .pkey,.tl-grp .pkey{display:inline-grid;vertical-align:middle;margin-right:2px}
 tr.composer td{background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-bottom:2px solid color-mix(in srgb,var(--accent) 30%,var(--line))}
 tr.composer .cell-in{border-color:var(--line);background:var(--surface)}
 /* field selects (new-card and new-note rows): same box as the text fields beside them */
@@ -730,6 +743,7 @@ let view='home', query='', openId=null, sort={k:'updated',dir:1}, filter='all', 
 /* A note opens its own drawer: same shell, different questions answered. */
 let openNote=null;
 let comp={project:null,status:'idea'};
+let composing=false, searchOpen=false;   /* the new-card row and the search box open on request */
 const $=id=>document.getElementById(id);
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -786,7 +800,7 @@ function toast(t,undo){
 function renderNav(){
   let h=`<div class="nav-label"><span>Overview</span></div>
   <button class="nav-item" data-go="home" aria-current="${view==='home'}" title="All projects">
-    <span class="pkey all">∗</span><span class="name">All projects</span><span></span></button>
+    <span class="pkey all"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><rect x="1" y="1" width="4" height="4" rx="1" fill="currentColor"/><rect x="7" y="1" width="4" height="4" rx="1" fill="currentColor"/><rect x="1" y="7" width="4" height="4" rx="1" fill="currentColor"/><rect x="7" y="7" width="4" height="4" rx="1" fill="currentColor"/></svg></span><span class="name">All projects</span><span></span></button>
   <div class="nav-label" style="margin-top:14px"><span>Projects · ${S.projects.length}</span><button id="addProjBtn" title="Add project" aria-label="Add project">+</button></div>`;
   if(false) h+=`<form class="newproj" id="newProjForm"><input id="npName" placeholder="Project name" aria-label="Project name" required><input id="npPath" class="mono" placeholder="~/code/my-app" aria-label="Project folder"><div class="r"><button type="button" class="btn sm ghost" id="npCancel">Cancel</button><button class="btn sm primary">Add</button></div></form>`;
   for(const p of S.projects){
@@ -843,6 +857,13 @@ function tabCount(t){
   const base=p?S.features.filter(f=>f.project===p.id):S.features;
   return base.filter(f=>t.id==='questions'?f.type==='question':f.type!=='question').length;
 }
+/* Search is a button until it's needed; it stays open while it holds a query. */
+const SEARCHICON=`<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.4 10.4 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+function searchCtl(){
+  const open=searchOpen||!!query, what=esc(TAB().label.toLowerCase());
+  return `<span class="searchctl ${open?'open':''}"><button class="opt sbtn" id="searchBtn" type="button" aria-label="Search ${what}" title="Search (/)" ${open?'tabindex="-1"':''}>${SEARCHICON}</button>${open?`<input class="search" id="search" type="search" placeholder="Search ${what}" value="${esc(query)}" aria-label="Search ${what}">`:''}</span>`;
+}
+function openSearch(){ searchOpen=true; render(); const n=$('search'); if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)} }
 function tabStrip(){
   return `<div class="tabs tabs-top" role="group" aria-label="Section">${TABS.map(t=>
     `<button data-tab="${t.id}" aria-pressed="${P.tab===t.id}">${t.label}<span class="c">${tabCount(t)}</span></button>`).join('')}</div>`;
@@ -866,7 +887,7 @@ function renderPage(){
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
          :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
-    <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search ${esc(TAB().label.toLowerCase())}" value="${esc(query)}" aria-label="Search ${esc(TAB().label.toLowerCase())}" title="Press / to search">
+    <div class="toolbar">${isNoteTab()?searchCtl():''}
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
       <button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(TAB().note):noun}</button></div></div>
   <div class="tabrow">${tabStrip()}${isNoteTab()?'':`
@@ -884,6 +905,7 @@ function renderPage(){
   </div>
   <div class="viewbar">
     <div class="opts">
+      ${searchCtl()}
       ${(()=>{const opts=areaOptions(); if(!opts.some(o=>o.name)) return ''; const picked=areaPicked();
         return `<details class="cols areas"><summary class="opt" style="padding-right:9px">Area <b>${!picked.length?'All':picked.length===1?esc(picked[0]||'No area'):picked.length+' areas'}</b></summary><div class="menu">
           ${opts.map(o=>`<label><input type="checkbox" data-area="${esc(o.name)}" ${picked.includes(o.name)?'checked':''}><span class="an">${o.name?esc(o.name):'No area yet'}</span><span class="ac">${o.count}</span></label>`).join('')}
@@ -988,7 +1010,7 @@ function noteComposer(cols,isHome){
 function renderNotesPage(isHome){
   const ns=scopeNotes().sort((a,b)=>b.updatedAt-a.updatedAt), cols=noteCols(isHome);
   const f=NOTEFIELD[TAB().note];
-  let rows=S.projects.length?noteComposer(cols,isHome):'';
+  let rows=S.projects.length&&composing?noteComposer(cols,isHome):'';
   for(const n of ns) rows+=`<tr data-nrow="${n.id}">${cols.map(c=>noteCell(c,n,isHome)).join('')}</tr>`;
   if(!ns.length) rows+=`<tr><td colspan="${cols.length}" class="empty">${esc(NOTE_EMPTY[TAB().note])}</td></tr>`;
   const minW=cols.reduce((a,c)=>a+cw('noteColW',c),0);
@@ -1051,7 +1073,7 @@ function composerRow(cols,isHome){
 function renderTable(fs,isHome){
   const cols=visibleCols(isHome);
   const th=c=>`<th style="${c.flex&&!(P.colW&&P.colW[c.id])?`min-width:${c.w}px`:`width:${cw('colW',c)}px`}">${grip('colW',c)}${c.id==='key'?`<input type="checkbox" class="rowsel" id="selAll" aria-label="Select all shown" ${fs.length&&fs.every(f=>sel.has(f.id))?'checked':''}>`:''}${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
-  let rows=composerRow(cols,isHome);
+  let rows=composing?composerRow(cols,isHome):'';
   for(const g of groupsOf(sortFs(fs),isHome)){
     const shut=g.id&&(P.collapsed||[]).includes(g.id);
     if(g.id) rows+=`<tr class="grp" data-grprow="${g.id}"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}" aria-label="${shut?'Show':'Hide'} this group">${CHEVRON}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
@@ -1060,8 +1082,7 @@ function renderTable(fs,isHome){
   }
   if(!fs.length) rows+=`<tr><td colspan="${cols.length}" class="empty">Nothing here yet. Add one in the row above.</td></tr>`;
   const minW=cols.reduce((a,c)=>a+cw('colW',c),0);
-  return `${bulkBar()}<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="hint">Click a row to open its card. Hover a title or note and click its pencil to edit it here.</p>`;
+  return `${bulkBar()}<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 /* ---------- bulk actions ---------- */
@@ -1187,7 +1208,7 @@ async function addFeature(projectId,title,status,note){
 }
 
 function bindNotes(p,isHome){
-  if($('newBtn')) $('newBtn').onclick=()=>$('nTitle')?.focus();
+  if($('newBtn')) $('newBtn').onclick=()=>{composing=!composing;render();if(composing) $('nTitle')?.focus()};
   const f=NOTEFIELD[TAB().note];
   if($('nTitle')){
     const submit=async()=>{
@@ -1269,7 +1290,11 @@ function bindTabs(){
 
 function bindPage(){
   const p=proj(view), isHome=!p;
-  $('search').oninput=e=>{query=e.target.value;const pos=e.target.selectionStart;render();const n=$('search');n.focus();n.setSelectionRange(pos,pos)};
+  if($('searchBtn')) $('searchBtn').onclick=openSearch;
+  if($('search')){
+    $('search').oninput=e=>{query=e.target.value;const pos=e.target.selectionStart;render();const n=$('search');n.focus();n.setSelectionRange(pos,pos)};
+    $('search').addEventListener('blur',()=>setTimeout(()=>{if(searchOpen&&!query&&document.activeElement?.id!=='search'){searchOpen=false;render()}},120));
+  }
   bindTabs();
   if(p&&$('projName')){
     const el=$('projName');
@@ -1300,7 +1325,12 @@ function bindPage(){
     P.areaPick=c.checked?[...cur,n]:cur.filter(x=>x!==n); savePrefs(); render(); document.querySelector('details.areas')?.setAttribute('open','')});
   if($('areaClear')) $('areaClear').onclick=()=>{P.areaPick=[];savePrefs();render()};
   document.querySelectorAll('[data-col]').forEach(c=>c.onchange=()=>{const id=c.dataset.col;P.hidden=c.checked?P.hidden.filter(x=>x!==id):[...P.hidden,id];savePrefs();render();document.querySelector('details.cols')?.setAttribute('open','')});
-  $('newBtn').onclick=()=>{if(P.mode!=='table'){P.mode='table';savePrefs();render()}$('cTitle').focus()};
+  $('newBtn').onclick=()=>{composing=!composing;if(composing&&P.mode!=='table'){P.mode='table';savePrefs()}render();if(composing) $('cTitle')?.focus()};
+  /* The new-card row closes on Escape, or when you leave it empty. */
+  const closeComposer=()=>{composing=false;render()};
+  ['cTitle','nTitle'].forEach(id=>{const el=$(id); if(!el) return;
+    el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeComposer()}});
+    el.addEventListener('blur',()=>setTimeout(()=>{const a=document.activeElement; if(composing&&!el.value.trim()&&!(a&&a.closest&&a.closest('tr.composer,#newBtn'))&&$(id)===el) closeComposer()},150))});
 
   // composer
   if($('cTitle')){
@@ -1643,9 +1673,9 @@ document.addEventListener('mousedown',e=>{
 document.addEventListener('keydown',e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const t=e.target, typing=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable);
-  if(e.key==='Escape'&&t&&t.id==='search'&&query){query='';render();$('search')?.focus();return}
+  if(e.key==='Escape'&&t&&t.id==='search'){if(query){query='';render();$('search')?.focus()}else{searchOpen=false;render()}return}
   if(typing||openId||openNote||$('dlg').open) return;
-  if(e.key==='/'){e.preventDefault();$('search')?.focus();return}
+  if(e.key==='/'){e.preventDefault();openSearch();return}
   if(e.key==='n'){e.preventDefault();$('newBtn')?.click()}
 });
 document.addEventListener('keydown',e=>{
