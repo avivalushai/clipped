@@ -1707,7 +1707,7 @@
       "key": "LE-45",
       "title": "Landing version badge is typed by hand",
       "type": "chore",
-      "status": "review",
+      "status": "done",
       "note": "cli/test/landing.test.ts fails when the landing badge, package.json and plugin.json disagree; bump all three together",
       "doneWhen": [],
       "steps": [],
@@ -1715,10 +1715,12 @@
         "landing/index.html",
         "cli/test/landing.test.ts"
       ],
-      "links": [],
+      "links": [
+        "0c9ce0a"
+      ],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-28T10:25:39Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T10:35:26Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
@@ -1739,6 +1741,16 @@
           "at": "2026-09-28T10:25:39Z",
           "by": "claude",
           "text": "Moved to review — cli/test/landing.test.ts fails when the landing badge, package.json and plugin.json disagree; bump all three together"
+        },
+        {
+          "at": "2026-09-28T10:35:26Z",
+          "by": "user",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-28T10:35:26Z",
+          "by": "user",
+          "text": "Proof: 0c9ce0a"
         }
       ]
     },
