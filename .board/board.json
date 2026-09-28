@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 49,
+  "nextNum": 50,
   "features": [
     {
       "key": "LE-1",
@@ -1656,8 +1656,8 @@
       "key": "LE-44",
       "title": "Landing page token figure is out of date",
       "type": "chore",
-      "status": "idea",
-      "note": "The What runs table says about 750 tokens for 19 cards; measure board context again and update it",
+      "status": "review",
+      "note": "The FAQ 'Does it cost tokens?' now says about 150 for a small board and about 600 for this repo's 43 cards",
       "doneWhen": [],
       "steps": [],
       "files": [
@@ -1665,13 +1665,28 @@
       ],
       "links": [],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-28T10:05:20Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-28T10:04:26Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T10:05:11Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-28T10:05:20Z",
+          "by": "claude",
+          "text": "Moved to review — The FAQ 'Does it cost tokens?' now says about 150 for a small board and about 600 for this repo's 43 cards"
         }
       ]
     },
@@ -1758,6 +1773,29 @@
           "at": "2026-09-27T17:36:00Z",
           "by": "claude",
           "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-49",
+      "title": "A second landing page to compare against the first",
+      "type": "feature",
+      "status": "review",
+      "note": "Aviv compares landing/v2.html with landing/index.html and picks one, or keeps parts of each",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/v2.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T10:08:05Z",
+      "updatedAt": "2026-09-28T10:08:05Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T10:08:05Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }
