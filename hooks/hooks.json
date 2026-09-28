@@ -14,6 +14,12 @@
         "hooks": [
           { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/post-tool-use.mjs", "timeout": 15 }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/asked.mjs", "timeout": 15 }
+        ]
       }
     ],
     "Stop": [

@@ -77,6 +77,7 @@ or an answered question. Neither → nothing.
 | You spot a bug or chore outside the task and don't fix it | an `idea` card, `--type bug` or `chore` |
 | You tell the user they have to do something — add keys, run a migration, update the plugin, click connect in a dashboard | a `chore` in `review` (their turn): see **Steps only the user can do** |
 | A question someone has to go and find out later | `board ask` — Open |
+| You asked the user with the multiple-choice question widget | nothing: a hook records it in Questions, Decided with their pick — don't add it again |
 | A question you answered with a table, a list, a comparison or a recommendation — looked up or from memory | `board ask` then `board answer` — Answered |
 | "Elaborate", "more detail", "why?" on an answer you recorded | `board answer` on the same card again — never a new one |
 | A fact you knew and said in a line | nothing |

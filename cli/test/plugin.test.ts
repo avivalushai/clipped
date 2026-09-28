@@ -161,6 +161,9 @@ describe("hooks.json", () => {
     for (const name of ["Read", "Bash", "Glob"]) expect(new RegExp(`^(${h.PostToolUse[0].matcher})$`).test(name)).toBe(false);
     expect(h.SessionStart[0].matcher).toBeUndefined();
     expect(h.Stop[0].matcher).toBeUndefined();
+    // the multiple-choice question widget has its own hook
+    expect(h.PostToolUse[1].matcher).toBe("AskUserQuestion");
+    expect(h.PostToolUse[1].hooks[0].command).toContain("hooks/asked.mjs");
   });
 });
 
@@ -186,6 +189,42 @@ describe("hook behaviour", () => {
     expect(ctx).toContain("Don't offer to create one");
     expect(ctx).toContain("`board ask`");
     expect(ctx).not.toMatch(/offer once/i);
+  });
+
+  describe("a question asked with the multiple-choice widget", () => {
+    const ask = (sb: Sandbox, answers: Record<string, string>) =>
+      runHook("asked.mjs", {
+        hook_event_name: "PostToolUse", session_id: "q1", cwd: sb.root, tool_name: "AskUserQuestion",
+        tool_input: { questions: [
+          { question: "Which theme is the default?", header: "Theme", multiSelect: false, options: [
+            { label: "Keep dark", description: "Ship as built" },
+            { label: "Light default", description: "Flip it and retune the light palette" },
+          ] },
+          { question: "Pills or tabs for the report sections?", header: "Sections", multiSelect: false, options: [
+            { label: "Pills", description: "" }, { label: "Tabs", description: "" },
+          ] },
+        ] },
+        tool_response: { answers },
+      }, { CLIPPED_HOME: sb.home, CLIPPED_NOW: sb.env.CLIPPED_NOW as string });
+    const questions = (sb: Sandbox) => sb.read().features.filter((f: { type: string }) => f.type === "question");
+
+    it("lands in Questions as decided, with the pick and the options not taken", () => {
+      const sb = withBoard();
+      ask(sb, { "Which theme is the default?": "Light default", "Pills or tabs for the report sections?": "Something else entirely" });
+      const [a, b] = questions(sb);
+      expect(a).toMatchObject({ title: "Which theme is the default?", status: "done", updatedBy: "user" });
+      expect(a.note).toBe("Light default — Flip it and retune the light palette. Other options: Keep dark");
+      expect(b.note).toContain("Something else entirely. (their own answer)");
+    });
+
+    it("keeps an unanswered question open, and never adds the same question twice", () => {
+      const sb = withBoard();
+      ask(sb, { "Which theme is the default?": "Keep dark" });
+      expect(questions(sb).map((f: { status: string }) => f.status)).toEqual(["done", "idea"]);
+      ask(sb, { "Pills or tabs for the report sections?": "Pills" });
+      expect(questions(sb)).toHaveLength(2);
+      expect(questions(sb)[1]).toMatchObject({ status: "done", note: "Pills. Other options: Tabs" });
+    });
   });
 
   it("PostToolUse attaches the edited file to the active card", () => {

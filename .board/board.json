@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 59,
+  "nextNum": 65,
   "features": [
     {
       "key": "LE-1",
@@ -2074,7 +2074,7 @@
       "key": "LE-55",
       "title": "A short video that explains the product",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Open landing/index.html, play the intro, then commit and deploy",
       "doneWhen": [],
       "steps": [
@@ -2100,9 +2100,11 @@
         "landing/index.html",
         "landing/video/intro.mp4"
       ],
-      "links": [],
+      "links": [
+        "7d08c0f"
+      ],
       "createdAt": "2026-09-28T12:08:34Z",
-      "updatedAt": "2026-09-28T14:11:29Z",
+      "updatedAt": "2026-09-28T14:35:06Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2184,6 +2186,16 @@
           "at": "2026-09-28T14:11:29Z",
           "by": "claude",
           "text": "Moved to review — Open landing/index.html, play the intro, then commit and deploy"
+        },
+        {
+          "at": "2026-09-28T14:35:06Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-28T14:35:06Z",
+          "by": "claude",
+          "text": "Proof: 7d08c0f"
         }
       ]
     },
@@ -2261,6 +2273,155 @@
           "at": "2026-09-28T14:29:58Z",
           "by": "user",
           "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-59",
+      "title": "Resize table columns by dragging a header's edge",
+      "type": "feature",
+      "status": "review",
+      "note": "Drag the right edge of a column header; the width stays after a reload; double-click the edge or Columns → Reset widths to undo. Works on the notes tables too",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T14:39:05Z",
+      "updatedAt": "2026-09-28T14:39:05Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T14:39:05Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-60",
+      "title": "Questions asked with the multiple-choice widget land in Questions",
+      "type": "feature",
+      "status": "review",
+      "note": "In a new session, have Claude ask you something with the question widget and pick an option: a Decided question appears with your pick and the options you didn't take",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "hooks/asked.mjs",
+        "hooks/hooks.json",
+        "cli/test/plugin.test.ts",
+        "skills/clipped/SKILL.md",
+        "SPEC.md"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T14:39:05Z",
+      "updatedAt": "2026-09-28T14:39:05Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T14:39:05Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-61",
+      "title": "How should the Claude Code desktop part be made? I can't screen-record your real desktop app myself.",
+      "type": "question",
+      "status": "done",
+      "note": "Faithful recreation (Recommended) — I rebuild the Claude Code desktop window (sidebar of sessions, transcript, prompt box) as an animation, with a fake cursor for the switching, endless scrolling and rage clicks. Fully scripted, crisp in 4K, and none of your real sessions appear on screen.. Other options: You screen-record it",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T14:42:04Z",
+      "updatedAt": "2026-09-28T14:42:04Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-62",
+      "title": "What should the board in part 2 be about?",
+      "type": "question",
+      "status": "done",
+      "note": "Made-up demo project (Recommended) — A fresh board for a fictional app (e.g. the Nimbus CRM from the landing page), filled by real `board` CLI commands while the real Clipped UI renders it live. Clean and easy to follow.. Other options: This repo's real board",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T14:42:04Z",
+      "updatedAt": "2026-09-28T14:42:04Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-63",
+      "title": "Sound for the new video?",
+      "type": "question",
+      "status": "done",
+      "note": "Voice + music (Recommended) — Same female voice and a music bed like the intro, with the music rising in the stressed part and settling when the board fills.. Other options: Music only · Silent",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T14:42:04Z",
+      "updatedAt": "2026-09-28T14:42:04Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T14:42:04Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-64",
+      "title": "A second video: the real product filling a board while Claude works",
+      "type": "feature",
+      "status": "active",
+      "note": "Recreate the Claude Code window and script the chaos part",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T14:42:16Z",
+      "updatedAt": "2026-09-28T14:42:16Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T14:42:16Z",
+          "by": "claude",
+          "text": "Created — active"
         }
       ]
     }
