@@ -11,7 +11,9 @@ describe("the landing page", () => {
   it("shows the version the plugin actually ships", () => {
     const version = JSON.parse(read("package.json")).version;
     expect(JSON.parse(read(".claude-plugin/plugin.json")).version).toBe(version);
-    const badge = /<b>clipped<\/b> v([\d.]+)/.exec(read("landing/index.html"))?.[1];
+    // The badge has moved between redesigns; look for the version inside the header pill.
+    const html = read("landing/index.html");
+    const badge = /class="(?:pill|badge)"[\s\S]{0,300}?\bv(\d+\.\d+\.\d+)\b/.exec(html)?.[1];
     expect(badge, "no version badge found in landing/index.html").toBeDefined();
     expect(badge, "landing/index.html's badge doesn't match package.json — update the badge").toBe(version);
   });

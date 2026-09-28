@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 52,
+  "nextNum": 57,
   "features": [
     {
       "key": "LE-1",
@@ -1996,6 +1996,152 @@
           "at": "2026-09-28T11:17:41Z",
           "by": "claude",
           "text": "Moved to review — Open board ui: light sidebar, Geist, rounded cards in grey columns, pill tabs and buttons; flip to dark mode"
+        }
+      ]
+    },
+    {
+      "key": "LE-52",
+      "title": "Plugin manifests point their homepage at useclipped.vercel.app",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T11:33:13Z",
+      "updatedAt": "2026-09-28T11:33:13Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T11:33:13Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-53",
+      "title": "Install steps warn that Claude will flag Clipped as a community plugin",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "createdAt": "2026-09-28T11:33:13Z",
+      "updatedAt": "2026-09-28T11:33:13Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T11:33:13Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-54",
+      "title": "The landing header links to the install guide",
+      "type": "feature",
+      "status": "review",
+      "note": "Install guide: same look as the landing page in light, dark and on a phone; header, command boxes, copy buttons, FAQ rows. Click Install guide in the header, then Privacy from the guide",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/index.html",
+        "landing/install.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T11:36:13Z",
+      "updatedAt": "2026-09-28T12:14:12Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T11:36:13Z",
+          "by": "claude",
+          "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T12:14:12Z",
+          "by": "claude",
+          "text": "Note: Install guide: same look as the landing page in light, dark and on a phone; header, command boxes, copy buttons, FAQ rows. Click Install guide in the header, then Privacy from the guide"
+        }
+      ]
+    },
+    {
+      "key": "LE-55",
+      "title": "A short video that explains the product",
+      "type": "feature",
+      "status": "active",
+      "note": "Watch the video and say what to change",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Animated scenes in the landing page style",
+          "done": true
+        },
+        {
+          "text": "Render frames and encode to MP4",
+          "done": true
+        },
+        {
+          "text": "User watches it and asks for changes",
+          "done": false
+        }
+      ],
+      "files": [
+        "video/clipped-intro.html"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T12:08:34Z",
+      "updatedAt": "2026-09-28T12:09:50Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T12:08:34Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T12:08:40Z",
+          "by": "claude",
+          "text": "Step done: Animated scenes in the landing page style"
+        },
+        {
+          "at": "2026-09-28T12:09:50Z",
+          "by": "claude",
+          "text": "Step done: Render frames and encode to MP4"
+        },
+        {
+          "at": "2026-09-28T12:09:50Z",
+          "by": "claude",
+          "text": "Note: Watch the video and say what to change"
+        }
+      ]
+    },
+    {
+      "key": "LE-56",
+      "title": "Dropdowns look like the rest of the board",
+      "type": "feature",
+      "status": "review",
+      "note": "Open Group by, a row's Status and Columns: menus with dots and a tick; the whole pill opens the list",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html",
+        "scripts/shoot-landing.mjs"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T12:11:57Z",
+      "updatedAt": "2026-09-28T12:11:57Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T12:11:57Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }
