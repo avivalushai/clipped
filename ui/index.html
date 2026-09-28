@@ -116,6 +116,10 @@ h1{font-family:var(--display);font-weight:500;font-size:32px;letter-spacing:-.03
 .h1in:hover{background:var(--sunk)}
 .h1in:focus{background:var(--sunk);outline:2px solid var(--focus);outline-offset:0}
 .sub{color:var(--muted);margin-top:6px}
+.kpis{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kpis span{cursor:help}
+.kpis span+span::before{content:"\00b7";margin-right:14px;color:var(--faint)}
+.kpis b{color:var(--ink);font-weight:600}
 h2{font-family:var(--display);font-weight:500;font-size:17px;letter-spacing:-.01em;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 h2 .count{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400}
 section{margin-bottom:32px}
@@ -602,7 +606,27 @@ async function loadAll(){
     for(const c of b.features) S.features.push(toFeature(ps[i].id,c));
     for(const n of b.notes||[]) S.notes.push(toNote(ps[i].id,n)) });
   S.unlinked=await api('/api/discover').catch(()=>[]);
+  await loadStats();
   if(view!=='home'&&!proj(view)) view='home';
+}
+/* Claude Code sessions per project, counted by the local server from Claude Code's own logs. */
+async function loadStats(){
+  const rows=await api('/api/stats').catch(()=>null);
+  if(rows) S.stats=Object.fromEntries(rows.map(r=>[r.id,r]));
+}
+function hrs(ms){ if(ms<H) return Math.round(ms/M)+' min'; const h=ms/H; return (h<100?h.toFixed(1):Math.round(h).toLocaleString())+' h' }
+function sessionLine(p){
+  const rows=p?[S.stats[p.id]].filter(Boolean):S.projects.map(x=>S.stats[x.id]).filter(Boolean);
+  const n=rows.reduce((a,r)=>a+r.sessions,0);
+  if(!n) return '';
+  const active=rows.reduce((a,r)=>a+r.activeMs,0), open=rows.reduce((a,r)=>a+r.openMs,0);
+  const last=Math.max(...rows.map(r=>r.lastAt?Date.parse(r.lastAt):0));
+  return `<div class="kpis" aria-label="Claude Code sessions">
+    <span title="Claude Code sessions started in ${p?'this folder or below it':'any of these projects'}"><b>${n.toLocaleString()}</b> session${n===1?'':'s'}</span>
+    <span title="Time Claude or you were doing something. A gap over 5 minutes counts as 5."><b>${hrs(active)}</b> active</span>
+    <span title="First message to last, per session — includes time a session sat open idle"><b>${hrs(open)}</b> open</span>
+    ${last?`<span title="${esc(new Date(last).toLocaleString())}">last <b>${Date.now()-last<M?'just now':ago(last)+' ago'}</b></span>`:''}
+  </div>`;
 }
 
 /* Claude Code knows these folders; they just don't have a board yet. */
@@ -668,7 +692,7 @@ async function deleteNote(n){
   catch(e){ toast(e.message); return false }
 }
 
-let S={projects:[],features:[],notes:[],unlinked:[]};
+let S={projects:[],features:[],notes:[],unlinked:[],stats:{}};
 let live=false, dirty=false, pendingPark=null;
 let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files'],hideDone:false,collapsed:['idea']};
 try{Object.assign(P,JSON.parse(localStorage.getItem(KEY+'.prefs'))||{})}catch(e){}
@@ -803,8 +827,8 @@ function renderPage(){
   const parked=S.features.filter(f=>(!p||f.project===p.id)&&f.type!=='question'&&f.status==='parked').length;
   const noun=P.tab==='questions'?'question':'card';
   let h=`<div class="head"><div>
-      ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>`
-         :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>`}
+      ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
+         :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
     <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search ${esc(TAB().label.toLowerCase())}" value="${esc(query)}" aria-label="Search ${esc(TAB().label.toLowerCase())}" title="Press / to search">
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
@@ -1556,6 +1580,9 @@ function connect(){
     reload(d.project||undefined) });
   es.onerror=()=>setConn('off','Reconnecting…');   // EventSource retries on its own
 }
+
+// Sessions move without the board changing; check once a minute.
+setInterval(async()=>{ if(document.hidden) return; await loadStats(); if(!editing()) render() },60_000);
 
 document.addEventListener('focusout',()=>{ if(dirty&&!editing()){dirty=false;reload()} });
 

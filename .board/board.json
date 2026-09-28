@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 65,
+  "nextNum": 66,
   "features": [
     {
       "key": "LE-1",
@@ -330,10 +330,11 @@
         "server/src/api.ts",
         "cli/test/server.test.ts",
         "cli/src/commands.ts",
-        "cli/src/cli.ts"
+        "cli/src/cli.ts",
+        "cli/test/sessions.test.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-27T09:14:30Z",
+      "updatedAt": "2026-09-28T14:57:43Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2408,20 +2409,117 @@
       "key": "LE-64",
       "title": "A second video: the real product filling a board while Claude works",
       "type": "feature",
-      "status": "active",
-      "note": "Recreate the Claude Code window and script the chaos part",
+      "status": "review",
+      "note": "Watch clipped-real.mp4; say what to change or where to use it",
       "doneWhen": [],
-      "steps": [],
-      "files": [],
+      "steps": [
+        {
+          "text": "Recreate the Claude Code window: ask, switch, scroll, rage-click",
+          "done": true
+        },
+        {
+          "text": "Capture the real Clipped UI after each board command",
+          "done": true
+        },
+        {
+          "text": "Voice and music",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": true
+        }
+      ],
+      "files": [
+        "video/real/events.json",
+        "video/real/clipped-real.html",
+        "video/real/voiceover.txt"
+      ],
       "links": [],
       "createdAt": "2026-09-28T14:42:16Z",
-      "updatedAt": "2026-09-28T14:42:16Z",
+      "updatedAt": "2026-09-28T14:57:34Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T14:42:16Z",
           "by": "claude",
           "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T14:52:13Z",
+          "by": "claude",
+          "text": "Step added (done): Recreate the Claude Code window: ask, switch, scroll, rage-click"
+        },
+        {
+          "at": "2026-09-28T14:52:13Z",
+          "by": "claude",
+          "text": "Step added (done): Capture the real Clipped UI after each board command"
+        },
+        {
+          "at": "2026-09-28T14:52:14Z",
+          "by": "claude",
+          "text": "Step added (done): Voice and music"
+        },
+        {
+          "at": "2026-09-28T14:52:14Z",
+          "by": "claude",
+          "text": "Step added: Render and send"
+        },
+        {
+          "at": "2026-09-28T14:52:14Z",
+          "by": "claude",
+          "text": "Note: 4K render running, then send"
+        },
+        {
+          "at": "2026-09-28T14:57:34Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-28T14:57:34Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-real.mp4; say what to change or where to use it"
+        }
+      ]
+    },
+    {
+      "key": "LE-65",
+      "title": "Each project shows its Claude Code sessions, active time and open time",
+      "type": "feature",
+      "status": "review",
+      "note": "Open localhost:4747 → under each project title: N sessions · X h active · Y h open · last …; hover each for what it means",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "server/src/sessions.ts",
+        "server/src/api.ts",
+        "ui/index.html",
+        "cli/test/sessions.test.ts"
+      ],
+      "links": [],
+      "createdAt": "2026-09-28T14:59:27Z",
+      "updatedAt": "2026-09-28T14:59:44Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T14:59:27Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T14:59:32Z",
+          "by": "claude",
+          "text": "Moved to review — Open localhost:4747 → each project shows N sessions · X h active · Y h open · last …; hover each for what it means"
+        },
+        {
+          "at": "2026-09-28T14:59:40Z",
+          "by": "claude",
+          "text": "Note: Reads only cwd + timestamps from ~/.claude/projects logs, incrementally (~1 s first scan, 1 ms after); GET /api/stats; 5 new tests, 205 pass. Tokens not yet."
+        },
+        {
+          "at": "2026-09-28T14:59:44Z",
+          "by": "claude",
+          "text": "Note: Open localhost:4747 → under each project title: N sessions · X h active · Y h open · last …; hover each for what it means"
         }
       ]
     }

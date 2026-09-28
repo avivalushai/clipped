@@ -5,6 +5,7 @@ import { run } from "../../cli/src/cli.js";
 import type { Ctx } from "../../cli/src/context.js";
 import type { Feature, Note, Step } from "../../cli/src/schema.js";
 import { discoverProjects, isKnownProject } from "./discover.js";
+import { sessionStats } from "./sessions.js";
 import { type Project, findProject, listProjects, loadBoard, summarize } from "./projects.js";
 
 export class HttpError extends Error {
@@ -108,6 +109,14 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
   if (seg[0] === "discover" && seg.length === 1) {
     if (method !== "GET") throw new HttpError(405, "use GET");
     return discoverProjects(ctx);
+  }
+
+  // GET /api/stats — Claude Code sessions per project, from its own logs on this machine
+  if (seg[0] === "stats" && seg.length === 1) {
+    if (method !== "GET") throw new HttpError(405, "use GET");
+    const projects = listProjects(ctx);
+    const stats = sessionStats(ctx, projects.map((p) => p.path));
+    return projects.map((p) => ({ id: p.id, ...stats.get(p.path)! }));
   }
 
   if (seg[0] !== "projects") return undefined;
