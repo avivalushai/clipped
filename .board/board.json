@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "project": {
     "name": "Clipped",
     "key": "LE"
@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 74,
+  "nextNum": 79,
   "features": [
     {
       "key": "LE-1",
@@ -101,7 +101,8 @@
           "text": "Moved to review — Run board list / add / park / context here and see if the output reads right"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-2",
@@ -195,7 +196,8 @@
           "text": "Step done: Install on a real project"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-3",
@@ -273,7 +275,8 @@
           "text": "Moved to review — Run board ui, then edit a card in the browser and watch it change in the terminal (and the other way round)"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-4",
@@ -395,7 +398,8 @@
           "text": "Note: Two weeks of real sessions on Braille.AI and bud — I'll ask the DOGFOOD.md questions at the end"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-5",
@@ -460,7 +464,8 @@
           "text": "Moved to review — Built and tested, but it needs your accounts: Clerk keys, Supabase project + schema.sql, Vercel, PostHog EU, and the domain. site/README.md has the table"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-9",
@@ -491,7 +496,8 @@
           "text": "Renamed from “Ideas don't count toward progress”"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-10",
@@ -512,7 +518,8 @@
           "text": "Created"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-11",
@@ -560,7 +567,8 @@
       ],
       "links": [
         "https://github.com/avivalushai/clipped"
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-12",
@@ -583,7 +591,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-14",
@@ -606,7 +615,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-15",
@@ -681,7 +691,8 @@
           "text": "Step done: Skill rules, /ask command, SPEC and README"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-16",
@@ -704,7 +715,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-17",
@@ -727,7 +739,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-18",
@@ -750,7 +763,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-19",
@@ -917,7 +931,8 @@
           "text": "Note: New 'So, what does Clipped actually do?' section with icons replaces How it works. Uncommitted"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-20",
@@ -941,7 +956,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-21",
@@ -967,7 +983,8 @@
           "text": "Moved to review — board rename \"New name\" — CLI, API and an editable title in the UI. I used it here: the board is called Clipped now, and the key stayed LE"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-22",
@@ -1017,7 +1034,8 @@
           "text": "Moved to review — Update the plugin to 0.3.1, then ask a research question in a Braille session: it should land in Questions → Answered on its own, and any 'do this first' should appear as an idea"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-23",
@@ -1048,7 +1066,8 @@
           "text": "Moved to review — Refresh the board: click a row anywhere (title, note, empty space) and its panel opens; hover and click a pencil to edit the title or note in place; open BRL-7 and the answer shows whole"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-24",
@@ -1109,7 +1128,8 @@
           "text": "Moved to review — Update the plugin to 0.3.2, open a new session in a folder with no board and ask 'top 3 mobile games per genre' — a board should appear with the answer under Questions → Answered; 'elaborate' should update that same card"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-25",
@@ -1142,7 +1162,8 @@
           "text": "Moved to review — Open landing/install.html (python3 -m http.server --directory landing) and read it as your friend would: desktop route, the check table, troubleshooting. Then deploy with the landing page"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-27",
@@ -1165,7 +1186,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-28",
@@ -1186,7 +1208,8 @@
           "text": "Created — review"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-29",
@@ -1214,7 +1237,8 @@
           "text": "Updated — Board and card screenshots on the landing page show the new look, light and dark"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-30",
@@ -1385,7 +1409,8 @@
           "text": "Done"
         }
       ],
-      "links": []
+      "links": [],
+      "area": ""
     },
     {
       "key": "LE-31",
@@ -1406,7 +1431,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-32",
@@ -1427,7 +1453,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-33",
@@ -1448,7 +1475,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-34",
@@ -1469,7 +1497,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-35",
@@ -1490,7 +1519,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-36",
@@ -1511,7 +1541,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-37",
@@ -1532,7 +1563,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-38",
@@ -1553,7 +1585,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-39",
@@ -1574,7 +1607,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-40",
@@ -1595,7 +1629,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-41",
@@ -1616,7 +1651,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-42",
@@ -1637,7 +1673,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-43",
@@ -1658,7 +1695,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-44",
@@ -1709,7 +1747,8 @@
           "by": "user",
           "text": "Proof: 69b678a, https://useclipped.vercel.app"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-45",
@@ -1760,7 +1799,8 @@
           "by": "user",
           "text": "Proof: 0c9ce0a"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-46",
@@ -1791,7 +1831,8 @@
           "by": "claude",
           "text": "Moved to review — launch.json and impeccable's config.json are in git; hook.cache.json and settings.local.json are ignored"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-47",
@@ -1812,7 +1853,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-48",
@@ -1833,7 +1875,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-49",
@@ -1909,7 +1952,8 @@
           "by": "claude",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-50",
@@ -1935,7 +1979,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-51",
@@ -2000,7 +2045,8 @@
           "by": "claude",
           "text": "Moved to review — Open board ui: light sidebar, Geist, rounded cards in grey columns, pill tabs and buttons; flip to dark mode"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-52",
@@ -2021,7 +2067,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-53",
@@ -2042,7 +2089,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-54",
@@ -2071,7 +2119,8 @@
           "by": "claude",
           "text": "Note: Install guide: same look as the landing page in light, dark and on a phone; header, command boxes, copy buttons, FAQ rows. Click Install guide in the header, then Privacy from the guide"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-55",
@@ -2200,7 +2249,8 @@
           "by": "claude",
           "text": "Proof: 7d08c0f"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-56",
@@ -2224,7 +2274,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-57",
@@ -2247,7 +2298,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-58",
@@ -2277,7 +2329,8 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-59",
@@ -2300,7 +2353,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-60",
@@ -2327,7 +2381,8 @@
           "by": "claude",
           "text": "Created — review"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-61",
@@ -2353,7 +2408,8 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-62",
@@ -2379,7 +2435,8 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-63",
@@ -2405,7 +2462,8 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-64",
@@ -2482,7 +2540,8 @@
           "by": "claude",
           "text": "Moved to review — Watch clipped-real.mp4; say what to change or where to use it"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-65",
@@ -2530,7 +2589,8 @@
           "by": "claude",
           "text": "Proof: 53633d7"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-66",
@@ -2577,7 +2637,8 @@
           "by": "claude",
           "text": "Moved to review — Watch clipped-builder.mp4 and pick the ending line"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-67",
@@ -2603,7 +2664,8 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-68",
@@ -2669,13 +2731,14 @@
           "by": "claude",
           "text": "Moved to review — Watch clipped-organized.mp4 and say what to change"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-69",
       "title": "Each card shows the area of the product its files are in",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Open localhost:4748 (Ledgerly demo): Area column on every grouping (dashed = guessed from folders); Group by Area; open a card and change its Area",
       "doneWhen": [],
       "steps": [],
@@ -2689,10 +2752,12 @@
         "ui/index.html",
         "cli/test/structure.test.ts"
       ],
-      "links": [],
+      "links": [
+        "5c82a8e"
+      ],
       "createdAt": "2026-09-28T15:32:37Z",
-      "updatedAt": "2026-09-28T15:50:06Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:07:48Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T15:32:37Z",
@@ -2713,8 +2778,19 @@
           "at": "2026-09-28T15:50:06Z",
           "by": "claude",
           "text": "Note: Open localhost:4748 (Ledgerly demo): Area column on every grouping (dashed = guessed from folders); Group by Area; open a card and change its Area"
+        },
+        {
+          "at": "2026-09-28T16:03:12Z",
+          "by": "claude",
+          "text": "Proof: 5c82a8e"
+        },
+        {
+          "at": "2026-09-28T16:07:48Z",
+          "by": "user",
+          "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-70",
@@ -2735,7 +2811,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-71",
@@ -2756,7 +2833,8 @@
           "by": "claude",
           "text": "Created"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-72",
@@ -2782,14 +2860,15 @@
           "by": "user",
           "text": "Done"
         }
-      ]
+      ],
+      "area": ""
     },
     {
       "key": "LE-73",
       "title": "A week-in-the-life video: one feature across five days",
       "type": "feature",
-      "status": "active",
-      "note": "4K render running, then send",
+      "status": "review",
+      "note": "Watch clipped-week.mp4 and say what to change",
       "doneWhen": [],
       "steps": [
         {
@@ -2806,7 +2885,7 @@
         },
         {
           "text": "Render and send",
-          "done": false
+          "done": true
         }
       ],
       "files": [
@@ -2815,7 +2894,7 @@
       ],
       "links": [],
       "createdAt": "2026-09-28T15:57:30Z",
-      "updatedAt": "2026-09-28T15:57:38Z",
+      "updatedAt": "2026-09-28T16:06:24Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -2837,6 +2916,199 @@
           "at": "2026-09-28T15:57:38Z",
           "by": "claude",
           "text": "Step done: Voice and music"
+        },
+        {
+          "at": "2026-09-28T16:06:24Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-28T16:06:24Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-week.mp4 and say what to change"
+        }
+      ],
+      "area": ""
+    },
+    {
+      "key": "LE-74",
+      "title": "The sidebar drops the parked count next to each project",
+      "type": "feature",
+      "status": "done",
+      "note": "No number next to the projects in the left menu",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [
+        "49a70d7"
+      ],
+      "area": "",
+      "createdAt": "2026-09-28T16:14:07Z",
+      "updatedAt": "2026-09-28T16:16:46Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T16:14:07Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:14:07Z",
+          "by": "claude",
+          "text": "Moved to review — No number next to the projects in the left menu"
+        },
+        {
+          "at": "2026-09-28T16:14:07Z",
+          "by": "claude",
+          "text": "Proof: 49a70d7"
+        },
+        {
+          "at": "2026-09-28T16:16:46Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-75",
+      "title": "The menu folds to a rail from a click on its empty space",
+      "type": "feature",
+      "status": "review",
+      "note": "Click empty space in the left menu: it folds at once (no jump), normal cursor; click the rail again: it opens",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "Skills",
+      "createdAt": "2026-09-28T16:18:17Z",
+      "updatedAt": "2026-09-28T16:25:12Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:18:17Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:18:17Z",
+          "by": "claude",
+          "text": "Moved to review — Click empty space in the left menu: it folds to project badges; click the rail again: it opens"
+        },
+        {
+          "at": "2026-09-28T16:23:06Z",
+          "by": "user",
+          "text": "Area: Skills"
+        },
+        {
+          "at": "2026-09-28T16:25:12Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T16:25:12Z",
+          "by": "claude",
+          "text": "Moved to review — Click empty space in the left menu: it folds at once (no jump), normal cursor; click the rail again: it opens"
+        }
+      ]
+    },
+    {
+      "key": "LE-76",
+      "title": "Filter the table by one or more areas from an Area chip",
+      "type": "feature",
+      "status": "review",
+      "note": "Area chip reads 'Area All' with nothing ticked, the area's name with one, 'N areas' with more; ticking filters the table",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:18:17Z",
+      "updatedAt": "2026-09-28T16:30:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:18:17Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:18:17Z",
+          "by": "claude",
+          "text": "Moved to review — Area chip next to Group by: tick two areas, only their cards show; Show all areas clears it"
+        },
+        {
+          "at": "2026-09-28T16:30:41Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T16:30:41Z",
+          "by": "claude",
+          "text": "Moved to review — Area chip reads 'Area All' with nothing ticked, the area's name with one, 'N areas' with more; ticking filters the table"
+        }
+      ]
+    },
+    {
+      "key": "LE-77",
+      "title": "Card titles wrap onto three lines in the card panel; the menu drops its footer",
+      "type": "feature",
+      "status": "review",
+      "note": "Open a card with a long title: it wraps (up to 3 lines); Enter saves. No Live chip or text at the bottom of the menu",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:25:12Z",
+      "updatedAt": "2026-09-28T16:25:12Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:25:12Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:25:12Z",
+          "by": "claude",
+          "text": "Moved to review — Open a card with a long title: it wraps (up to 3 lines); Enter saves. No Live chip or text at the bottom of the menu"
+        }
+      ]
+    },
+    {
+      "key": "LE-78",
+      "title": "Row icons stay inside their cell; the page background stays put while the table scrolls",
+      "type": "feature",
+      "status": "review",
+      "note": "Hover a row with a long title: pencil and copy stay in the Card column. Scroll down: the grid background doesn't move",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:30:41Z",
+      "updatedAt": "2026-09-28T16:30:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T16:30:41Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T16:30:41Z",
+          "by": "claude",
+          "text": "Moved to review — Hover a row with a long title: pencil and copy stay in the Card column. Scroll down: the grid background doesn't move"
         }
       ]
     }
@@ -2960,6 +3232,12 @@
       "createdAt": "2026-09-28T15:07:28Z",
       "updatedAt": "2026-09-28T15:32:47Z",
       "updatedBy": "claude"
+    }
+  ],
+  "areas": [
+    {
+      "name": "Skills",
+      "paths": []
     }
   ]
 }

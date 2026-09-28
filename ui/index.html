@@ -49,7 +49,7 @@
 html,body{height:100%}
 body{background-color:var(--ground);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
 /* the landing page's blueprint grid, fading out below the header */
-body::before{content:"";position:absolute;inset:0 0 auto 0;height:640px;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent);mask-image:linear-gradient(to bottom,#000 20%,transparent)}
+body::before{content:"";position:fixed;inset:0 0 auto 0;height:640px;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent);mask-image:linear-gradient(to bottom,#000 20%,transparent)}
 *{box-sizing:border-box}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -242,7 +242,10 @@ tr.grp:hover td{background:var(--sunk);color:var(--ink)}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:21;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
 .drawer-h{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
 .drawer-h .row{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted);font-size:12px}
-.title-in{font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.02em;border:0;background:none;padding:2px 0;width:100%;letter-spacing:-.01em}
+.title-in{font-family:var(--display);font-size:22px;font-weight:500;letter-spacing:-.02em;border:0;background:none;padding:2px 0;width:100%;letter-spacing:-.01em;line-height:1.25;resize:none;overflow:hidden;display:block;color:inherit}
+/* the title wraps onto a second and third line; past that it scrolls */
+textarea.title-in{max-height:calc(3 * 1.25em + 6px)}
+textarea.title-in.scrolls{overflow-y:auto}
 .drawer-b{padding:16px 20px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto;display:flex;flex-direction:column;gap:20px}
 .field{display:flex;flex-direction:column;gap:6px}
 .lbl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:500;display:flex;justify-content:space-between;align-items:center}
@@ -300,7 +303,10 @@ body.resizing,body.resizing *{cursor:col-resize!important;user-select:none!impor
 .grid td.vcell.note{color:var(--muted);font-size:13px}
 .grid td.vcell.title .txt{font-weight:500}
 .grid tr.is-done td.vcell.title .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
-.grid td.vcell .txt{padding:0 7px;display:inline-block;max-width:calc(100% - 30px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.grid td.vcell .vrow{display:flex;align-items:center;min-width:0}
+.grid td.vcell .vrow>*{flex:none}
+.grid td.vcell .vrow>.txt{flex:0 1 auto;min-width:0}
+.grid td.vcell .txt{padding:0 7px;display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .grid td.vcell .pencil{opacity:0;background:none;border:0;padding:2px 4px;margin-left:4px;color:var(--muted);cursor:pointer;vertical-align:middle;border-radius:4px}
 .grid tr:hover td.vcell .pencil{opacity:.6}
 .grid td.vcell .pencil:hover{opacity:1;color:var(--accent);background:var(--sunk)}
@@ -385,6 +391,12 @@ details.cols .menu label:hover{background:var(--sunk)}
 details.cols .menu label:has(input:disabled){cursor:default;color:var(--muted)}
 details.cols .menu label:has(input:disabled):hover{background:none}
 details.cols .menu input{accent-color:var(--accent);width:14px;height:14px;margin:0}
+details.areas .menu{left:0;right:auto;transform-origin:top left;max-height:min(360px,60vh);overflow:auto}
+details.areas .menu::before{content:"Show areas"}
+details.areas .menu .an{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.areas .menu .ac{font-family:var(--mono);font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+summary.opt.on{border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--ink)}
+summary.opt b{font-weight:500;color:var(--ink);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @keyframes menu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}}
 .tabs button{display:inline-flex;align-items:center;gap:6px}
 .tabs svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
@@ -429,6 +441,12 @@ details.cols .menu input{accent-color:var(--accent);width:14px;height:14px;margi
   h1{font-size:25px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* The menu folded by hand: the same rail as on a narrow screen, still showing each project's badge. */
+.app.side-shut{grid-template-columns:64px minmax(0,1fr)}
+.app.side-shut .side{padding:14px 8px;align-items:center}
+.app.side-shut .brand b,.app.side-shut .nav-item .name,.app.side-shut .nav-item .mini,.app.side-shut .nav-item .add,.app.side-shut .nav-label span,.app.side-shut .nav-label button,.app.side-shut .side-foot{display:none}
+.app.side-shut .nav-label{padding:0 0 4px}
+.app.side-shut .nav-item{grid-template-columns:22px;justify-content:center;padding:8px}
 
 /* ---------- review fixes ---------- */
 /* a card with no steps has nothing to measure */
@@ -505,15 +523,10 @@ details.cols .menu input{accent-color:var(--accent);width:14px;height:14px;margi
 <body>
 
 
-<div class="app">
-  <aside class="side" aria-label="Projects">
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Projects">
     <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--ground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Clipped</b></div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">
-      <span class="sample-tag" id="connTag">Connecting…</span>
-      <span>Each project's board lives in its repo. Claude reads it when a session starts and writes to it as you work.</span>
-      <button class="linkbtn" id="refreshBtn">Refresh</button>
-    </div>
   </aside>
   <main id="mainEl"></main>
 </div>
@@ -709,7 +722,7 @@ async function deleteNote(n){
 
 let S={projects:[],features:[],notes:[],unlinked:[],stats:{},areas:{}};
 let live=false, dirty=false, pendingPark=null;
-let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files'],hideDone:false,collapsed:['idea']};
+let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files'],hideDone:false,collapsed:['idea'],areaPick:[],sideShut:false};
 try{Object.assign(P,JSON.parse(localStorage.getItem(KEY+'.prefs'))||{})}catch(e){}
 const savePrefs=()=>{try{localStorage.setItem(KEY+'.prefs',JSON.stringify(P))}catch(e){}};
 let sel=new Set();   /* cards ticked for a bulk action */
@@ -802,9 +815,18 @@ function tabCards(){
   const p=proj(view), base=p?S.features.filter(f=>f.project===p.id):S.features;
   return base.filter(f=>P.tab==='questions'?f.type==='question':f.type!=='question');
 }
+/* Areas the Area chip can offer here, with how many cards each holds ("" = no area yet). */
+function areaOptions(){
+  const m=new Map();
+  for(const f of tabCards()) m.set(f.inArea||'',(m.get(f.inArea||'')||0)+1);
+  const names=[...m.keys()].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  return [...names,...(m.has('')?['']:[])].map(n=>({name:n,count:m.get(n)}));
+}
+/* The ticked areas that exist in this view. None ticked (or none here) = every area. */
+const areaPicked=()=>{const here=new Set(areaOptions().map(o=>o.name));return (P.areaPick||[]).filter(n=>here.has(n))};
 function scopeFeatures(){
-  const q=query.toLowerCase();
-  return tabCards().filter(f=>
+  const q=query.toLowerCase(), picked=areaPicked();
+  return tabCards().filter(f=>(!picked.length||picked.includes(f.inArea||''))&&
     (filter==='all'||f.status===filter||(filter==='new'&&isNew(f)))&&(!P.hideDone||f.status!=='done'||filter==='done')&&
     (!q||f.title.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q)||fkey(f).toLowerCase().includes(q)));
 }
@@ -862,6 +884,10 @@ function renderPage(){
   </div>
   <div class="viewbar">
     <div class="opts">
+      ${(()=>{const opts=areaOptions(); if(!opts.some(o=>o.name)) return ''; const picked=areaPicked();
+        return `<details class="cols areas"><summary class="opt" style="padding-right:9px">Area <b>${!picked.length?'All':picked.length===1?esc(picked[0]||'No area'):picked.length+' areas'}</b></summary><div class="menu">
+          ${opts.map(o=>`<label><input type="checkbox" data-area="${esc(o.name)}" ${picked.includes(o.name)?'checked':''}><span class="an">${o.name?esc(o.name):'No area yet'}</span><span class="ac">${o.count}</span></label>`).join('')}
+          ${picked.length?`<button class="linkbtn colreset" id="areaClear" type="button">Show all areas</button>`:''}</div></details>`})()}
       ${P.mode!=='board'?`<span class="opt">Group by<select id="groupSel" aria-label="Group by">
         <option value="status" ${P.group==='status'?'selected':''}>Status</option>
         <option value="area" ${P.group==='area'?'selected':''}>Area</option>
@@ -978,7 +1004,7 @@ const COPYICON=`<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="tru
 const PENCIL=`<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M11.5 1.6 14.4 4.5 5.9 13H3v-2.9zM12.9.2a1 1 0 0 1 1.4 0l1.5 1.5a1 1 0 0 1 0 1.4l-1 1L11.9 1.2z"/></svg>`;
 function editableCell({id,k,attr,value,ph,cls,label,shown}){
   if(editCell===id+'|'+k) return `<td class="vcell editing ${cls}"><input class="cell-in ${cls}" ${attr}="${k}" data-id="${id}" value="${esc(value)}" placeholder="${esc(ph)}" aria-label="${esc(label)}"></td>`;
-  return `<td class="vcell ${cls}"><span class="txt">${shown??(value?esc(value):`<span class="ph">${esc(ph)}</span>`)}</span><button class="pencil" data-editcell="${id}|${k}" aria-label="Edit ${esc(label.toLowerCase())}" title="Edit">${PENCIL}</button></td>`;
+  return `<td class="vcell ${cls}"><div class="vrow"><span class="txt">${shown??(value?esc(value):`<span class="ph">${esc(ph)}</span>`)}</span><button class="pencil" data-editcell="${id}|${k}" aria-label="Edit ${esc(label.toLowerCase())}" title="Edit">${PENCIL}</button></div></td>`;
 }
 function cell(c,f){
   const pr=proj(f.project);
@@ -990,7 +1016,7 @@ function cell(c,f){
       const notes=S.notes.filter(n=>n.project===f.project&&n.cards.includes(f.key));
       const extra=(notes.length?`<span class="rownotes">${notes.map(n=>`<button class="clink" data-nopen="${n.id}" title="${esc(KINDL[n.kind]+': '+n.title)}">${esc(n.nid.slice(n.nid.indexOf('-')+1))}</button>`).join('')}</span>`:'')
         +(f.status!=='done'?`<button class="rowcopy" data-copy="${f.id}" title="Copy the prompt that picks this up in Claude" aria-label="Copy prompt for ${fkey(f)}">${COPYICON}</button>`:'');
-      return extra?td.replace(/<\/td>$/,extra+'</td>'):td;
+      return extra?td.replace(/<\/div><\/td>$/,extra+'</div></td>'):td;
     }
     case 'area': return `<td>${areaTag(f)}</td>`;
     case 'status': return `<td><span class="sel ${f.status}"><select class="status ${f.status}" data-edit="status" data-id="${f.id}" aria-label="Status">${STATUSES.map(s=>`<option value="${s.id}" ${s.id===f.status?'selected':''}>${sl(s.id)}</option>`).join('')}</select></span></td>`;
@@ -1125,6 +1151,8 @@ function renderTimeline(fs,isHome){
 
 /* ---------- render & bind ---------- */
 function render(){
+  $('app').classList.toggle('side-shut',!!P.sideShut);
+  $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu';
   renderNav();
   $('mainEl').innerHTML=renderPage();
   bindPage();
@@ -1268,6 +1296,9 @@ function bindPage(){
   document.querySelectorAll('tr[data-grprow]').forEach(tr=>tr.onclick=()=>{const id=tr.dataset.grprow;
     P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render();
     document.querySelector(`[data-grp="${id}"]`)?.focus({preventScroll:true})});
+  document.querySelectorAll('[data-area]').forEach(c=>c.onchange=()=>{const n=c.dataset.area, cur=areaPicked();
+    P.areaPick=c.checked?[...cur,n]:cur.filter(x=>x!==n); savePrefs(); render(); document.querySelector('details.areas')?.setAttribute('open','')});
+  if($('areaClear')) $('areaClear').onclick=()=>{P.areaPick=[];savePrefs();render()};
   document.querySelectorAll('[data-col]').forEach(c=>c.onchange=()=>{const id=c.dataset.col;P.hidden=c.checked?P.hidden.filter(x=>x!==id):[...P.hidden,id];savePrefs();render();document.querySelector('details.cols')?.setAttribute('open','')});
   $('newBtn').onclick=()=>{if(P.mode!=='table'){P.mode='table';savePrefs();render()}$('cTitle').focus()};
 
@@ -1355,7 +1386,7 @@ function underScrim(e){
   return row.dataset.row?{card:row.dataset.row}:row.dataset.nrow?{note:row.dataset.nrow}:{card:row.dataset.open};
 }
 function openTarget(t){ if(!t) return; if(t.card){openNote=null;openId=t.card}else{openId=null;openNote=t.note} renderDrawer() }
-function fitText(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px'}
+function fitText(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px';el.classList.toggle('scrolls',el.scrollHeight>el.clientHeight+2)}
 function fitDrawerText(){document.querySelectorAll('#drawerRoot textarea').forEach(t=>{fitText(t);t.addEventListener('input',()=>fitText(t))})}
 /* Proof: a commit hash becomes a link into the repo; a URL shows its host. */
 const isSha=x=>/^[0-9a-f]{7,40}$/i.test(x);
@@ -1409,7 +1440,7 @@ function renderDrawer(){
   $('drawerRoot').innerHTML=`<div class="scrim" id="scrim"></div>
   <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(f.title)}">
     <div class="drawer-h"><div class="row"><span class="mono">${fkey(f)} · ${esc(proj(f.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
-      <input class="title-in" id="titleIn" value="${esc(f.title)}" aria-label="${isQ?'Question':'Title'}">${isQ||!f.steps.length?'':progBar(f)}</div>
+      <textarea class="title-in" id="titleIn" rows="1" aria-label="${isQ?'Question':'Title'}">${esc(f.title)}</textarea>${isQ||!f.steps.length?'':progBar(f)}</div>
     <div class="drawer-b">
       ${verdict}
       <div class="field"><span class="lbl">Status</span><div class="seg">${STATUSES.map(s=>`<button data-st="${s.id}" aria-pressed="${f.status===s.id}"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}</button>`).join('')}</div></div>
@@ -1459,7 +1490,7 @@ function renderDrawer(){
   // A2: title and note save when you leave them (or press ⌘Enter); closing saves too.
   const autosave=el=>{ if(!el) return;
     el.addEventListener('blur',()=>{ if(pendingPark===f.id&&el.id==='noteIn') return; saveNow() });
-    el.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();saveNow()} if(e.key==='Enter'&&el.tagName==='INPUT'){e.preventDefault();el.blur()} });
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();saveNow()} if(e.key==='Enter'&&(el.tagName==='INPUT'||el.id==='titleIn')){e.preventDefault();el.blur()} });
   };
   autosave($('titleIn')); autosave($('noteIn'));
   if($('parkBtn')) $('parkBtn').onclick=()=>commit().then(ok=>{if(ok!==false) toast(fkey(f)+' parked')});
@@ -1473,7 +1504,7 @@ function renderDrawer(){
   /* Write the open fields back. Returns false if the server refused, 'same' if nothing changed. */
   async function commit(){
     const ti=$('titleIn'), ni=$('noteIn'); if(!ti) return true;
-    const t=ti.value.trim()||f.title, n=ni.value.trim();
+    const t=ti.value.replace(/\s*\n\s*/g,' ').trim()||f.title, n=ni.value.trim();   // a pasted line break doesn't belong in a title
     const parkNow=pendingPark===f.id&&n;
     if(t===f.title&&n===f.note&&!parkNow) return 'same';
     if(parkNow) pendingPark=null;
@@ -1590,10 +1621,14 @@ document.addEventListener('click',e=>{
   const pill=e.target.closest('.opt'); const ps=pill&&pill.querySelector('select');
   if(ps&&e.target!==ps&&!ps.contains(e.target)){try{ps.showPicker()}catch(_){ps.focus()}return}
   const cp=e.target.closest('[data-copy]'); if(cp){e.stopPropagation();const f=S.features.find(x=>x.id===cp.dataset.copy);if(f) copyPrompt(f);return}
+  /* The menu folds to a rail from a click on its empty space, and opens from a click anywhere on the rail but a project. */
+  const side=e.target.closest('#side');
+  if(side&&(P.sideShut?!e.target.closest('[data-go],[data-init]'):!e.target.closest('button,a,input,select,textarea,label,form,.nav-item'))){
+    P.sideShut=!P.sideShut; savePrefs(); $('app').classList.toggle('side-shut',P.sideShut); $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu'; return }
   const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();window.scrollTo(0,0);return}
   const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
   const no=e.target.closest('[data-nopen]'); if(no&&!e.target.closest('.drawer')){openTheNote(no.dataset.nopen);return}
-  const d=document.querySelector('details.cols[open]'); if(d&&!e.target.closest('details.cols')) d.removeAttribute('open');
+  document.querySelectorAll('details.cols[open]').forEach(d=>{ if(!d.contains(e.target)) d.removeAttribute('open') });
 });
 /* Leaving a row field — by blur, Escape or clicking away — puts it back to text. */
 document.addEventListener('focusout',e=>{
@@ -1619,7 +1654,7 @@ document.addEventListener('keydown',e=>{
 });
 $('dlgClose').onclick=()=>$('dlg').close();
 $('dlgCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('dlgPre').textContent);toast('Copied')}catch(e){const r=document.createRange();r.selectNodeContents($('dlgPre'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Selected — press ⌘C to copy')}};
-$('refreshBtn').onclick=()=>reload().then(()=>toast('Refreshed'));
+
 
 /* ---------- live: the server pushes when any board changes ---------- */
 function setConn(state,label){ live=state==='live'; const t=$('connTag'); if(t){t.textContent=label;t.dataset.state=state} }
