@@ -1178,7 +1178,9 @@ var init_watch = __esm({
 // server/src/server.ts
 var server_exports = {};
 __export(server_exports, {
+  BOARD_HOST: () => BOARD_HOST,
   DEFAULT_PORT: () => DEFAULT_PORT,
+  boardUrl: () => boardUrl,
   createServer: () => createServer,
   listen: () => listen
 });
@@ -1298,7 +1300,7 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
+var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, BOARD_HOST, boardUrl, MIME, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
@@ -1310,7 +1312,9 @@ var init_server = __esm({
     init_watch();
     DEFAULT_PORT = 4747;
     ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?clipped\.dev$/;
-    ALLOWED_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+    ALLOWED_HOST = /^(localhost|clipped\.localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+    BOARD_HOST = "clipped.localhost";
+    boardUrl = (url) => url.replace("//localhost:", `//${BOARD_HOST}:`);
     MIME = {
       ".html": "text/html; charset=utf-8",
       ".js": "text/javascript; charset=utf-8",
@@ -1749,7 +1753,7 @@ function remove(ctx, { pos, opts }) {
 function ui(ctx, { opts }) {
   const port = str2(opts, "port") ? Number(str2(opts, "port")) : void 0;
   if (port !== void 0 && (!Number.isInteger(port) || port < 1 || port > 65535)) throw new UserError("--port must be a port number");
-  void Promise.resolve().then(() => (init_server(), server_exports)).then(({ listen: listen2, DEFAULT_PORT: DEFAULT_PORT2 }) => listen2(ctx, port ?? DEFAULT_PORT2)).then(({ url }) => {
+  void Promise.resolve().then(() => (init_server(), server_exports)).then(({ listen: listen2, DEFAULT_PORT: DEFAULT_PORT2, boardUrl: boardUrl2 }) => listen2(ctx, port ?? DEFAULT_PORT2).then((r) => ({ url: boardUrl2(r.url) }))).then(({ url }) => {
     const projects = readRegistry(ctx).length;
     ctx.out(`Clipped \u2192 ${url}`);
     ctx.out(`${projects} project${projects === 1 ? "" : "s"} \xB7 board data stays on this machine \xB7 Ctrl-C to stop`);
@@ -2077,7 +2081,7 @@ function run(argv, ctx) {
     return 0;
   }
   if (name === "--version" || name === "-v") {
-    ctx.out("0.7.0");
+    ctx.out("0.7.1");
     return 0;
   }
   const command = COMMANDS[name];

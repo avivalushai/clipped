@@ -238,6 +238,22 @@ describe("serving the UI and staying local", () => {
     });
     expect(status).toBe(403); // DNS rebinding: a public hostname pointed at 127.0.0.1
   });
+
+  it("answers at clipped.localhost, the address the board opens at, and no other .localhost name", async () => {
+    const { url } = await serve(seeded());
+    const port = Number(new URL(url).port);
+    const statusFor = (host: string) =>
+      new Promise<number>((resolve, reject) => {
+        const req = http.request({ host: "127.0.0.1", port, path: "/api/projects", headers: { Host: host } }, (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        });
+        req.on("error", reject);
+        req.end();
+      });
+    expect(await statusFor(`clipped.localhost:${port}`)).toBe(200);
+    expect(await statusFor(`evil.localhost:${port}`)).toBe(403);
+  });
 });
 
 describe("adopting a project from the UI", () => {

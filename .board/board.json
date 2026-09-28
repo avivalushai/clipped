@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 83,
+  "nextNum": 85,
   "features": [
     {
       "key": "LE-1",
@@ -3164,18 +3164,20 @@
       "key": "LE-79",
       "title": "The table's header row stays on screen while you scroll",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Scroll a long table: the header row stays at the table's top, solid, with no wobble",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "865ffaf"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:38:56Z",
-      "updatedAt": "2026-09-28T16:41:36Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:45:44Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:38:56Z",
@@ -3196,6 +3198,16 @@
           "at": "2026-09-28T16:41:36Z",
           "by": "claude",
           "text": "Moved to review — Scroll a long table: the header row stays at the table's top, solid, with no wobble"
+        },
+        {
+          "at": "2026-09-28T16:45:29Z",
+          "by": "claude",
+          "text": "Proof: 865ffaf"
+        },
+        {
+          "at": "2026-09-28T16:45:44Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3203,18 +3215,20 @@
       "key": "LE-80",
       "title": "The new-card row opens only from + New card",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Click + New card: the new row opens; click it again: it closes",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "865ffaf"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:38:56Z",
-      "updatedAt": "2026-09-28T16:41:36Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:45:44Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:38:56Z",
@@ -3235,6 +3249,16 @@
           "at": "2026-09-28T16:41:36Z",
           "by": "claude",
           "text": "Moved to review — Click + New card: the new row opens; click it again: it closes"
+        },
+        {
+          "at": "2026-09-28T16:45:29Z",
+          "by": "claude",
+          "text": "Proof: 865ffaf"
+        },
+        {
+          "at": "2026-09-28T16:45:44Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3242,18 +3266,20 @@
       "key": "LE-81",
       "title": "Search opens from a button next to the Area chip",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "The magnifier sits left of the Area chip; click it (or /) to search",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "865ffaf"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:38:56Z",
-      "updatedAt": "2026-09-28T16:41:36Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:45:44Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:38:56Z",
@@ -3274,6 +3300,16 @@
           "at": "2026-09-28T16:41:36Z",
           "by": "claude",
           "text": "Moved to review — The magnifier sits left of the Area chip; click it (or /) to search"
+        },
+        {
+          "at": "2026-09-28T16:45:29Z",
+          "by": "claude",
+          "text": "Proof: 865ffaf"
+        },
+        {
+          "at": "2026-09-28T16:45:44Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3281,18 +3317,20 @@
       "key": "LE-82",
       "title": "Table polish: no hint line, centred All projects icon, one-line area headings",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "No 'Click a row…' line under the table; the All projects icon is centred; area group headings keep the badge on the same line",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "865ffaf"
+      ],
       "area": "",
       "createdAt": "2026-09-28T16:38:56Z",
-      "updatedAt": "2026-09-28T16:38:56Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T16:45:44Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T16:38:56Z",
@@ -3303,11 +3341,87 @@
           "at": "2026-09-28T16:38:56Z",
           "by": "claude",
           "text": "Moved to review — No 'Click a row…' line under the table; the All projects icon is centred; area group headings keep the badge on the same line"
+        },
+        {
+          "at": "2026-09-28T16:45:29Z",
+          "by": "claude",
+          "text": "Proof: 865ffaf"
+        },
+        {
+          "at": "2026-09-28T16:45:44Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-83",
+      "title": "Can the board open from a real URL (like useclipped.dev) instead of localhost?",
+      "type": "question",
+      "status": "done",
+      "note": "Decided: clipped.localhost:4747. The page's code stays on this machine, no domain, no hosted page. Works in Chrome, Edge, Brave, Firefox (they send *.localhost to this machine themselves) and Safari on macOS (the system does). localhost:4747 keeps working.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T16:51:47Z",
+      "updatedAt": "2026-09-28T17:04:34Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-28T16:51:47Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T16:51:47Z",
+          "by": "claude",
+          "text": "Moved to review — Yes, two ways. (1) Recommended: serve the board page at a web address (useclipped.vercel.app/app, or a bought domain) that reads and writes boards through the local server on :4747, so content never leaves the machine. The UI already supports this; missing: deploy the page (404 today), allow the domain in server CORS (only clipped.dev now), local server still running, Chrome asks for local-network permission, Safari may block https→localhost (untested). (2) http://clipped.localhost:4747: server returns 403 today (host check); allowing *.localhost is a small change. Not a tunnel (ngrok): puts boards online."
+        },
+        {
+          "at": "2026-09-28T17:04:34Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-84",
+      "title": "The board opens at clipped.localhost:4747",
+      "type": "feature",
+      "status": "review",
+      "note": "Open http://clipped.localhost:4747 in Chrome and Safari: the board loads with your projects; localhost:4747 still works",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "server/src/server.ts",
+        "cli/src/commands.ts",
+        "ui/index.html",
+        "cli/test/server.test.ts",
+        "README.md",
+        "landing/install.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:04:34Z",
+      "updatedAt": "2026-09-28T17:04:34Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T17:04:34Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T17:04:34Z",
+          "by": "claude",
+          "text": "Moved to review — Open http://clipped.localhost:4747 in Chrome and Safari: the board loads with your projects; localhost:4747 still works"
         }
       ]
     }
   ],
-  "nextNoteNum": 8,
+  "nextNoteNum": 9,
   "notes": [
     {
       "id": "LE-N1",
@@ -3425,6 +3539,21 @@
       ],
       "createdAt": "2026-09-28T15:07:28Z",
       "updatedAt": "2026-09-28T15:32:47Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N8",
+      "kind": "brainstorm",
+      "title": "Board at a real URL: pros, cons and user fears",
+      "body": "Hosted page (useclipped.dev/app) talking to the local server. Pros: memorable/shareable link, UI updates on deploy, feels like a product, data stays local, room for sign-in later. Cons: dead when the local server is off; Chrome local-network prompt, Safari may block https→localhost; hosted page vs old local server version mismatch; deployment + domain + origin allowlist to maintain; bigger attack surface if the allowlist is wrong. Fears: 'is my plan on your server?' (biggest), the scary local-network prompt, 'why install if it's a website', 'can others open my board', lock-in if the site dies, analytics on the page, ad blockers/corporate networks. Mitigations: 'nothing is uploaded' banner, explain before the prompt, clear server-off screen with the start command, keep localhost:4747 as fallback, no analytics on the board page. Lean: clipped.localhost:4747 now; hosted page once sign-in/teams exist.",
+      "considered": "Tunnel (ngrok): real public URL but boards on the internet — rejected.",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-83"
+      ],
+      "createdAt": "2026-09-28T16:54:33Z",
+      "updatedAt": "2026-09-28T16:54:33Z",
       "updatedBy": "claude"
     }
   ],

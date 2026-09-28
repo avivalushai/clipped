@@ -561,7 +561,7 @@ export function ui(ctx: Ctx, { opts }: Args) {
   if (port !== undefined && (!Number.isInteger(port) || port < 1 || port > 65535)) throw new UserError("--port must be a port number");
 
   void import("../../server/src/server.js")
-    .then(({ listen, DEFAULT_PORT }) => listen(ctx, port ?? DEFAULT_PORT))
+    .then(({ listen, DEFAULT_PORT, boardUrl }) => listen(ctx, port ?? DEFAULT_PORT).then((r) => ({ url: boardUrl(r.url) })))
     .then(({ url }) => {
       const projects = readRegistry(ctx).length;
       ctx.out(`Clipped → ${url}`);

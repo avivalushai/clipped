@@ -26,7 +26,7 @@ npm install && npm run build && npm test
 ./bin/board ui
 ```
 
-Opens http://localhost:4747 — every registered project, live-updating as Claude writes.
+Opens http://clipped.localhost:4747 (plain http://localhost:4747 works too) — every registered project, live-updating as Claude writes.
 
 ## Install the plugin
 

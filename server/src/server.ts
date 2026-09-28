@@ -22,8 +22,15 @@ function defaultUiDir(): string {
 /** The hosted UI may talk to this server; a random web page may not. */
 const ALLOWED_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$|^https:\/\/(www\.)?clipped\.dev$/;
 
-/** Reject DNS-rebinding: only loopback hostnames may reach us. */
-const ALLOWED_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+/** Reject DNS-rebinding: only loopback hostnames may reach us. clipped.localhost is
+    loopback too — browsers and macOS send every *.localhost name to this machine —
+    and it's the address the board opens at. Other *.localhost names stay out. */
+const ALLOWED_HOST = /^(localhost|clipped\.localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+/** The address people see: a name, not an IP, and still this machine. Only for
+    showing and opening — scripts use plain localhost, which resolves everywhere. */
+export const BOARD_HOST = "clipped.localhost";
+export const boardUrl = (url: string) => url.replace("//localhost:", `//${BOARD_HOST}:`);
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
