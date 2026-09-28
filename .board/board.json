@@ -1656,17 +1656,20 @@
       "key": "LE-44",
       "title": "Landing page token figure is out of date",
       "type": "chore",
-      "status": "review",
+      "status": "done",
       "note": "The FAQ 'Does it cost tokens?' now says about 150 for a small board and about 600 for this repo's 43 cards",
       "doneWhen": [],
       "steps": [],
       "files": [
         "landing/index.html"
       ],
-      "links": [],
+      "links": [
+        "69b678a",
+        "https://useclipped.vercel.app"
+      ],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-28T10:05:20Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T10:17:20Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
@@ -1687,6 +1690,16 @@
           "at": "2026-09-28T10:05:20Z",
           "by": "claude",
           "text": "Moved to review — The FAQ 'Does it cost tokens?' now says about 150 for a small board and about 600 for this repo's 43 cards"
+        },
+        {
+          "at": "2026-09-28T10:17:20Z",
+          "by": "user",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-28T10:17:20Z",
+          "by": "user",
+          "text": "Proof: 69b678a, https://useclipped.vercel.app"
         }
       ]
     },
