@@ -422,10 +422,8 @@ Never move a card to `done` on a guess. Review is where uncertainty goes.
 ## Before you end a turn
 
 A decision, a loose end or a step for the user leaves no diff. The end-of-turn
-hook catches code that changed without the board, and replies that *say*
-something was left behind — "you'll need to", "isn't tested yet", "we decided" —
-when the board didn't move that turn. It catches the obvious ones, not all of
-them, so check yourself before your last line:
+hook only catches code that changed without the board — nothing catches the
+rest, so check yourself before your last line:
 
 - Did something get **decided** — even across many small replies? → a brainstorm note
 - Did you **mention** something left to do — a bug, a chore, a "you'll need to"? → a card

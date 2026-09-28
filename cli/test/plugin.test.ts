@@ -293,46 +293,34 @@ describe("hook behaviour", () => {
     expect(runHook("stop.mjs", { session_id: "s5", cwd: sb.root, stop_hook_active: true }, env).raw).toBe("");
   });
 
-  describe("Stop reads the reply for what it left behind", () => {
-    const setup = () => {
-      const sb = withBoard();
-      delete sb.env.CLIPPED_NOW; // compares board times against real stop times
-      return { sb, env: { CLAUDE_PLUGIN_DATA: sb.home } };
-    };
-    const stop = (sb: Sandbox, env: Env, session: string, reply: string, turn?: string) =>
-      runHook("stop.mjs", { hook_event_name: "Stop", session_id: session, cwd: sb.root, prompt_id: turn, last_assistant_message: reply }, env);
+  it("Stop no longer reads the reply: a loose end in words alone doesn't block", () => {
+    const sb = withBoard();
+    delete sb.env.CLIPPED_NOW;
+    const env = { CLAUDE_PLUGIN_DATA: sb.home };
+    const r = runHook("stop.mjs", {
+      hook_event_name: "Stop", session_id: "t1", cwd: sb.root, prompt_id: "p1",
+      last_assistant_message: "Done. You'll need to add the Stripe keys in Vercel. We decided to drop Safari 15.",
+    }, env);
+    expect(r.code).toBe(0);
+    expect(r.raw).toBe("");
+  });
 
-    it("nudges once when the reply leaves the user a step and the board didn't move", () => {
-      const { sb, env } = setup();
-      const r = stop(sb, env, "t1", "Done. You'll need to add the Stripe keys in Vercel before it works.", "p1");
-      expect(r.code).toBe(2);
-      expect(r.err).toContain("a step only the user can do");
-      expect(r.err).toContain("Before you end a turn");
-      expect(stop(sb, env, "t1", "Nothing worth a row here.", "p1").code).toBe(0); // once per turn
-    });
-
-    it("names each kind it found", () => {
-      const { sb, env } = setup();
-      const r = stop(sb, env, "t2", "We decided to drop Safari 15. The export isn't tested yet.", "p1");
-      expect(r.code).toBe(2);
-      expect(r.err).toContain("something not done");
-      expect(r.err).toContain("a decision");
-    });
-
-    it("stays quiet for a plain reply, a reply with the Board footer, or a turn that moved the board", async () => {
-      const { sb, env } = setup();
-      expect(stop(sb, env, "t3", "All 194 tests pass.", "p1").code).toBe(0);
-      expect(stop(sb, env, "t3", "You'll need to restart it.\n\nBoard: APP-1 Save loops → review", "p2").code).toBe(0);
-      await new Promise((r) => setTimeout(r, 1100)); // card logs have second resolution
-      sb.board("add", "Restart the server", "--type", "chore");
-      expect(stop(sb, env, "t3", "You'll need to restart the server.", "p3").code).toBe(0);
-    });
-
-    it("without a turn id, never nudges twice in a row", () => {
-      const { sb, env } = setup();
-      expect(stop(sb, env, "t4", "You'll need to update the plugin.").code).toBe(2);
-      expect(stop(sb, env, "t4", "You'll need to update the plugin — nothing to record, it's done.").code).toBe(0);
-    });
+  it("Stop nudges at most once per turn, even after more edits", async () => {
+    const sb = withBoard();
+    delete sb.env.CLIPPED_NOW;
+    sb.board("add", "Save loops", "--status", "active");
+    const env = { CLAUDE_PLUGIN_DATA: sb.home };
+    const edit = (file: string) => runHook("post-tool-use.mjs", {
+      session_id: "t2", cwd: sb.root, tool_name: "Edit", tool_input: { file_path: path.join(sb.root, file) },
+    }, env);
+    const stop = (turn: string) => runHook("stop.mjs", { hook_event_name: "Stop", session_id: "t2", cwd: sb.root, prompt_id: turn }, env);
+    await new Promise((r) => setTimeout(r, 1100)); // card logs have second resolution
+    edit("src/a.ts");
+    expect(stop("p1").code).toBe(2);
+    await new Promise((r) => setTimeout(r, 10));
+    edit("src/b.ts");
+    expect(stop("p1").code).toBe(0); // same turn, already nudged
+    expect(stop("p2").code).toBe(2); // the unrecorded edit is still caught next turn
   });
 
   it("survives junk input instead of breaking the session", () => {

@@ -171,7 +171,7 @@ for 14 days drops out of the brief into a one-line count. The skill's *The brief
 is mine, not gospel* section says what Claude does when one turns out to be wrong.
 | PostToolUse (Edit/Write) | `board touch <file>` — record files on the active card. |
 | PostToolUse (AskUserQuestion) | A question Claude asked with the multiple-choice widget becomes a question card: Decided with the user's pick and the options not taken, or Open if it was skipped. Asking the same question again updates the same card. |
-| Stop | If code changed this turn and the board wasn't updated → ask Claude to update it before finishing. Also, if the reply (`last_assistant_message`) says something was left behind — a step for the user, something not done, a decision, a suggestion — and the board didn't change that turn → ask Claude to record it or say there's nothing worth a row. Blocks with exit code 2 and the reason on stderr; at most once per turn, never loops. |
+| Stop | If code changed this turn and the board wasn't updated → ask Claude to update it before finishing. It doesn't read the reply: decisions and loose ends that leave no diff are the skill's "Before you end a turn" check, because each nudge costs a full extra pass over the conversation. Blocks with exit code 2 and the reason on stderr; at most once per turn, never loops. |
 
 > Verify exact hook names, matcher syntax and the Stop-hook "block" mechanism against current Claude Code docs before implementing.
 

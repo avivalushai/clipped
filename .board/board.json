@@ -3391,7 +3391,7 @@
       "key": "LE-84",
       "title": "The board opens at clipped.localhost:4747",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Open http://clipped.localhost:4747 in Chrome and Safari: the board loads with your projects; localhost:4747 still works",
       "doneWhen": [],
       "steps": [],
@@ -3408,8 +3408,8 @@
       ],
       "area": "",
       "createdAt": "2026-09-28T17:04:34Z",
-      "updatedAt": "2026-09-28T17:05:29Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T17:26:31Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T17:04:34Z",
@@ -3425,6 +3425,11 @@
           "at": "2026-09-28T17:05:29Z",
           "by": "claude",
           "text": "Proof: 5f22db4"
+        },
+        {
+          "at": "2026-09-28T17:26:31Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -3464,7 +3469,7 @@
       "key": "LE-86",
       "title": "The board keeps one address: board ui reuses it and runs it in the background",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Run /clipped:board twice: same link (clipped.localhost:4747), 'already running' the second time; close Claude and the link still opens; /clipped:board stop stops it",
       "doneWhen": [],
       "steps": [],
@@ -3480,8 +3485,8 @@
       ],
       "area": "",
       "createdAt": "2026-09-28T17:16:38Z",
-      "updatedAt": "2026-09-28T17:19:04Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T17:26:31Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T17:16:38Z",
@@ -3497,28 +3502,43 @@
           "at": "2026-09-28T17:19:04Z",
           "by": "claude",
           "text": "Proof: bc3559a"
+        },
+        {
+          "at": "2026-09-28T17:26:31Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
     {
       "key": "LE-87",
-      "title": "The Stop hook nudges at most once per turn",
+      "title": "The Stop hook only nudges when code changed, once per turn",
       "type": "feature",
       "status": "review",
-      "note": "One shared per-turn guard in hooks/stop.mjs covers both checks; new test in cli/test/plugin.test.ts. Uncommitted.",
+      "note": "Removed the reply-text check (6 of 7 nudges, ~0.43% of tokens, 2 of ~174 writes). SPEC and SKILL updated; 212 tests pass. Uncommitted.",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "links": [],
       "area": "",
       "createdAt": "2026-09-28T17:18:21Z",
-      "updatedAt": "2026-09-28T17:18:21Z",
+      "updatedAt": "2026-09-28T17:32:44Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T17:18:21Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-28T17:32:44Z",
+          "by": "claude",
+          "text": "Renamed from “The Stop hook nudges at most once per turn”"
+        },
+        {
+          "at": "2026-09-28T17:32:44Z",
+          "by": "claude",
+          "text": "Note: Removed the reply-text check (6 of 7 nudges, ~0.43% of tokens, 2 of ~174 writes). SPEC and SKILL updated; 212 tests pass. Uncommitted."
         }
       ]
     },
@@ -3526,7 +3546,7 @@
       "key": "LE-88",
       "title": "Asking Claude to open the board opens it",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "In a new Claude session, say 'open the board': Claude runs board ui, the browser opens, and it replies with the link",
       "doneWhen": [],
       "steps": [
@@ -3539,11 +3559,13 @@
         "skills/clipped/SKILL.md",
         "hooks/session-start.mjs"
       ],
-      "links": [],
+      "links": [
+        "99d7004"
+      ],
       "area": "",
       "createdAt": "2026-09-28T17:20:51Z",
-      "updatedAt": "2026-09-28T17:23:42Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-28T17:26:31Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-28T17:20:51Z",
@@ -3559,6 +3581,16 @@
           "at": "2026-09-28T17:23:42Z",
           "by": "claude",
           "text": "Step added (done): Also on a bare 'clipped' / 'clippd' or 'open clipped'"
+        },
+        {
+          "at": "2026-09-28T17:25:25Z",
+          "by": "claude",
+          "text": "Proof: 99d7004"
+        },
+        {
+          "at": "2026-09-28T17:26:31Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     }
