@@ -22,6 +22,7 @@
   --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-card:14px; --r-panel:16px; --r-ctl:10px;
+  --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -308,9 +309,12 @@ dialog pre{margin:0;padding:16px;max-height:60vh;overflow:auto;font-family:var(-
 .cell-in.note{font-size:13px;color:var(--muted)}
 .cell-in::placeholder{color:var(--faint);font-weight:400}
 .sel{position:relative;display:inline-block}
-.sel::after{content:"▾";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none}
+.sel::after{content:"";position:absolute;right:8px;top:50%;translate:0 -50%;width:10px;height:10px;background:currentColor;-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat;pointer-events:none;opacity:.6;transition:opacity .15s ease}
+.sel:hover::after,.sel:focus-within::after{opacity:1}
 .sel.idea{color:var(--s-idea)}.sel.active{color:var(--s-active)}.sel.parked{color:var(--s-parked)}.sel.review{color:var(--s-review)}.sel.done{color:var(--s-done)}
-select.status{appearance:none;-webkit-appearance:none;padding-right:22px;cursor:pointer;font-family:var(--sans)}
+select.status{appearance:none;-webkit-appearance:none;padding-right:24px;cursor:pointer;transition:box-shadow .15s ease}
+select.status:hover{box-shadow:0 0 0 1px color-mix(in srgb,currentColor 35%,transparent)}
+select.status:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
 select.status option{color:var(--ink);background:var(--surface);text-transform:none}
 .keybtn{border:0;background:none;padding:2px 0;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:underline dotted;text-underline-offset:3px}
 .keybtn:hover{color:var(--accent)}
@@ -318,7 +322,11 @@ select.status option{color:var(--ink);background:var(--surface);text-transform:n
 .pkey.sm{width:18px;height:18px;font-size:9px;border-radius:5px;flex:none}
 tr.composer td{background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-bottom:2px solid color-mix(in srgb,var(--accent) 30%,var(--line))}
 tr.composer .cell-in{border-color:var(--line);background:var(--surface)}
-tr.composer select{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:5px;padding:4px 22px 4px 6px;width:100%;appearance:none;-webkit-appearance:none;color:var(--ink)}
+/* field selects (new-card and new-note rows): same box as the text fields beside them */
+.sel select:not(.status){font-size:13px;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:5px 26px 5px 9px;width:100%;appearance:none;-webkit-appearance:none;color:var(--ink);cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease}
+.sel select:not(.status):hover{border-color:color-mix(in srgb,var(--ink) 28%,transparent)}
+.sel select:not(.status):focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.sel:has(select:not(.status))::after{color:var(--muted)}
 tr.composer .key{color:var(--accent);font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .chips button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 11px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px}
@@ -329,16 +337,30 @@ tr.composer .key{color:var(--accent);font-weight:600}
 .viewbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .viewbar .opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .opt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:0 6px 0 12px;height:32px}
-.opt select{border:0;background:none;padding:4px 2px;font-weight:500;color:var(--ink);cursor:pointer}
+.opt select{border:0;background:none;padding:4px 30px 4px 2px;margin-right:-14px;font-weight:500;color:var(--ink);cursor:pointer;appearance:none;-webkit-appearance:none}
+.opt select:focus-visible{outline:none}
+/* pill dropdowns (Group by, Density, Move to, Columns): one chevron, one hover, one focus ring */
+.opt:has(select){position:relative;padding-right:14px;transition:border-color .15s ease,box-shadow .15s ease}
+.opt:has(select)::after,summary.opt::after{content:"";width:10px;height:10px;flex:none;background:var(--muted);-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat;pointer-events:none}
+.opt:has(select)::after{position:absolute;right:12px;top:50%;translate:0 -50%}
+summary.opt::after{margin-left:2px;transition:rotate .2s ease}
+details.cols[open] summary.opt::after{rotate:180deg}
+.opt:hover{border-color:color-mix(in srgb,var(--ink) 28%,transparent)}
+.opt:has(select:focus-visible),summary.opt:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+details.cols[open] summary.opt{border-color:color-mix(in srgb,var(--ink) 28%,transparent);background:var(--sunk)}
 .opt input{accent-color:var(--accent);margin:0 6px 0 0}
 label.opt{cursor:pointer;padding-right:12px}
 details.cols{position:relative}
 details.cols summary{list-style:none;cursor:pointer}
 details.cols summary::-webkit-details-marker{display:none}
-details.cols .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-lg);padding:6px;min-width:220px;display:flex;flex-direction:column}
-details.cols .menu label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+details.cols .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:5px;min-width:220px;display:flex;flex-direction:column;transform-origin:top right;animation:menu-in .16s cubic-bezier(.2,.8,.2,1)}
+details.cols .menu::before{content:"Show columns";font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 10px 4px}
+details.cols .menu label{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px}
 details.cols .menu label:hover{background:var(--sunk)}
-details.cols .menu input{accent-color:var(--accent)}
+details.cols .menu label:has(input:disabled){cursor:default;color:var(--muted)}
+details.cols .menu label:has(input:disabled):hover{background:none}
+details.cols .menu input{accent-color:var(--accent);width:14px;height:14px;margin:0}
+@keyframes menu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}}
 .tabs button{display:inline-flex;align-items:center;gap:6px}
 .tabs svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
 .grid.compact td{height:34px;padding:2px 8px}
@@ -401,7 +423,7 @@ details.cols .menu input{accent-color:var(--accent)}
 .grid tr:not(:hover) td.keycell .rowsel:not(:checked){opacity:.35}
 .bulkbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-radius:var(--r-card)}
 .bulkbar b{font-weight:600;margin-right:4px}
-.bulkbar select{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;margin-left:6px}
+.bulkbar .opt{height:30px}
 /* copy prompt and linked notes, on the row */
 .rowcopy{opacity:0;border:0;background:none;color:var(--muted);padding:3px 5px;border-radius:5px;vertical-align:middle;margin-left:2px;line-height:0}
 .grid tr:hover .rowcopy,.card:hover .rowcopy,.rowcopy:focus-visible{opacity:.75}
@@ -429,6 +451,28 @@ details.cols .menu input{accent-color:var(--accent)}
 /* timeline: time spent waiting on you */
 .tl-idle.wait{border-top-color:var(--s-review)}
 .tl-idle.wait span{color:var(--s-review)}
+
+/* ---------- dropdown lists ----------
+   Where the browser supports customizable selects (Chrome, Edge), a select opens as a
+   menu like the Columns one. Elsewhere the closed select keeps the look above and the
+   list stays native. */
+@supports (appearance:base-select){
+  /* :is(#x) lifts this above the per-select rules that set appearance:none */
+  select:is(select,#x),::picker(select){appearance:base-select;-webkit-appearance:base-select}
+  select::picker-icon{display:none}
+  select{min-height:0}
+  ::picker(select){border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-lg);padding:5px;margin-block:6px;min-width:max(anchor-size(width),160px);font-family:var(--sans);font-size:13px;opacity:1;translate:0 0;transition:opacity .14s ease,translate .14s ease,display .14s allow-discrete,overlay .14s allow-discrete}
+  @starting-style{::picker(select):popover-open{opacity:0;translate:0 -4px}}
+  select option{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;color:var(--ink);background:none;font-family:var(--sans);font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer}
+  select option:hover,select option:focus-visible{background:var(--sunk);outline:none}
+  select option:checked{font-weight:500}
+  select option::checkmark{order:1;margin-left:auto;color:var(--accent);font-size:12px}
+  select option[value=""]{color:var(--faint)}
+  /* status lists show the status colour in front of each choice */
+  select:is(.status,#cStatus,#bulkMove) option[value]:not([value=""])::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:var(--c,var(--faint))}
+  select option[value="idea"]{--c:var(--s-idea)} select option[value="active"]{--c:var(--s-active)} select option[value="parked"]{--c:var(--s-parked)} select option[value="review"]{--c:var(--s-review)} select option[value="done"]{--c:var(--s-done)}
+}
+@media (prefers-reduced-motion:reduce){::picker(select){transition:none}details.cols .menu{animation:none}}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -1417,6 +1461,9 @@ async function copyPrompt(f){
   catch(e){ openDialog('Paste this into Claude',text) }
 }
 document.addEventListener('click',e=>{
+  /* a pill dropdown opens from anywhere on the pill, not just its value */
+  const pill=e.target.closest('.opt'); const ps=pill&&pill.querySelector('select');
+  if(ps&&e.target!==ps&&!ps.contains(e.target)){try{ps.showPicker()}catch(_){ps.focus()}return}
   const cp=e.target.closest('[data-copy]'); if(cp){e.stopPropagation();const f=S.features.find(x=>x.id===cp.dataset.copy);if(f) copyPrompt(f);return}
   const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();window.scrollTo(0,0);return}
   const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
