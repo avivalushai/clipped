@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "landing",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4800",
+        "--directory",
+        "landing"
+      ],
+      "port": 4800
+    },
+    {
+      "name": "board-ui",
+      "runtimeExecutable": "./bin/board",
+      "runtimeArgs": [
+        "ui",
+        "--no-open"
+      ],
+      "port": 4747
+    }
+  ]
+}

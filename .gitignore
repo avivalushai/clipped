@@ -5,3 +5,8 @@ dist/
 .next/
 .env*.local
 site/public/app/index.html
+
+# Claude Code: personal settings stay local; the preview config (launch.json) is shared
+.claude/settings.local.json
+# the impeccable design checker: its per-session cache stays local; config.json is shared
+.impeccable/hook.cache.json

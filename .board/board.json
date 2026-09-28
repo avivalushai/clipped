@@ -1758,20 +1758,30 @@
       "key": "LE-46",
       "title": "Commit or ignore .claude/ and .impeccable/",
       "type": "chore",
-      "status": "idea",
-      "note": "Both sit untracked in the repo root; decide which belongs in git",
+      "status": "review",
+      "note": "launch.json and impeccable's config.json are in git; hook.cache.json and settings.local.json are ignored",
       "doneWhen": [],
       "steps": [],
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-28T10:38:22Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-28T10:38:06Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-28T10:38:22Z",
+          "by": "claude",
+          "text": "Moved to review — launch.json and impeccable's config.json are in git; hook.cache.json and settings.local.json are ignored"
         }
       ]
     },
@@ -1822,15 +1832,16 @@
       "title": "A second landing page to compare against the first",
       "type": "feature",
       "status": "review",
-      "note": "Aviv picks one of the four copy versions (?copy=sharp|story|short) and the page replaces index.html",
+      "note": "Aviv reviews landing/v3.html (v2 layout + original hero board, chip headline) and picks a copy version",
       "doneWhen": [],
       "steps": [],
       "files": [
-        "landing/v2.html"
+        "landing/v2.html",
+        "landing/v3.html"
       ],
       "links": [],
       "createdAt": "2026-09-28T10:08:05Z",
-      "updatedAt": "2026-09-28T10:22:48Z",
+      "updatedAt": "2026-09-28T10:37:53Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -1842,6 +1853,16 @@
           "at": "2026-09-28T10:22:48Z",
           "by": "claude",
           "text": "Note: Aviv picks one of the four copy versions (?copy=sharp|story|short) and the page replaces index.html"
+        },
+        {
+          "at": "2026-09-28T10:37:53Z",
+          "by": "claude",
+          "text": "Files: landing/v3.html"
+        },
+        {
+          "at": "2026-09-28T10:37:53Z",
+          "by": "claude",
+          "text": "Note: Aviv reviews landing/v3.html (v2 layout + original hero board, chip headline) and picks a copy version"
         }
       ]
     }
