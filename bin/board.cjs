@@ -1285,7 +1285,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.9.6";
+    VERSION = "0.9.7";
   }
 });
 
@@ -1320,6 +1320,19 @@ function changeAllowed(req) {
   const origin = req.headers.origin;
   if (!origin || origin === "null") return !origin;
   return origin === `http://${req.headers.host}` || HOSTED_ORIGIN.test(origin);
+}
+function portUp(port) {
+  const one = (host) => new Promise((resolve) => {
+    const s2 = import_node_net.default.connect({ host, port });
+    const done2 = (up) => {
+      s2.destroy();
+      resolve(up);
+    };
+    s2.setTimeout(600, () => done2(false));
+    s2.once("connect", () => done2(true));
+    s2.once("error", () => done2(false));
+  });
+  return Promise.all([one("127.0.0.1"), one("::1")]).then(([a, b]) => a || b);
 }
 async function readBody(req) {
   const chunks = [];
@@ -1374,6 +1387,11 @@ data: ${JSON.stringify(data)}
       if (!ALLOWED_HOST.test(req.headers.host ?? "")) return json(res, 403, { error: "loopback only" });
       if (!changeAllowed(req)) return json(res, 403, { error: "changes are only accepted from the board's own page" });
       if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });
+      if (urlPath === "/api/ping") {
+        const port = Number(new URL(req.url ?? "/", "http://localhost").searchParams.get("port"));
+        if (!Number.isInteger(port) || port < 1 || port > 65535) return json(res, 400, { error: "port must be 1\u201365535" });
+        return json(res, 200, { port, up: await portUp(port) });
+      }
       if (urlPath === "/api/events") {
         res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
         clients.add(res);
@@ -1422,12 +1440,13 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs12, import_node_http, import_node_path11, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, HOSTED_ORIGIN, json;
+var import_node_fs12, import_node_http, import_node_net, import_node_path11, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, HOSTED_ORIGIN, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
     import_node_fs12 = __toESM(require("node:fs"), 1);
     import_node_http = __toESM(require("node:http"), 1);
+    import_node_net = __toESM(require("node:net"), 1);
     import_node_path11 = __toESM(require("node:path"), 1);
     import_node_url = require("node:url");
     init_api();

@@ -3,6 +3,7 @@
 
 import fs from "node:fs";
 import http from "node:http";
+import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Ctx } from "../../cli/src/context.js";
@@ -63,6 +64,22 @@ export function changeAllowed(req: http.IncomingMessage): boolean {
   const origin = req.headers.origin;
   if (!origin || origin === "null") return !origin; // "null" = a sandboxed or file page: refuse
   return origin === `http://${req.headers.host}` || HOSTED_ORIGIN.test(origin);
+}
+
+/** Something is listening on this machine's port (IPv4 or IPv6), answering within 600ms. */
+function portUp(port: number): Promise<boolean> {
+  const one = (host: string) =>
+    new Promise<boolean>((resolve) => {
+      const s = net.connect({ host, port });
+      const done = (up: boolean) => {
+        s.destroy();
+        resolve(up);
+      };
+      s.setTimeout(600, () => done(false));
+      s.once("connect", () => done(true));
+      s.once("error", () => done(false));
+    });
+  return Promise.all([one("127.0.0.1"), one("::1")]).then(([a, b]) => a || b);
 }
 
 const json = (res: http.ServerResponse, status: number, body: unknown) => {
@@ -132,6 +149,13 @@ export function createServer(ctx: Ctx, options: ServerOptions = {}) {
 
       // So `board ui` can tell its own board from some other app on the port, and stop it.
       if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });
+
+      // Is an app answering on this local port? For the live dot on Outputs. Local ports only.
+      if (urlPath === "/api/ping") {
+        const port = Number(new URL(req.url ?? "/", "http://localhost").searchParams.get("port"));
+        if (!Number.isInteger(port) || port < 1 || port > 65535) return json(res, 400, { error: "port must be 1–65535" });
+        return json(res, 200, { port, up: await portUp(port) });
+      }
 
       if (urlPath === "/api/events") {
         res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });

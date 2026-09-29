@@ -389,3 +389,40 @@ describe("hook behaviour", () => {
     }
   });
 });
+
+describe("the outputs hook", () => {
+  const reply = (sb: any, text: string) =>
+    runHook("outputs.mjs", { hook_event_name: "Stop", session_id: "o1", cwd: sb.root, last_assistant_message: text }, sb.env);
+
+  it("attaches links to things Claude made to the card being worked on", () => {
+    const sb = withBoard();
+    sb.board("add", "Old idea");
+    sb.board("add", "Recipe app", "--status", "active");
+    const r = reply(sb, [
+      "The app is running at http://localhost:3000/recipes.",
+      "Preview: https://recipes-git-main.vercel.app and the PR is https://github.com/me/recipes/pull/42.",
+      "See the docs at https://react.dev/learn and open the board at http://clipped.localhost:4747.",
+    ].join("\n"));
+    expect(r.code).toBe(0);
+    const card = sb.read().features.find((f: any) => f.title === "Recipe app");
+    expect(card.links).toEqual([
+      "http://localhost:3000/recipes",
+      "https://recipes-git-main.vercel.app",
+      "https://github.com/me/recipes/pull/42",
+    ]);
+    expect(sb.read().features.find((f: any) => f.title === "Old idea").links).toEqual([]);
+  });
+
+  it("adds a link once, and does nothing when no card is in progress or in review", () => {
+    const sb = withBoard();
+    sb.board("add", "Recipe app", "--status", "active");
+    reply(sb, "Running at http://localhost:3000");
+    reply(sb, "Still at http://localhost:3000");
+    expect(sb.read().features[0].links).toEqual(["http://localhost:3000"]);
+
+    const idle = withBoard();
+    idle.board("add", "Someday");
+    reply(idle, "Running at http://localhost:5173");
+    expect(idle.read().features[0].links).toEqual([]);
+  });
+});

@@ -364,3 +364,19 @@ describe("notes over the API", () => {
   });
 });
 
+
+describe("GET /api/ping", () => {
+  it("says whether something answers on a local port", async () => {
+    const { call, server } = await serve(seeded());
+    const port = (server.address() as { port: number }).port;
+    expect((await call(`/api/ping?port=${port}`)).body).toEqual({ port, up: true });
+    const closed = await new Promise<number>((resolve) => {
+      const s = http.createServer().listen(0, "127.0.0.1", () => {
+        const p = (s.address() as { port: number }).port;
+        s.close(() => resolve(p));
+      });
+    });
+    expect((await call(`/api/ping?port=${closed}`)).body).toEqual({ port: closed, up: false });
+    expect((await call("/api/ping?port=99999")).status).toBe(400);
+  });
+});

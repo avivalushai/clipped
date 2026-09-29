@@ -118,6 +118,18 @@ main{padding-block:26px 60px;padding-inline:28px;min-width:0}
 .stick-head table{table-layout:fixed;border-collapse:collapse}
 .stick-head.stuck{border-radius:0;box-shadow:0 6px 12px -10px rgba(0,0,0,.25)}
 .grid thead.ghost-head{visibility:hidden}
+.odot{width:8px;height:8px;border-radius:50%;background:var(--line-2);display:inline-block;flex:none}
+.odot.up{background:var(--s-done);box-shadow:0 0 0 3px color-mix(in srgb,var(--s-done) 18%,transparent)}
+.odot.down{background:var(--faint);opacity:.55}
+.outcell{display:flex;align-items:center;gap:8px;min-width:0}
+.outcell a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.outarrow{color:var(--faint);font-size:12px}
+.outkind{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.outcard{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.outcard .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.outbtns{display:flex;flex-wrap:wrap;gap:8px}
+.outbtn{display:inline-flex;align-items:center;gap:7px;max-width:100%;text-decoration:none;color:var(--ink)}
+.outbtn .ob-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .crumb{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;gap:6px;align-items:center}
 h1{font-family:var(--display);font-weight:500;font-size:32px;letter-spacing:-.035em;line-height:1.1;margin:0;text-wrap:balance}
@@ -714,12 +726,14 @@ const TABS=[
   {id:'brainstorms',label:'Brainstorms',note:'brainstorm'},
   {id:'plans',label:'Plans',note:'plan'},
   {id:'decisions',label:'Design',heading:'Design decisions',note:'decision'},   /* the data is decisions; the tab is where design lives */
-  {id:'references',label:'References',note:'reference'}];
+  {id:'references',label:'References',note:'reference'},
+  {id:'outputs',label:'Outputs',heading:'Outputs',note:null}];   /* what Claude made that you can open — from the cards' links */
 const TAB=()=>TABS.find(t=>t.id===P.tab)||TABS[0];
 /* The Design tab holds two things: the decisions, and the UI work they shaped.
    UI work is the same cards as in Work — shown here too, not moved. */
 const uiWork=()=>P.tab==='decisions'&&P.designView==='ui';
-const isNoteTab=()=>!!TAB().note;   /* UI work is a plain table on the Design tab, not the Work page again */
+const isNoteTab=()=>!!TAB().note;
+const isOutTab=()=>P.tab==='outputs';   /* UI work is a plain table on the Design tab, not the Work page again */
 const UI_AREA=/^(ui|ux|design|frontend|front[- ]end|web|landing|site|styles?|components?|theme)$/i;
 const UI_FILE=/\.(css|scss|sass|less|html?|jsx|tsx|vue|svelte|astro)$/i;
 /* A card is UI work when its area says so, most of its files are UI files, or a design decision links to it. */
@@ -1030,6 +1044,7 @@ function scopeNotes(){
 /* Counts for the tab strip, in the current project or across all of them. */
 function tabCount(t){
   const p=proj(view);
+  if(t.id==='outputs') return outputsHere().length;
   if(t.note) return (p?pn(p.id):S.notes).filter(n=>n.kind===t.note).length;
   const base=p?S.features.filter(f=>f.project===p.id):S.features;
   return base.filter(f=>t.id==='questions'?f.type==='question':f.type!=='question').length;
@@ -1060,6 +1075,7 @@ function homeSub(parked){
   const across=`across ${S.projects.length} project${S.projects.length===1?'':'s'}`;
   if(uiWork()){const n=tabCards().length; return `${n} UI card${n===1?'':'s'} ${across}, with the design decisions each one made.`}
   if(isNoteTab()) return `${tabCount(TAB())} ${NOUN[TAB().note]}${tabCount(TAB())===1?'':'s'} ${across}.`;
+  if(isOutTab()){const n=outputsHere().length; return `${n} thing${n===1?'':'s'} Claude made that you can open, ${across}.`}
   if(P.tab==='questions'){
     const open=tabCards().filter(f=>f.status!=='done').length;
     return `${open} unsettled question${open===1?'':'s'} ${across}. Answered ones are waiting on a decision.`;
@@ -1215,13 +1231,13 @@ function renderPage(){
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
          :`<h1>${esc(uiWork()?'UI work':TAB().heading||'All '+TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
-    <div class="toolbar">${isNoteTab()?searchCtl():''}
+    <div class="toolbar">${isNoteTab()||isOutTab()?searchCtl():''}
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
-      ${uiWork()?'':`<button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(NOUN[TAB().note]):noun}</button>`}</div></div>
-  <div class="tabrow">${tabStrip()}${P.tab==='decisions'?designSwitch():''}${isNoteTab()?'':`
+      ${uiWork()||isOutTab()?'':`<button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(NOUN[TAB().note]):noun}</button>`}</div></div>
+  <div class="tabrow">${tabStrip()}${P.tab==='decisions'?designSwitch():''}${isNoteTab()||isOutTab()?'':`
     <div class="tabs" role="group" aria-label="View">${(P.tab==='questions'?['table','board']:['table','board','timeline']).map(m=>`<button data-mode="${m}" aria-pressed="${P.mode===m}">${ICON[m]}${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>`}</div>
-  ${isNoteTab()?renderNotesPage(isHome):''}`;
-  if(isNoteTab()) return h;
+  ${isNoteTab()?renderNotesPage(isHome):''}${isOutTab()?renderOutputs(isHome):''}`;
+  if(isNoteTab()||isOutTab()) return h;
   h+=`
   <div class="stats">
     <div class="bigbar"><div class="statrow"><div class="stat" title="Done, out of everything that isn\u2019t an idea"><b>${doneShare(all)}%</b> ${P.tab==='questions'?'decided':'done'}</div>${c('review')?`<button class="stat waiting" data-filter="review" title="Show only these"><b>${c('review')}</b> waiting on you</button>`:''}${(()=>{const n=all.filter(isNew).length;return n?`<span class="newbits"><button class="stat fresh" data-filter="new" title="Show only these"><span class="newdot"></span><b>${n}</b> new since you looked</button><button class="linkbtn" id="seenAll" title="Only removes the blue dots. No card changes status.">Clear the new dots</button></span>`:''})()}</div><div class="track">${STATUSES.map(s=>c(s.id)?`<span style="flex:${c(s.id)};background:${color(s.id)}" title="${sl(s.id)}: ${c(s.id)}"></span>`:'').join('')}</div></div>
@@ -1372,6 +1388,71 @@ function renderUiWork(isHome){
   return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
     <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint">The same cards as in Work — changes to one show in both. Click a row to open the card; click a decision to see the call it made.</p>`;
+}
+
+/* ---------- outputs ----------
+   Everything Claude made that you can open — an app on localhost, a deployed site, a pull
+   request, an artifact, a file — gathered from the cards' links. Commits stay on their card. */
+const isUrl=x=>/^https?:\/\//i.test(x);
+const LOCAL_RE=/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]|[\w-]+\.localhost)(?::(\d+))?/i;
+const localPort=u=>{const m=LOCAL_RE.exec(u); return m?Number(m[1]||80):null};
+function outKind(u){
+  if(LOCAL_RE.test(u)) return 'Local app';
+  if(/github\.com\/[^/]+\/[^/]+\/pull\/\d+/i.test(u)) return 'Pull request';
+  if(/claude\.ai\/(code\/)?artifact\//i.test(u)) return 'Artifact';
+  if(/\.(mp4|mov|webm|pdf|png|jpe?g|gif|zip)(\?|#|$)/i.test(u)) return 'File';
+  return 'Site';
+}
+/* A readable name, without the query string — that's where tokens live. */
+function outLabel(u){
+  const pr=/github\.com\/[^/]+\/([^/]+)\/pull\/(\d+)/i.exec(u); if(pr) return `PR #${pr[2]} · ${pr[1]}`;
+  try{ const x=new URL(u); return x.host+(x.pathname==='/'?'':x.pathname) }catch(e){ return u }
+}
+function outputsHere(){
+  const p=proj(view), base=p?S.features.filter(f=>f.project===p.id):S.features, seen=new Map();
+  for(const f of base) for(const u of f.links.filter(isUrl)){
+    const at=(f.log.slice().reverse().find(l=>l.text.includes(u))||{}).at||f.updatedAt;
+    const o=seen.get(u); if(!o||at>o.at) seen.set(u,{url:u,card:f,at,kind:outKind(u),label:outLabel(u),port:localPort(u)});
+  }
+  const q=query.toLowerCase();
+  return [...seen.values()].filter(o=>!q||o.label.toLowerCase().includes(q)||o.card.title.toLowerCase().includes(q)||o.kind.toLowerCase().includes(q)).sort((a,b)=>b.at-a.at);
+}
+/* Local apps get a live dot: the board's own server checks whether the port answers. */
+const portState={};
+const odot=port=>port?`<span class="odot ${portState[port]?.up===true?'up':portState[port]?.up===false?'down':''}" data-port="${port}" title="${portState[port]?.up===true?'Running':portState[port]?.up===false?'Not running right now':'Checking…'}"></span>`:'';
+async function checkPorts(){
+  const ports=[...new Set([...document.querySelectorAll('.odot[data-port]')].map(e=>+e.dataset.port))];
+  await Promise.all(ports.map(async port=>{
+    if(portState[port]&&Date.now()-portState[port].at<10000) return;
+    try{ const r=await api('/api/ping?port='+port); portState[port]={up:!!r.up,at:Date.now()} }catch(e){}
+  }));
+  document.querySelectorAll('.odot[data-port]').forEach(e=>{const st=portState[+e.dataset.port]; if(!st) return;
+    e.classList.toggle('up',st.up); e.classList.toggle('down',!st.up); e.title=st.up?'Running':'Not running right now'});
+}
+setInterval(()=>{ if(!document.hidden&&document.querySelector('.odot[data-port]')) checkPorts() },15000);
+function renderOutputs(isHome){
+  const outs=outputsHere();
+  const cols=[{id:'out',label:'Output',w:340},{id:'kind',label:'Kind',w:130},{id:'card',label:'Card',w:320},...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'at',label:'Added',w:92}];
+  const cell=(c,o)=>{ switch(c.id){
+    case 'out': return `<td><span class="outcell">${odot(o.port)}<a class="ext" href="${esc(o.url)}" target="_blank" rel="noreferrer noopener" title="${esc(o.url)}">${esc(o.label)}</a><span class="outarrow" aria-hidden="true">↗</span></span></td>`;
+    case 'kind': return `<td><span class="outkind">${esc(o.kind)}</span></td>`;
+    case 'card': return `<td><span class="outcard"><span class="dot" style="background:${color(o.card.status)}"></span>${esc(o.card.title)}</span></td>`;
+    case 'project': return `<td><span class="projcell">${pbadge(proj(o.card.project),true)}${esc(proj(o.card.project).name)}</span></td>`;
+    case 'at': return `<td class="mono">${ago(o.at)}</td>`;
+  }};
+  const rows=outs.map(o=>`<tr data-row="${o.card.id}">${cols.map(c=>cell(c,o)).join('')}</tr>`).join('')
+    ||`<tr><td colspan="${cols.length}" class="empty">Nothing to open yet. When Claude starts an app, deploys a site or opens a pull request, the link lands here — and as a button on its card.</td></tr>`;
+  const minW=cols.reduce((a,c)=>a+c.w,0);
+  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px;width:100%">
+    <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* A row opens the card the output came from; the link itself opens the output. */
+function bindOutputs(){
+  document.querySelectorAll('tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{
+    if(e.target.closest('a,button')) return;
+    openNote=null; openId=tr.dataset.row; renderDrawer();
+  }));
 }
 
 function renderNotesPage(isHome){
@@ -1584,6 +1665,7 @@ function render(){
   renderNav();
   $('mainEl').innerHTML=renderPage();
   stickyHeads();
+  if(isOutTab()) checkPorts();
   if(view==='home'&&!boardChosen&&(inWelcome||!realProjects().length)){ bindFirstRun(); return }
   bindPage();
   if($('landedX')) $('landedX').onclick=()=>{firstLanded=null;render()};
@@ -1730,6 +1812,7 @@ function bindPage(){
     .then(b=>openDialog(tilde(p.path)+'/.board/board.json',JSON.stringify(b,null,2)))
     .catch(e=>toast(e.message));
   if(isNoteTab()) return bindNotes(p,isHome);
+  if(isOutTab()) return bindOutputs();
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{P.mode=b.dataset.mode;savePrefs();render()});
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const k=b.dataset.sort;sort=sort.k===k?{k,dir:-sort.dir}:{k,dir:1};render()});
@@ -1895,6 +1978,7 @@ function renderDrawer(){
       <textarea class="title-in" id="titleIn" rows="1" aria-label="${isQ?'Question':'Title'}">${esc(f.title)}</textarea>${isQ||!f.steps.length?'':progBar(f)}</div>
     <div class="drawer-b">
       ${verdict}
+      ${(()=>{const outs=f.links.filter(isUrl); return outs.length?`<div class="field"><span class="lbl">Outputs</span><div class="outbtns">${outs.map(u=>`<a class="btn sm outbtn" href="${esc(u)}" target="_blank" rel="noreferrer noopener" title="${esc(u)}">${odot(localPort(u))}<span class="ob-l">Open ${esc(outLabel(u))}</span><span aria-hidden="true">↗</span></a>`).join('')}</div></div>`:''})()}
       <div class="field"><span class="lbl">Status</span><div class="seg">${STATUSES.map(s=>`<button data-st="${s.id}" aria-pressed="${f.status===s.id}"><span class="dot" style="background:${color(s.id)}"></span>${sl(s.id)}</button>`).join('')}</div></div>
       <div class="field"><label class="lbl" for="noteIn">${noteLbl}</label><textarea id="noteIn" class="${f.status==='parked'||parking?'stopnote':''}" placeholder="${f.status==='parked'||parking?'What was left undone, and why you switched away':'Context for the next session'}">${esc(f.note)}</textarea>
         ${parking?`<div class="r"><button class="btn sm primary" id="parkBtn">Park with this note</button></div>`:''}</div>
@@ -1911,7 +1995,7 @@ function renderDrawer(){
       <div class="field"><span class="lbl">Activity</span><ul class="log">${[...f.log].reverse().map(l=>`<li>${who(l.by)}<span>${esc(l.text)}<div class="when">${ago(l.at)} ago</div></span></li>`).join('')}</ul></div>
       <div class="drawer-f"><button class="btn danger ghost" id="dDel">${isQ?'Delete question':'Delete card'}</button><span class="saved" id="savedTag" aria-live="polite">Changes save when you leave a field</span></div>
     </div></aside>`;
-  fitDrawerText();
+  fitDrawerText(); checkPorts();
   const close=()=>commit().then(()=>{openId=null;pendingPark=null;render()});
   $('scrim').onclick=e=>{const t=underScrim(e); commit().then(()=>{openId=null;pendingPark=null;render();openTarget(t)})};
   $('dClose').onclick=close;

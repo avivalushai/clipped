@@ -114,6 +114,16 @@ Files attach themselves as you edit, but only to a card they plausibly belong
 to. When you know which card the work is for, say so: `board touch <file>
 --card LE-3`, or `board update LE-3 --file <file>`.
 
+## Outputs
+
+When you make something the user can open — start an app (`localhost:3000`), deploy a
+site, open a pull request, publish an artifact — attach its link to the card you're on:
+`board update LE-3 --link http://localhost:3000`. It shows in the board's **Outputs**
+tab and as an Open button on the card, so the user can get back to it without scrolling
+the chat. A hook also picks such links out of your replies, but name them in the reply
+the way the user would ("the app is running at http://localhost:3000"). Links to docs or
+search results aren't outputs; leave them out.
+
 ## Areas
 
 Every card shows the **area** of the product it's in — a page, a surface, a
