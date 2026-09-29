@@ -8,6 +8,7 @@ import { discoverProjects, isKnownProject } from "./discover.js";
 import { sessionStats } from "./sessions.js";
 import { areaOf } from "../../cli/src/areas.js";
 import { type Project, findProject, listProjects, loadBoard, summarize } from "./projects.js";
+import { readPrefs, writePrefs } from "./prefs.js";
 
 export class HttpError extends Error {
   constructor(
@@ -121,6 +122,13 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
     const projects = listProjects(ctx);
     const stats = sessionStats(ctx, projects.map((p) => p.path));
     return projects.map((p) => ({ id: p.id, ...stats.get(p.path)! }));
+  }
+
+  // GET|PATCH /api/prefs — UI choices kept on this machine, not in one browser
+  if (seg[0] === "prefs" && seg.length === 1) {
+    if (method === "GET") return readPrefs(ctx);
+    if (method === "PATCH") return writePrefs(ctx, (req.body ?? {}) as Record<string, unknown>);
+    throw new HttpError(405, "use GET or PATCH");
   }
 
   if (seg[0] !== "projects") return undefined;

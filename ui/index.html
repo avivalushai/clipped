@@ -246,6 +246,10 @@ tr.grp:hover td{background:var(--sunk);color:var(--ink)}
 .who.you b{background:var(--ink);color:var(--surface)}
 .hint{font-size:12px;color:var(--muted)}
 .call{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.uirow{cursor:pointer}
+.uirow:hover>td{background:var(--sunk)}
+.uist{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.struck{text-decoration:line-through;color:var(--muted)}
 .callrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 
 /* ---------- home ---------- */
@@ -429,7 +433,7 @@ summary.opt b{font-weight:500;color:var(--ink);max-width:140px;overflow:hidden;t
 .tabs button{display:inline-flex;align-items:center;gap:6px}
 .tabs svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
 .grid.compact td{height:34px;padding:2px 8px}
-.grid tbody tr[data-row]>td,.grid tbody tr[data-nrow]>td{height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.grid tbody tr[data-row]>td,.grid tbody tr[data-nrow]>td,.grid tbody tr.uirow>td{height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .grid.compact tbody tr[data-row]>td,.grid.compact tbody tr[data-nrow]>td{height:34px}
 .grid.compact .cell-in{padding:2px 6px}
 .grid.compact .status{padding:1px 20px 1px 7px;font-size:11px}
@@ -714,7 +718,7 @@ const TAB=()=>TABS.find(t=>t.id===P.tab)||TABS[0];
 /* The Design tab holds two things: the decisions, and the UI work they shaped.
    UI work is the same cards as in Work — shown here too, not moved. */
 const uiWork=()=>P.tab==='decisions'&&P.designView==='ui';
-const isNoteTab=()=>!!TAB().note&&!uiWork();
+const isNoteTab=()=>!!TAB().note;   /* UI work is a plain table on the Design tab, not the Work page again */
 const UI_AREA=/^(ui|ux|design|frontend|front[- ]end|web|landing|site|styles?|components?|theme)$/i;
 const UI_FILE=/\.(css|scss|sass|less|html?|jsx|tsx|vue|svelte|astro)$/i;
 /* A card is UI work when its area says so, most of its files are UI files, or a design decision links to it. */
@@ -797,7 +801,17 @@ const toNote=(pid,n)=>({id:pid+':'+n.id,nid:n.id,project:pid,kind:n.kind,title:n
   body:n.body||'',considered:n.considered||'',decidedBy:n.decidedBy||'',confirmedAt:n.confirmedAt||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
   createdAt:Date.parse(n.createdAt),updatedAt:Date.parse(n.updatedAt),by:n.updatedBy==='claude'?'claude':'you'});
 
+/* Closing Getting started and finishing the tour are kept on this machine, not in
+   this browser: the board has two addresses and localStorage has one per address. */
+const keepPref=patch=>api('/api/prefs',{method:'PATCH',body:JSON.stringify(patch)}).catch(()=>{});
 async function loadAll(){
+  const kept=await api('/api/prefs').catch(()=>null);
+  if(kept){
+    for(const k of ['obHidden','tourDone'])
+      if(typeof kept[k]==='boolean') P[k]=kept[k];
+      else if(P[k]===true) keepPref({[k]:true}); // closed in this browser before the machine kept it
+    savePrefs();
+  }
   const ps=await api('/api/projects');
   S.projects=ps.map((p,i)=>({id:p.id,key:p.key,name:p.name,path:p.path,repoUrl:p.repoUrl||'',color:PCOLORS[i%PCOLORS.length],error:p.error}));
   const boards=await Promise.all(ps.map(p=>p.error?Promise.resolve(null):api('/api/projects/'+p.id+'/board').catch(()=>null)));
@@ -1040,7 +1054,7 @@ function tabStrip(){
 /* One line under the title that means something on every tab. */
 function homeSub(parked){
   const across=`across ${S.projects.length} project${S.projects.length===1?'':'s'}`;
-  if(uiWork()){const n=tabCards().length; return `${n} UI card${n===1?'':'s'} ${across} — the same cards as in Work, with the design decisions they shaped.`}
+  if(uiWork()){const n=tabCards().length; return `${n} UI card${n===1?'':'s'} ${across}, with the design decisions each one made.`}
   if(isNoteTab()) return `${tabCount(TAB())} ${NOUN[TAB().note]}${tabCount(TAB())===1?'':'s'} ${across}.`;
   if(P.tab==='questions'){
     const open=tabCards().filter(f=>f.status!=='done').length;
@@ -1164,7 +1178,7 @@ const TOUR=[
 ];
 let tourAt=-1;
 function startTour(){ openId=null; if(P.mode!=='table'){P.mode='table';savePrefs()} render(); tourAt=0; showTour() }
-function endTour(done){ tourAt=-1; document.getElementById('tour')?.remove(); if(done){P.tourDone=true;savePrefs();render()} }
+function endTour(done){ tourAt=-1; document.getElementById('tour')?.remove(); if(done){P.tourDone=true;savePrefs();keepPref({tourDone:true});render()} }
 function showTour(){
   document.getElementById('tour')?.remove();
   const step=TOUR[tourAt]; if(!step) return endTour(true);
@@ -1330,7 +1344,34 @@ function noteComposer(cols,isHome){
   return `<tr class="composer">${out}</tr>`;
 }
 
+/* UI work: the cards behind the design, in a plain table like the decisions next to it.
+   Each row opens the card; its decision chips open the calls it made. */
+function renderUiWork(isHome){
+  const q=query.toLowerCase();
+  const fs=tabCards().filter(f=>!q||f.title.toLowerCase().includes(q)||f.key.toLowerCase().includes(q)||(f.inArea||'').toLowerCase().includes(q))
+    .sort((a,b)=>(GORDER[a.status]??9)-(GORDER[b.status]??9)||b.updatedAt-a.updatedAt);
+  const cols=[{id:'key',label:'Key',w:92},...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'title',label:'Card',w:360},
+    {id:'status',label:'Status',w:130},{id:'area',label:'Area',w:120},{id:'calls',label:'Design decisions',w:200},{id:'updated',label:'Updated',w:92}];
+  const calls=f=>S.notes.filter(n=>n.kind==='decision'&&n.project===f.project&&n.cards.includes(f.key));
+  const cell=(c,f)=>{switch(c.id){
+    case 'key': return `<td class="mono">${esc(f.key)}</td>`;
+    case 'project': return `<td>${pbadge(proj(f.project),true)} <span class="pname">${esc(proj(f.project).name)}</span></td>`;
+    case 'title': return `<td class="title"><span class="${f.status==='done'?'struck':''}">${esc(f.title)}</span></td>`;
+    case 'status': return `<td><span class="uist"><span class="dot" style="background:${color(f.status)}"></span>${esc(stLabel(f))}</span></td>`;
+    case 'area': return `<td>${f.inArea||f.area?esc(f.inArea||f.area):'<span class="muted">—</span>'}</td>`;
+    case 'calls': {const ns=calls(f); return `<td>${ns.length?ns.map(n=>`<button class="clink" data-nopen="${n.id}" title="${esc(n.title)}">${esc(n.nid.slice(n.nid.indexOf('-')+1))}</button>`).join(' '):'<span class="muted">—</span>'}</td>`}
+    case 'updated': return `<td class="mono">${ago(f.updatedAt)}</td>`;
+  }return '<td></td>'};
+  let rows=fs.map(f=>`<tr class="uirow" data-open="${f.id}" tabindex="0">${cols.map(c=>cell(c,f)).join('')}</tr>`).join('');
+  if(!fs.length) rows=`<tr><td colspan="${cols.length}" class="empty">${q?'No UI work matches that.':'No UI work yet. A card shows here when its area is the UI, most of its files are UI files, or a design decision links to it.'}</td></tr>`;
+  const minW=cols.reduce((a,c)=>a+c.w,0);
+  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
+    <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="hint">The same cards as in Work — changes to one show in both. Click a row to open the card; click a decision to see the call it made.</p>`;
+}
+
 function renderNotesPage(isHome){
+  if(uiWork()) return renderUiWork(isHome);
   const ns=scopeNotes().sort((a,b)=>b.updatedAt-a.updatedAt), cols=noteCols(isHome);
   const f=NOTEFIELD[TAB().note];
   let rows=S.projects.length&&composing?noteComposer(cols,isHome):'';
@@ -1542,8 +1583,8 @@ function render(){
   bindPage();
   if($('landedX')) $('landedX').onclick=()=>{firstLanded=null;render()};
   if($('obTour')) $('obTour').onclick=startTour;
-  if($('obHide')) $('obHide').onclick=()=>{P.obHidden=true;savePrefs();render();
-    toast('Getting started closed',()=>{P.obHidden=false;savePrefs();render()})};
+  if($('obHide')) $('obHide').onclick=()=>{P.obHidden=true;savePrefs();keepPref({obHidden:true});render();
+    toast('Getting started closed',()=>{P.obHidden=false;savePrefs();keepPref({obHidden:false});render()})};
   renderDrawer();
   if(editCell){
     const n=document.querySelector('td.vcell.editing input');
@@ -2039,8 +2080,8 @@ document.addEventListener('click',e=>{
   if(side&&(P.sideShut?!e.target.closest('[data-go],[data-init]'):!e.target.closest('button,a,input,select,textarea,label,form,.nav-item'))){
     P.sideShut=!P.sideShut; savePrefs(); $('app').classList.toggle('side-shut',P.sideShut); $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu'; return }
   const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();window.scrollTo(0,0);return}
-  const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
   const no=e.target.closest('[data-nopen]'); if(no&&!e.target.closest('.drawer')){openTheNote(no.dataset.nopen);return}
+  const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
   document.querySelectorAll('details.cols[open]').forEach(d=>{ if(!d.contains(e.target)) d.removeAttribute('open') });
 });
 /* Leaving a row field — by blur, Escape or clicking away — puts it back to text. */

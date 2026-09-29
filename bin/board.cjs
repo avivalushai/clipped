@@ -289,8 +289,8 @@ function setStatus(ctx, f, to, by, note3) {
 function progress(f) {
   return { done: f.steps.filter((s2) => s2.done).length, total: f.steps.length };
 }
-function sortFeatures(fs13) {
-  return [...fs13].sort(
+function sortFeatures(fs14) {
+  return [...fs14].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || b.updatedAt.localeCompare(a.updatedAt)
   );
 }
@@ -388,7 +388,7 @@ var init_registry = __esm({
 // cli/src/schema.ts
 function validateBoard(b) {
   const errs = [];
-  const err = (path13, msg) => errs.push(`${path13}: ${msg}`);
+  const err = (path14, msg) => errs.push(`${path14}: ${msg}`);
   if (!isObj(b)) return ["board: must be an object"];
   if (b.schemaVersion !== SCHEMA_VERSION) err("schemaVersion", `must be ${SCHEMA_VERSION}`);
   if (!isObj(b.project)) err("project", "must be an object");
@@ -779,7 +779,7 @@ var init_projects = __esm({
     init_registry();
     init_schema();
     init_store();
-    projectId = (path13) => import_node_crypto2.default.createHash("sha1").update(path13).digest("hex").slice(0, 8);
+    projectId = (path14) => import_node_crypto2.default.createHash("sha1").update(path14).digest("hex").slice(0, 8);
   }
 });
 
@@ -1018,6 +1018,35 @@ var init_sessions = __esm({
   }
 });
 
+// server/src/prefs.ts
+function readPrefs(ctx) {
+  try {
+    const raw = JSON.parse(import_node_fs10.default.readFileSync(prefsFile(ctx), "utf8"));
+    return Object.fromEntries(PREF_KEYS.filter((k) => typeof raw[k] === "boolean").map((k) => [k, raw[k]]));
+  } catch {
+    return {};
+  }
+}
+function writePrefs(ctx, patch) {
+  const next = readPrefs(ctx);
+  for (const k of PREF_KEYS) if (typeof patch[k] === "boolean") next[k] = patch[k];
+  import_node_fs10.default.mkdirSync(homeDir(ctx), { recursive: true });
+  writeJsonAtomic(prefsFile(ctx), next);
+  return next;
+}
+var import_node_fs10, import_node_path9, PREF_KEYS, prefsFile;
+var init_prefs = __esm({
+  "server/src/prefs.ts"() {
+    "use strict";
+    import_node_fs10 = __toESM(require("node:fs"), 1);
+    import_node_path9 = __toESM(require("node:path"), 1);
+    init_context();
+    init_fsutil();
+    PREF_KEYS = ["obHidden", "tourDone"];
+    prefsFile = (ctx) => import_node_path9.default.join(homeDir(ctx), "ui.json");
+  }
+});
+
 // server/src/api.ts
 function board(ctx, project2, argv) {
   const out = [];
@@ -1065,8 +1094,8 @@ function applyPatch(ctx, p, key, patch) {
   return feature(p, key);
 }
 function handleApi(ctx, req) {
-  const { method, path: path13 } = req;
-  const seg = path13.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  const { method, path: path14 } = req;
+  const seg = path14.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   if (seg[0] === "discover" && seg.length === 1) {
     if (method !== "GET") throw new HttpError(405, "use GET");
     return discoverProjects(ctx);
@@ -1076,6 +1105,11 @@ function handleApi(ctx, req) {
     const projects = listProjects(ctx);
     const stats = sessionStats(ctx, projects.map((p2) => p2.path));
     return projects.map((p2) => ({ id: p2.id, ...stats.get(p2.path) }));
+  }
+  if (seg[0] === "prefs" && seg.length === 1) {
+    if (method === "GET") return readPrefs(ctx);
+    if (method === "PATCH") return writePrefs(ctx, req.body ?? {});
+    throw new HttpError(405, "use GET or PATCH");
   }
   if (seg[0] !== "projects") return void 0;
   if (seg.length === 1) {
@@ -1131,7 +1165,7 @@ function handleApi(ctx, req) {
       return argv.length > 3 ? board(ctx, p, argv) : note(p, id);
     }
   }
-  if (seg[2] !== "features") throw new HttpError(404, `no route ${path13}`);
+  if (seg[2] !== "features") throw new HttpError(404, `no route ${path14}`);
   if (seg.length === 3) {
     if (method !== "POST") throw new HttpError(405, "use POST");
     const b = req.body ?? {};
@@ -1149,7 +1183,7 @@ function handleApi(ctx, req) {
     if (method === "DELETE") return board(ctx, p, ["delete", key]);
     throw new HttpError(405, "use PATCH or DELETE");
   }
-  throw new HttpError(404, `no route ${path13}`);
+  throw new HttpError(404, `no route ${path14}`);
 }
 var HttpError, feature, note, str;
 var init_api = __esm({
@@ -1160,6 +1194,7 @@ var init_api = __esm({
     init_sessions();
     init_areas();
     init_projects();
+    init_prefs();
     HttpError = class extends Error {
       constructor(status, message) {
         super(message);
@@ -1201,7 +1236,7 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
   };
   const watch = (target, handler) => {
     try {
-      const w = import_node_fs10.default.watch(target, { persistent: false }, handler);
+      const w = import_node_fs11.default.watch(target, { persistent: false }, handler);
       w.on("error", () => {
       });
       watchers.push(w);
@@ -1211,16 +1246,16 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
   const rebuild = () => {
     while (watchers.length) watchers.pop().close();
     if (closed) return;
-    watch(import_node_path9.default.dirname(registryFile(ctx)), (_e, file) => {
+    watch(import_node_path10.default.dirname(registryFile(ctx)), (_e, file) => {
       if (!file || String(file).startsWith("projects.json")) {
         rebuild();
         fire(null);
       }
     });
-    for (const p of listProjects(ctx)) watch(import_node_path9.default.join(p.path, BOARD_DIR), () => fire(p.id));
+    for (const p of listProjects(ctx)) watch(import_node_path10.default.join(p.path, BOARD_DIR), () => fire(p.id));
   };
   try {
-    import_node_fs10.default.mkdirSync(import_node_path9.default.dirname(registryFile(ctx)), { recursive: true });
+    import_node_fs11.default.mkdirSync(import_node_path10.default.dirname(registryFile(ctx)), { recursive: true });
   } catch {
   }
   rebuild();
@@ -1233,12 +1268,12 @@ function watchBoards(ctx, onChange, { debounceMs = 60 } = {}) {
     rebuild
   };
 }
-var import_node_fs10, import_node_path9;
+var import_node_fs11, import_node_path10;
 var init_watch = __esm({
   "server/src/watch.ts"() {
     "use strict";
-    import_node_fs10 = __toESM(require("node:fs"), 1);
-    import_node_path9 = __toESM(require("node:path"), 1);
+    import_node_fs11 = __toESM(require("node:fs"), 1);
+    import_node_path10 = __toESM(require("node:path"), 1);
     init_registry();
     init_store();
     init_projects();
@@ -1263,9 +1298,9 @@ __export(server_exports, {
   listen: () => listen
 });
 function defaultUiDir() {
-  const here = typeof __dirname === "string" ? __dirname : import_node_path10.default.dirname((0, import_node_url.fileURLToPath)(__filename));
-  const candidates = [import_node_path10.default.resolve(here, "../../ui"), import_node_path10.default.resolve(here, "../ui")];
-  return candidates.find((d) => import_node_fs11.default.existsSync(import_node_path10.default.join(d, "index.html"))) ?? candidates[0];
+  const here = typeof __dirname === "string" ? __dirname : import_node_path11.default.dirname((0, import_node_url.fileURLToPath)(__filename));
+  const candidates = [import_node_path11.default.resolve(here, "../../ui"), import_node_path11.default.resolve(here, "../ui")];
+  return candidates.find((d) => import_node_fs12.default.existsSync(import_node_path11.default.join(d, "index.html"))) ?? candidates[0];
 }
 function cors(req, res) {
   const origin = req.headers.origin;
@@ -1304,13 +1339,13 @@ async function readBody(req) {
 }
 function serveStatic(res, urlPath, uiDir) {
   const rel = urlPath === "/" || urlPath === "/app" ? "index.html" : urlPath.replace(/^\/+/, "");
-  const file = import_node_path10.default.join(uiDir, rel);
-  if (!file.startsWith(uiDir + import_node_path10.default.sep) || !import_node_fs11.default.existsSync(file) || !import_node_fs11.default.statSync(file).isFile()) {
+  const file = import_node_path11.default.join(uiDir, rel);
+  if (!file.startsWith(uiDir + import_node_path11.default.sep) || !import_node_fs12.default.existsSync(file) || !import_node_fs12.default.statSync(file).isFile()) {
     res.writeHead(404, { "Content-Type": "text/plain" });
     return void res.end("Not found");
   }
-  res.writeHead(200, { "Content-Type": MIME[import_node_path10.default.extname(file)] ?? "application/octet-stream", "Cache-Control": "no-cache" });
-  import_node_fs11.default.createReadStream(file).pipe(res);
+  res.writeHead(200, { "Content-Type": MIME[import_node_path11.default.extname(file)] ?? "application/octet-stream", "Cache-Control": "no-cache" });
+  import_node_fs12.default.createReadStream(file).pipe(res);
 }
 function createServer(ctx, options = {}) {
   const uiDir = options.uiDir ?? defaultUiDir();
@@ -1387,13 +1422,13 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, HOSTED_ORIGIN, json;
+var import_node_fs12, import_node_http, import_node_path11, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, HOSTED_ORIGIN, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
-    import_node_fs11 = __toESM(require("node:fs"), 1);
+    import_node_fs12 = __toESM(require("node:fs"), 1);
     import_node_http = __toESM(require("node:http"), 1);
-    import_node_path10 = __toESM(require("node:path"), 1);
+    import_node_path11 = __toESM(require("node:path"), 1);
     import_node_url = require("node:url");
     init_api();
     init_watch();
@@ -1442,7 +1477,7 @@ function parseType(v) {
   return v;
 }
 function prettyName(dir) {
-  return import_node_path11.default.basename(dir).replace(/[-_.]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim() || "Project";
+  return import_node_path12.default.basename(dir).replace(/[-_.]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim() || "Project";
 }
 function deriveKey(name) {
   const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
@@ -1455,15 +1490,15 @@ function createBoard(root, name, key) {
   if (!KEY_RE.test(key)) throw new UserError("--key must be 2\u20136 letters/digits, starting with a letter (e.g. LOOP)");
   const board2 = emptyBoard(name, key);
   writeBoard(boardFileFor(root), board2);
-  writeFileAtomic(import_node_path11.default.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
+  writeFileAtomic(import_node_path12.default.join(root, BOARD_DIR, ".gitignore"), "*.lock\n*.tmp\n*.bak\n");
   return board2;
 }
 function init(ctx, { opts }) {
-  const root = import_node_path11.default.resolve(ctx.cwd);
+  const root = import_node_path12.default.resolve(ctx.cwd);
   const file = boardFileFor(root);
   let board2;
   let created = false;
-  if (import_node_fs12.default.existsSync(file)) {
+  if (import_node_fs13.default.existsSync(file)) {
     board2 = readBoard(file);
     if (opts.key) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 the key is in every card's id, so it can't change now`);
     if (opts.name) throw new UserError(`board already exists in ${BOARD_DIR}/ \u2014 rename it with \`board rename "${str2(opts, "name")}"\``);
@@ -1487,23 +1522,23 @@ function boardForAdding(ctx, opts) {
   const name = prettyName(root);
   const board2 = createBoard(root, name, deriveKey(name));
   registerProject(ctx, { path: root, name, key: board2.project.key });
-  if (!opts.json) ctx.out(`Created board ${name} (${board2.project.key}) in ${import_node_path11.default.join(root, BOARD_DIR)}/`);
+  if (!opts.json) ctx.out(`Created board ${name} (${board2.project.key}) in ${import_node_path12.default.join(root, BOARD_DIR)}/`);
   return { root, file: boardFileFor(root) };
 }
 function listCmd(ctx, { opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const statuses = str2(opts, "status")?.split(",").map((s2) => parseStatus(s2.trim()));
   const type = parseType(str2(opts, "type"));
-  let fs13 = board2.features;
-  if (statuses) fs13 = fs13.filter((f) => statuses.includes(f.status));
-  else if (!opts.all) fs13 = fs13.filter((f) => f.status !== "done");
-  if (type) fs13 = fs13.filter((f) => f.type === type);
-  fs13 = sortFeatures(fs13);
-  const w = Math.max(0, ...fs13.map((f) => f.key.length));
+  let fs14 = board2.features;
+  if (statuses) fs14 = fs14.filter((f) => statuses.includes(f.status));
+  else if (!opts.all) fs14 = fs14.filter((f) => f.status !== "done");
+  if (type) fs14 = fs14.filter((f) => f.type === type);
+  fs14 = sortFeatures(fs14);
+  const w = Math.max(0, ...fs14.map((f) => f.key.length));
   const hidden = !statuses && !opts.all ? board2.features.filter((f) => f.status === "done").length : 0;
-  const lines = fs13.length ? fs13.map((f) => formatLine(f, w)) : ["No cards."];
+  const lines = fs14.length ? fs14.map((f) => formatLine(f, w)) : ["No cards."];
   if (hidden) lines.push(`(+${hidden} done \u2014 use --all)`);
-  emit(ctx, opts, fs13, lines);
+  emit(ctx, opts, fs14, lines);
 }
 function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
@@ -1555,8 +1590,8 @@ function context(ctx, { opts }) {
     }
     return true;
   };
-  const section = (title, fs13, extra) => {
-    const keep = fs13.filter(carry);
+  const section = (title, fs14, extra) => {
+    const keep = fs14.filter(carry);
     if (!keep.length) return;
     lines.push(`${title}:`);
     for (const f of keep) {
@@ -1802,7 +1837,7 @@ function merge(ctx, { pos, opts }) {
   emit(ctx, opts, into, `Merged ${from.key} into ${into.key} ${into.title}`);
 }
 function projectFiles(root, cwd, paths) {
-  const rels = paths.map((p) => import_node_path11.default.relative(root, import_node_path11.default.resolve(cwd, p))).filter((r) => r && !r.startsWith("..") && !import_node_path11.default.isAbsolute(r)).map((r) => r.split(import_node_path11.default.sep).join("/")).filter((r) => r !== BOARD_DIR && !r.startsWith(BOARD_DIR + "/"));
+  const rels = paths.map((p) => import_node_path12.default.relative(root, import_node_path12.default.resolve(cwd, p))).filter((r) => r && !r.startsWith("..") && !import_node_path12.default.isAbsolute(r)).map((r) => r.split(import_node_path12.default.sep).join("/")).filter((r) => r !== BOARD_DIR && !r.startsWith(BOARD_DIR + "/"));
   return [...new Set(rels)];
 }
 function touch(ctx, { pos, opts }) {
@@ -2212,15 +2247,15 @@ function area2(ctx, { pos, opts }) {
   }
   throw new UserError(`unknown: board area ${sub} \u2014 use list, add, rename or rm`);
 }
-var import_node_child_process, import_node_crypto3, import_node_fs12, import_node_os3, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, BOARD_PORT, boardLink, wait;
+var import_node_child_process, import_node_crypto3, import_node_fs13, import_node_os3, import_node_path12, str2, list, STALE_DAYS, linksOf, park, review, done, BOARD_PORT, boardLink, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
     import_node_child_process = require("node:child_process");
     import_node_crypto3 = __toESM(require("node:crypto"), 1);
-    import_node_fs12 = __toESM(require("node:fs"), 1);
+    import_node_fs13 = __toESM(require("node:fs"), 1);
     import_node_os3 = __toESM(require("node:os"), 1);
-    import_node_path11 = __toESM(require("node:path"), 1);
+    import_node_path12 = __toESM(require("node:path"), 1);
     init_account();
     init_analytics();
     init_areas();
@@ -2285,7 +2320,7 @@ usage: board ${command.usage}`);
       ctx.out(`usage: board ${command.usage}`);
       return 0;
     }
-    const dir = typeof opts.dir === "string" ? import_node_path12.default.resolve(ctx.cwd, opts.dir) : ctx.cwd;
+    const dir = typeof opts.dir === "string" ? import_node_path13.default.resolve(ctx.cwd, opts.dir) : ctx.cwd;
     command.run({ ...ctx, cwd: dir }, { pos: parsed.positionals, opts });
     return 0;
   } catch (e) {
@@ -2294,11 +2329,11 @@ usage: board ${command.usage}`);
     return 1;
   }
 }
-var import_node_path12, import_node_util, GLOBAL, s, many, flag, COMMANDS;
+var import_node_path13, import_node_util, GLOBAL, s, many, flag, COMMANDS;
 var init_cli = __esm({
   "cli/src/cli.ts"() {
     "use strict";
-    import_node_path12 = __toESM(require("node:path"), 1);
+    import_node_path13 = __toESM(require("node:path"), 1);
     import_node_util = require("node:util");
     init_commands();
     init_version();
