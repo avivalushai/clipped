@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 103,
+  "nextNum": 104,
   "features": [
     {
       "key": "LE-1",
@@ -3779,10 +3779,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "096b6a1"
+      ],
       "area": "",
       "createdAt": "2026-09-28T18:47:10Z",
-      "updatedAt": "2026-09-29T10:10:41Z",
+      "updatedAt": "2026-09-29T10:11:45Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3849,6 +3851,11 @@
           "at": "2026-09-29T10:10:41Z",
           "by": "claude",
           "text": "Step added (done): Ready for release: no demo, no sample board — only the user's own projects and tasks"
+        },
+        {
+          "at": "2026-09-29T10:11:45Z",
+          "by": "claude",
+          "text": "Proof: 096b6a1"
         }
       ]
     },
@@ -4127,10 +4134,12 @@
       "doneWhen": [],
       "steps": [],
       "files": [],
-      "links": [],
+      "links": [
+        "096b6a1"
+      ],
       "area": "",
       "createdAt": "2026-09-29T09:24:16Z",
-      "updatedAt": "2026-09-29T09:29:55Z",
+      "updatedAt": "2026-09-29T10:11:45Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4142,6 +4151,11 @@
           "at": "2026-09-29T09:29:55Z",
           "by": "claude",
           "text": "Moved to review — A page on another site (or another localhost app) can't add, edit or delete cards: 403. The board page and the CLI still work. Not committed."
+        },
+        {
+          "at": "2026-09-29T10:11:45Z",
+          "by": "claude",
+          "text": "Proof: 096b6a1"
         }
       ]
     },
@@ -4235,10 +4249,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "096b6a1"
+      ],
       "area": "",
       "createdAt": "2026-09-29T09:41:40Z",
-      "updatedAt": "2026-09-29T09:41:40Z",
+      "updatedAt": "2026-09-29T10:11:45Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4250,6 +4266,40 @@
           "at": "2026-09-29T09:41:40Z",
           "by": "claude",
           "text": "Moved to review — Open 7+ board tabs: the newest still loads; background tabs catch up when you return to them. Not committed."
+        },
+        {
+          "at": "2026-09-29T10:11:45Z",
+          "by": "claude",
+          "text": "Proof: 096b6a1"
+        }
+      ]
+    },
+    {
+      "key": "LE-103",
+      "title": "The Getting started checklist can be closed from the board",
+      "type": "feature",
+      "status": "review",
+      "note": "On the board, Getting started shows a 'Close ×' button; clicking it hides the checklist with an Undo. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T10:18:59Z",
+      "updatedAt": "2026-09-29T10:18:59Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T10:18:59Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T10:18:59Z",
+          "by": "claude",
+          "text": "Moved to review — On the board, Getting started shows a 'Close ×' button; clicking it hides the checklist with an Undo. Not committed."
         }
       ]
     }

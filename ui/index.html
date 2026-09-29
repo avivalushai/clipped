@@ -561,7 +561,9 @@ li.done .fr-check::after{content:"";width:8px;height:4px;border:2px solid #fff;b
 .ob-h{display:flex;align-items:center;gap:12px}
 .ob-h>div{display:grid}
 .ob-h>div span{color:var(--muted);font-size:12.5px}
-.ob-h .xbtn{margin-left:auto}
+.ob-h .ob-close{margin-left:auto;color:var(--muted)}
+.ob-h .ob-close span{font-size:14px;line-height:1;margin-left:2px}
+.ob-h .ob-close:hover{color:var(--ink)}
 .ob-ring{--p:0;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--s-done) calc(var(--p)*360deg),var(--sunk) 0);flex:none}
 .ob-ring b{width:30px;height:30px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--mono);font-size:10.5px}
 .ob-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px}
@@ -1102,7 +1104,7 @@ function gettingStarted(){
   if(n===st.length) return '';
   return `<section class="ob" aria-label="Getting started">
     <div class="ob-h"><span class="ob-ring" style="--p:${n/st.length}"><b>${n}/${st.length}</b></span><div><b>Getting started</b><span>Ticks itself as you go.</span></div>
-      <button class="xbtn" id="obHide" aria-label="Hide getting started" title="Hide">×</button></div>
+      <button class="btn sm ob-close" id="obHide" aria-label="Close getting started">Close <span aria-hidden="true">×</span></button></div>
     <ol class="ob-list">${st.map(x=>`<li class="${x.done?'done':''}"><span class="fr-check"></span>${esc(x.t)}${x.tour&&!x.done?` <button class="btn sm primary" id="obTour">Start</button>`:''}</li>`).join('')}</ol>
   </section>`;
 }
@@ -1448,7 +1450,8 @@ function render(){
   bindPage();
   if($('landedX')) $('landedX').onclick=()=>{firstLanded=null;render()};
   if($('obTour')) $('obTour').onclick=startTour;
-  if($('obHide')) $('obHide').onclick=()=>{P.obHidden=true;savePrefs();render()};
+  if($('obHide')) $('obHide').onclick=()=>{P.obHidden=true;savePrefs();render();
+    toast('Getting started closed',()=>{P.obHidden=false;savePrefs();render()})};
   renderDrawer();
   if(editCell){
     const n=document.querySelector('td.vcell.editing input');
