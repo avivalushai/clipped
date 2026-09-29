@@ -1,6 +1,6 @@
 // board.json schema (SPEC §3) and a dependency-free validator.
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const STATUSES = ["idea", "active", "parked", "review", "done"] as const;
 export const TYPES = ["feature", "bug", "chore", "question"] as const;
@@ -17,6 +17,14 @@ export type Granularity = (typeof GRANULARITIES)[number];
 export interface Step {
   text: string;
   done: boolean;
+}
+
+/** A step of a plan made in chat. It's ticked by hand, or by the card doing it being done. */
+export interface PlanStep {
+  text: string;
+  done: boolean;
+  /** The card doing this step ("" = nobody has started it as a card). */
+  card: string;
 }
 
 export interface LogEntry {
@@ -64,6 +72,8 @@ export interface Note {
   url: string;
   file: string;
   cards: string[]; // card keys this note produced or is about
+  /** A step plan's steps, in order. Empty on every other note, and on a plan that is a document. */
+  steps: PlanStep[];
   createdAt: string;
   updatedAt: string;
   updatedBy: Actor;
@@ -211,6 +221,15 @@ export function validateBoard(b: unknown): string[] {
       err(`${p}.confirmedAt`, "must be empty or an ISO-8601 UTC timestamp");
     if (!Array.isArray(n.cards) || !n.cards.every(isStr)) err(`${p}.cards`, "must be an array of card keys");
     else for (const key of n.cards as string[]) if (!seen.has(key)) err(`${p}.cards`, `no card ${key} on this board`);
+    if (!Array.isArray(n.steps)) err(`${p}.steps`, "must be an array");
+    else {
+      if (n.steps.length && n.kind !== "plan") err(`${p}.steps`, "only a plan has steps");
+      n.steps.forEach((s, j) => {
+        if (!isObj(s) || !isStr(s.text) || !s.text.trim() || typeof s.done !== "boolean" || !isStr(s.card))
+          return err(`${p}.steps[${j}]`, "must be { text: string, done: boolean, card: string }");
+        if (s.card && !seen.has(s.card)) err(`${p}.steps[${j}].card`, `no card ${s.card} on this board`);
+      });
+    }
 
     for (const k of ["createdAt", "updatedAt"] as const)
       if (!isStr(n[k]) || !ISO_RE.test(n[k] as string)) err(`${p}.${k}`, "must be an ISO-8601 UTC timestamp");

@@ -40,7 +40,8 @@ board update LE-3 --area "Invoices"|auto       # put one card in an area by hand
 board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided
 
-board note add brainstorm|plan|decision|reference "Title" [--body ...] [--considered ...] [--decided-by user|claude] [--url ...] [--file ...] [--card LE-3]...
+board note add brainstorm|plan|decision|reference "Title" [--body ...] [--considered ...] [--decided-by user|claude] [--url ...] [--file ...] [--card LE-3]... [--step "..."]...
+board note step LE-N5 "text"|2 [--done|--undone|--remove] [--card LE-40|none]
 board note list [--kind decision] · note show LE-N3 · note update LE-N3 ... · note link LE-N3 LE-4 · note rm LE-N3
 ```
 
@@ -100,7 +101,8 @@ or an answered question. Neither → nothing.
 | A long discussion whose path is worth keeping, not only where it landed | a brainstorm note, linked to its decisions and ideas |
 | How the project is set up — where it deploys, which account or dashboard holds what, the command that matters | a reference note |
 | A plan document in the repo | cards, plus one plan note |
-| A plan you wrote in chat and they approved | steps on the card, not a note |
+| A plan you wrote in chat for one piece of work, and they approved | steps on the card, not a note |
+| A bigger thing broken into stages or numbered steps in chat — "Step 1… Step 2… Step 3…" | a **step plan**: one plan note holding the steps in order, see **Step plans** |
 | Thinking aloud, and anything the user turned down | nothing |
 
 The rest of this file is the detail behind each row.
@@ -441,10 +443,34 @@ Rules that keep it useful:
 - Never edit the document to match the board. The doc holds the thinking; the
   board holds the state.
 
-A plan you write yourself in the chat — in plan mode, or "here's how I'll do
-it" — is not a document. When the user approves it, it becomes the card: each
-step a `--step`, its end state the `--done-when`. No plan note: that's for
-files that live in the repo, which the user will open again.
+A plan you write yourself in the chat for **one piece of work** — in plan mode,
+or "here's how I'll do it" — is not a document. When the user approves it, it
+becomes the card: each step a `--step`, its end state the `--done-when`.
+
+### Step plans
+
+When you and the user think big and break it into stages — Step 1, Step 2,
+Step 3, each one a piece of work you'll come back for — the plan itself is worth
+keeping, not only the pieces. That's a **step plan**: one plan note that holds
+the goal and the steps, in order. The Plans tab shows it as a step plan (a plan
+in a file is a document) with how far it has got.
+
+- **Write it when the breakdown is agreed**, before starting Step 1, without
+  being asked. Title it what the whole thing is for; the body is the goal and
+  the why in a line or two; one `--step` per step, in the user's order and words:
+  `board note add plan "First-run experience" --body "A new user watches their first tasks land" --step "Welcome header" --step "Live stream" --step "See your board"`
+- **A step is not a card until it's being worked on.** When you start one,
+  create or pick its card as usual, then point the step at it:
+  `board note step LE-N5 2 --card LE-40`. The step counts as done when that
+  card is done. A step done without a card: `board note step LE-N5 2 --done`.
+- **Coming back** ("let's do step 3", "where were we on the onboarding?"): the
+  session brief lists step plans still under way with the step you're on;
+  `board note show LE-N5` has the rest. Continue from there, don't re-plan.
+- **The plan changes, the note changes**: add a step with
+  `board note step LE-N5 "New step"`, drop one with `--remove`. Don't start a
+  second plan for the same goal.
+- One piece of work with a few steps is still just a card with `--step`s. A step
+  plan is for work that spans several cards and several sessions.
 
 ## Statuses
 

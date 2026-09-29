@@ -32,6 +32,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       confirmedAt: n.confirmedAt ?? "",
     })),
   }),
+  // v5 → v6: a plan made in chat keeps its steps, in order.
+  5: (board) => ({
+    ...board,
+    notes: ((board.notes as Record<string, unknown>[]) ?? []).map((n) => ({ ...n, steps: n.steps ?? [] })),
+  }),
 };
 
 export class MigrationError extends Error {}

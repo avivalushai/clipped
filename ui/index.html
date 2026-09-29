@@ -297,6 +297,14 @@ textarea.title-in.scrolls{overflow-y:auto}
 .checklist label:hover{background:var(--sunk)}
 .checklist input{margin-top:3px;accent-color:var(--accent)}
 .checklist .done span{text-decoration:line-through;color:var(--faint)}
+.psteps li{display:flex;align-items:flex-start;gap:6px;border-radius:6px}
+.psteps li label{flex:1;min-width:0}
+.psteps li.now{background:color-mix(in srgb,var(--active) 13%,transparent)}
+.psteps .pnum{font-family:var(--mono);font-weight:500;font-size:11.5px;color:var(--faint);margin-right:8px}
+.psteps .pcard{flex:none;width:auto;margin-top:2px}
+.ptype{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.ptype.step{color:var(--active);border-color:color-mix(in srgb,var(--active) 35%,transparent);background:color-mix(in srgb,var(--active) 8%,transparent)}
+.plabel{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .addstep{display:flex;gap:8px;align-items:center}
 .addstep input{flex:1;min-width:0;border:1px dashed var(--line-2);background:none}
 /* One size for every one-line control in a panel: inputs, the Add fields, dropdowns. */
@@ -751,7 +759,7 @@ const NOTE_EMPTY={
   reference:'No references yet. Anything you looked up and would look up again belongs here.'};
 const NOTE_HINT={
   brainstorm:'A brainstorm is the thinking, not the work — what it decided lives on the cards it links to.',
-  plan:'Plans hold the reasoning; the board holds the state. Editing a card never edits the document.',
+  plan:'A step plan is one we broke into steps in chat — it keeps them in order and knows which one is next. A document is a plan file in the repo; editing a card never edits it.',
   decision:'Every call that shaped how the product looks and works, what lost, and whose call it was. Claude’s calls wait for you to agree.',
   reference:'Links you would otherwise have to scroll back through the chat to find.'};
 const KINDL={brainstorm:'Brainstorm',plan:'Plan',decision:'Design decision',reference:'Reference'};
@@ -766,7 +774,7 @@ const NOTEBODY={
   decision:{label:'What we chose, and why',ph:'The call, and the reason given for it \u2014 not a reason made up afterwards'},
   reference:{label:'Why it\u2019s here',ph:'What this answered, in one line'}};
 const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decided (optional)'},
-  plan:{k:'file',label:'Document',ph:'docs/plan.md (optional)'},
+  plan:{k:'file',label:'Goal or document',ph:'docs/plan.md (optional)'},
   decision:{k:'body',label:'Chose, and why',ph:'Why this one (optional)'},
   reference:{k:'url',label:'Link',ph:'https://… (optional)'}};
 /* The order work is shown in: what's moving, what's waiting on you, what's stopped, what's
@@ -817,7 +825,7 @@ const toFeature=(pid,c)=>({id:pid+':'+c.key,key:c.key,num:+c.key.slice(c.key.las
   log:(c.log||[]).map(l=>({at:Date.parse(l.at),by:l.by==='claude'?'claude':'you',text:l.text}))});
 
 const toNote=(pid,n)=>({id:pid+':'+n.id,nid:n.id,project:pid,kind:n.kind,title:n.title,
-  body:n.body||'',considered:n.considered||'',decidedBy:n.decidedBy||'',confirmedAt:n.confirmedAt||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
+  body:n.body||'',considered:n.considered||'',decidedBy:n.decidedBy||'',confirmedAt:n.confirmedAt||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),steps:(n.steps||[]).map(x=>({text:x.text,done:!!x.done,card:x.card||''})),
   createdAt:Date.parse(n.createdAt),updatedAt:Date.parse(n.updatedAt),by:n.updatedBy==='claude'?'claude':'you'});
 
 /* Closing Getting started and finishing the tour are kept on this machine, not in
@@ -1308,6 +1316,7 @@ const GROUPINGS={
   questions:{def:'status',opts:[['status','Status'],['touched','Last touched'],['area','Area'],['project','Project'],['none','Nothing']]},
   decisions:{def:'who',opts:[['who','Who decided'],['card','Card'],['area','Area'],['none','Nothing']]},
   brainstorms:{def:'led',opts:[['led','Led to work'],['touched','Last touched'],['none','Nothing']]},
+  plans:{def:'ptype',opts:[['ptype','Type'],['none','Nothing']]},
   references:{def:'none',opts:[['site','Site'],['none','Nothing']]},
   outputs:{def:'kind',opts:[['kind','Kind'],['card','Card'],['project','Project'],['none','Nothing']]}};
 const WORK_GROUPS=[['status','Status'],['area','Area'],['project','Project'],['none','Nothing']];
@@ -1371,7 +1380,9 @@ function sortFs(fs){
 function noteCols(isHome){
   const f=NOTEFIELD[TAB().note];
   return [{id:'id',label:'Id',w:92},...(isHome?[{id:'project',label:'Project',w:124}]:[]),
-    {id:'title',label:'Title',w:280},{id:'target',label:f.label,w:300},
+    {id:'title',label:'Title',w:280},
+    ...(TAB().note==='plan'?[{id:'ptype',label:'Type',w:116},{id:'pprog',label:'Progress',w:220}]:[]),
+    {id:'target',label:f.label,w:300},
     ...(TAB().note==='decision'?[{id:'call',label:'Whose call',w:244}]:[]),
     {id:'cards',label:'Cards',w:132},{id:'updated',label:'Updated',w:92},{id:'by',label:'Last by',w:104},{id:'del',label:'',w:44}];
 }
@@ -1387,16 +1398,32 @@ function callCell(n){
 const agree=n=>saveNote(n,{confirmed:true}).then(ok=>ok&&toast('Agreed with '+n.nid));
 const cardLink=(pid,key)=>`<button class="clink" data-card="${pid+':'+key}">${esc(key)}</button>`;
 
+/* Two kinds of plan: a step plan was broken down in chat and holds its own steps;
+   a document is a file in the repo. A step counts as done once it's ticked, or once
+   the card doing it is done. */
+const isStepPlan=n=>n.kind==='plan'&&n.steps.length>0;
+function planProg(n){
+  const doneKeys=new Set(S.features.filter(f=>f.project===n.project&&f.status==='done').map(f=>f.key));
+  const done=n.steps.map(s=>s.done||(!!s.card&&doneKeys.has(s.card)));
+  const d=done.filter(Boolean).length;
+  return {done,count:d,total:n.steps.length,next:done.indexOf(false),
+    label:d===n.steps.length?`All ${d} steps done`:`Step ${done.indexOf(false)+1} of ${n.steps.length}`};
+}
 function noteCell(c,n,isHome){
   const f=NOTEFIELD[n.kind];
   switch(c.id){
     case 'id': return `<td><button class="keybtn" data-nopen="${n.id}" title="Open note">${esc(n.nid)}</button></td>`;
     case 'project': return `<td><span class="projcell">${pbadge(proj(n.project),true)}${esc(proj(n.project).name)}</span></td>`;
     case 'title': return editableCell({id:n.id,k:'title',attr:'data-nedit',value:n.title,ph:'',cls:'title',label:'Title'});
-    case 'target': return editableCell({id:n.id,k:f.k,attr:'data-nedit',value:n[f.k],ph:f.ph,cls:n.kind==='plan'?'mono':'',label:f.label,
+    case 'target': if(isStepPlan(n)&&!n.file) return editableCell({id:n.id,k:'body',attr:'data-nedit',value:n.body,ph:'The goal (optional)',cls:'',label:'Goal'});
+      return editableCell({id:n.id,k:f.k,attr:'data-nedit',value:n[f.k],ph:f.ph,cls:n.kind==='plan'?'mono':'',label:f.label,
       shown:n.kind==='reference'&&n.url?`<a class="ext" href="${esc(n.url)}" target="_blank" rel="noreferrer noopener" title="${esc(n.url)}">${esc(n.url)}</a>`:undefined});
     case 'cards': return `<td>${n.cards.length?n.cards.map(k=>cardLink(n.project,k)).join(' '):'<span class="muted">—</span>'}</td>`;
     case 'call': return `<td>${callCell(n)}</td>`;
+    case 'ptype': return `<td><span class="ptype ${isStepPlan(n)?'step':''}">${isStepPlan(n)?'Step plan':'Document'}</span></td>`;
+    case 'pprog': { if(!isStepPlan(n)) return `<td class="muted">${n.cards.length?esc(cardTally(noteCards(n))):'—'}</td>`;
+      const g=planProg(n);
+      return `<td><div class="prog"><div class="track"><div class="fill" style="width:${Math.round(100*g.count/g.total)}%;background:${g.count===g.total?'var(--done)':'var(--active)'}"></div></div><span class="plabel">${g.label}</span></div></td>` }
     case 'updated': return `<td class="mono">${ago(n.updatedAt)}</td>`;
     case 'by': return `<td>${who(n.by)}</td>`;
     case 'del': return `<td><button class="xbtn" data-ndel="${n.id}" title="Delete" aria-label="Delete ${esc(n.title)}">×</button></td>`;
@@ -1518,6 +1545,8 @@ function noteGroups(ns,isHome){
   if(g==='touched') return touchedGroups(ns,t);
   if(g==='who'){ const W=[['unchecked',"Claude's call, unchecked",unchecked],['you','Your call',n=>n.decidedBy!=='claude'],['agreed',"Claude's call, you agreed",n=>n.decidedBy==='claude'&&!!n.confirmedAt]];
     return W.map(([id,l,fn])=>({id:t+':who:'+id,head:esc(l),items:ns.filter(fn)})).filter(x=>x.items.length) }
+  if(g==='ptype') return [['step','Step plans',isStepPlan],['doc','Documents',n=>!isStepPlan(n)]]
+    .map(([id,l,fn])=>({id:t+':ptype:'+id,head:esc(l),items:ns.filter(fn)})).filter(x=>x.items.length);
   if(g==='led') return [['yes','Led to work',n=>n.cards.length>0],['no','Nothing yet',n=>!n.cards.length]]
     .map(([id,l,fn])=>({id:t+':led:'+id,head:esc(l),items:ns.filter(fn)})).filter(x=>x.items.length);
   const last=(a,b)=>(a==='')-(b==='')||a.localeCompare(b);
@@ -2161,7 +2190,7 @@ function renderDrawer(){
    came of it. */
 const NOTE_UNLINKED={
   brainstorm:'No cards yet. Claude links the ones a decision produced.',
-  plan:'No cards from this document yet \u2014 /clipped:plan turns it into some.',
+  plan:'No cards yet. A document becomes cards with /clipped:plan; a step plan links each step\u2019s card as the work starts.',
   decision:'Not linked to a card yet. Claude links the cards this call shaped.',
   reference:'Not linked to a card yet.'};
 const hostOf=u=>{try{return new URL(u).host}catch(e){return u}};
@@ -2184,7 +2213,7 @@ function sourceNotes(f){
   const ns=S.notes.filter(n=>n.project===f.project&&n.cards.includes(f.key));
   if(!ns.length) return '';
   return `<div class="field"><span class="lbl">Linked notes</span><ul class="nlinks">${ns.map(n=>
-    `<li><button class="nlink" data-nopen="${n.id}"><span class="mono st">${esc(n.nid)}</span><span class="t">${esc(n.title)}</span><span class="st">${esc(KINDL[n.kind])}</span></button></li>`).join('')}</ul></div>`;
+    `<li><button class="nlink" data-nopen="${n.id}"><span class="mono st">${esc(n.nid)}</span><span class="t">${esc(n.title)}</span><span class="st">${esc(isStepPlan(n)&&n.steps.some(s=>s.card===f.key)?`Plan · step ${n.steps.findIndex(s=>s.card===f.key)+1} of ${n.steps.length}`:KINDL[n.kind])}</span></button></li>`).join('')}</ul></div>`;
 }
 function openTheNote(id){
   const n=S.notes.find(x=>x.id===id); if(!n) return;
@@ -2198,12 +2227,22 @@ function planPrompt(n){
     `An unticked checkbox is work too: something to find out is a question, something to do is a chore. Show me the list before you add anything.`].join('\n\n');
 }
 
+/* A plan's steps, in order: tick one off, open the card doing it, add the next. */
+function planSteps(n){
+  const g=planProg(n), card=k=>S.features.find(f=>f.project===n.project&&f.key===k);
+  return `<div class="field"><span class="lbl"><span>Steps</span>${n.steps.length?`<span class="mono">${g.label}</span>`:''}</span>
+    ${n.steps.length?`<ol class="checklist psteps">${n.steps.map((s,i)=>{const c=s.card&&card(s.card), byCard=!s.done&&g.done[i];
+      return `<li class="${i===g.next?'now':''}"><label class="${g.done[i]?'done':''}"><input type="checkbox" data-pstep="${i}" ${g.done[i]?'checked':''} ${byCard?'disabled title="Done because its card is done"':''}><span><b class="pnum">${i+1}</b>${esc(s.text)}</span></label>${c?`<button class="nlink pcard" data-gocard="${c.id}"><span class="dot" style="background:${color(c.status)}"></span><span class="mono st">${esc(c.key)}</span></button>`:''}</li>`}).join('')}</ol>`
+      :`<span class="hint">A plan broken into steps in chat keeps them here, in order. A plan that's a document in the repo doesn't need any.</span>`}
+    <form class="addstep" id="pStepForm"><input id="pStepIn" placeholder="Add a step" aria-label="New step"><button class="btn sm">Add</button></form></div>`;
+}
 function renderNoteDrawer(){
   const n=S.notes.find(x=>x.id===openNote);
   if(!n){openNote=null;$('drawerRoot').innerHTML='';return}
   const fld=NOTEBODY[n.kind], cards=noteCards(n);
   const target=n.kind==='reference'
     ? `<div class="field"><label class="lbl" for="nUrl">Link</label><input id="nUrl" class="fin mono" value="${esc(n.url)}" placeholder="https://\u2026" aria-label="Link">${n.url?`<a class="ext" href="${esc(n.url)}" target="_blank" rel="noreferrer noopener">Open ${esc(hostOf(n.url))}</a>`:''}</div>`
+    : n.kind==='plan'&&isStepPlan(n)&&!n.file ? ''
     : n.kind==='plan'
     ? `<div class="field"><label class="lbl" for="nFile">Document</label><input id="nFile" class="fin mono" value="${esc(n.file)}" placeholder="docs/plan.md" aria-label="Document"><span class="hint">The document holds the reasoning; the board holds what came of it. Editing a card never edits the document.</span></div>`
     : '';
@@ -2212,10 +2251,11 @@ function renderNoteDrawer(){
   <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(n.title)}">
     <div class="drawer-h"><div class="row"><span class="mono">${esc(n.nid)} \u00b7 ${esc(proj(n.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
       <textarea class="title-in" id="nTitleIn" rows="1" aria-label="${esc(KINDL[n.kind])} title">${esc(n.title)}</textarea>
-      <div class="row"><span class="kindtag">${esc(KINDL[n.kind])}</span><span>updated ${ago(n.updatedAt)} ago by ${n.by==='claude'?'Claude':'you'}</span></div></div>
+      <div class="row"><span class="kindtag">${esc(n.kind==='plan'?(isStepPlan(n)?'Step plan':n.file?'Plan document':'Plan'):KINDL[n.kind])}</span><span>updated ${ago(n.updatedAt)} ago by ${n.by==='claude'?'Claude':'you'}</span></div></div>
     <div class="drawer-b">
       ${target}
-      <div class="field"><label class="lbl" for="nBody">${esc(fld.label)}</label><textarea id="nBody" placeholder="${esc(fld.ph)}">${esc(n.body)}</textarea></div>
+      <div class="field"><label class="lbl" for="nBody">${esc(isStepPlan(n)?'Goal':fld.label)}</label><textarea id="nBody" placeholder="${esc(isStepPlan(n)?'What this plan is for, and why this way':fld.ph)}">${esc(n.body)}</textarea></div>
+      ${n.kind==='plan'?planSteps(n):''}
       ${n.kind==='decision'?`<div class="field"><span class="lbl">Whose call</span><div class="callrow">${
         n.decidedBy==='user'?`<span>${who('you')}</span><span class="hint">You made this call.</span>`
         :unchecked(n)?`<span>${who('claude')}</span><span class="hint">Claude made this call and you haven\u2019t checked it.</span><button class="btn sm primary" id="nAgree">I agree</button><button class="btn sm ghost" id="nMine">It was my call</button>`
@@ -2240,6 +2280,9 @@ function renderNoteDrawer(){
     deleteNote(n).then(ok=>{if(ok){openNote=null;render();toast(n.nid+' deleted')}})};
   if($('nAgree')) $('nAgree').onclick=()=>commitNote().then(()=>agree(n));
   if($('nMine')) $('nMine').onclick=()=>commitNote().then(()=>saveNote(n,{decidedBy:'user'}));
+  document.querySelectorAll('[data-pstep]').forEach(c=>c.onchange=()=>commitNote().then(()=>saveNote(n,{step:{n:+c.dataset.pstep+1,done:c.checked}})));
+  if($('pStepForm')) $('pStepForm').onsubmit=e=>{e.preventDefault(); const t=$('pStepIn').value.trim(); if(!t) return;
+    commitNote().then(()=>saveNote(n,{step:{add:t}})).then(ok=>{if(ok){renderNoteDrawer(); $('pStepIn')?.focus()}})};
   if($('nHandoff')) $('nHandoff').onclick=()=>commitNote().then(()=>openDialog('Paste this into Claude',planPrompt(n)));
   document.querySelectorAll('[data-gocard]').forEach(b=>b.onclick=()=>commitNote().then(()=>{
     const f=S.features.find(x=>x.id===b.dataset.gocard); if(!f) return;

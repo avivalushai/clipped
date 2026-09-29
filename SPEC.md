@@ -109,12 +109,13 @@ but the UI renames them: Open · Looking into · Parked · Answered · Decided. 
 gap between Answered and Decided is the point — Claude finds the answer, the
 user makes the call.
 
-**Notes** are `{ id, kind, title, body, considered, decidedBy, confirmedAt, url, file, cards[], createdAt, updatedAt, updatedBy }`.
+**Notes** are `{ id, kind, title, body, considered, decidedBy, confirmedAt, url, file, cards[], steps[], createdAt, updatedAt, updatedBy }`.
 - `id`: `LOOP-N3` — a separate counter (`nextNoteNum`) so notes never take a card's number
 - `kind`: `brainstorm | plan | decision | reference`
 - `body` carries a brainstorm's outcome or a decision's call and reason, `file` a plan's document, `url` a reference's link
 - `decidedBy` (decisions only, `""` otherwise): `user | claude` — who made the call. Defaults to whoever records it; Claude records `user` only when the user picked, asked for or corrected toward it (`--decided-by`)
 - `confirmedAt` (decisions only): when the user agreed with a call Claude made (`board note confirm`, or **I agree** on the board). Only the user can set it. A Claude call with no `confirmedAt` is *unchecked* — the session brief counts them (v5)
+- `steps` (plans only): a **step plan** — a plan broken into steps in chat — keeps its steps in order as `{ text, done, card }`. `card` is the card doing that step ("" until one exists); a step counts as done when ticked or when its card is done. A plan with no steps is a **document** (`file`). The session brief lists step plans still under way with the current step (v6)
 - `cards` are the card keys the note produced or informed; the validator rejects a key that isn't on the board, so links can't dangle
 - No status, no steps, no progress: a note has no next step, which is exactly what keeps it off the work tabs
 - Every schema change bumps `schemaVersion`; the CLI migrates old files automatically.

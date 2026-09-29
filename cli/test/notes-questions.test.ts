@@ -125,7 +125,7 @@ describe("board note", () => {
 
   it("explains an unknown subcommand", () => {
     const sb = withBoard();
-    expect(sb.board("note", "frobnicate").err).toContain("use add, list, show, update, link, confirm or rm");
+    expect(sb.board("note", "frobnicate").err).toContain("use add, list, show, update, step, link, confirm or rm");
   });
 });
 
@@ -167,7 +167,7 @@ describe("schemaVersion 2", () => {
     const sb = withBoard();
     const bad = (note: unknown) => validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [note] }).join(" ");
     const ok = {
-      id: "APP-N1", kind: "plan", title: "The spec", body: "", considered: "", decidedBy: "", confirmedAt: "", url: "", file: "", cards: [],
+      id: "APP-N1", kind: "plan", title: "The spec", body: "", considered: "", decidedBy: "", confirmedAt: "", url: "", file: "", cards: [], steps: [],
       createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-20T10:00:00Z", updatedBy: "claude",
     };
     expect(validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [ok] })).toEqual([]);
@@ -177,5 +177,7 @@ describe("schemaVersion 2", () => {
     expect(bad({ ...ok, title: " " })).toContain("notes[0].title");
     expect(bad({ ...ok, cards: ["APP-7"] })).toContain("no card APP-7 on this board");
     expect(bad({ ...ok, url: 3 })).toContain("notes[0].url");
+    expect(bad({ ...ok, steps: [{ text: "a", done: false, card: "APP-7" }] })).toContain("no card APP-7 on this board");
+    expect(bad({ ...ok, kind: "reference", steps: [{ text: "a", done: false, card: "" }] })).toContain("only a plan has steps");
   });
 });

@@ -183,6 +183,7 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
       for (const [flag, key] of fields)
         if (key !== "title" && b[key] !== undefined && b[key] !== "") argv.push(flag, str(b[key], key));
       for (const c of (b.cards as string[]) ?? []) argv.push("--card", str(c, "card key"));
+      for (const t of (b.steps as string[]) ?? []) argv.push("--step", str(t, "step text"));
       return board<Note>(ctx, p, argv);
     }
 
@@ -192,6 +193,19 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
       if (method === "DELETE") return board<Note>(ctx, p, ["note", "rm", id]);
       // Agreeing with a decision is the one note write that must come from you, so it rides on the page's own actor.
       if (method === "PATCH" && b.confirmed === true) return board<Note>(ctx, p, ["note", "confirm", id]);
+      // A plan's steps: { step: { add: "text" } } or { step: { n: 2, done?: bool, card?: "LOOP-9"|"", remove?: true } }
+      if (method === "PATCH" && b.step && typeof b.step === "object") {
+        const st = b.step as Record<string, unknown>;
+        if (st.add !== undefined) return board<Note>(ctx, p, ["note", "step", id, str(st.add, "step text")]);
+        if (!Number.isInteger(st.n) || (st.n as number) < 1) throw new HttpError(400, "step.n must be a step number");
+        const argv = ["note", "step", id, String(st.n)];
+        if (st.remove === true) argv.push("--remove");
+        else {
+          if (st.done !== undefined) argv.push(st.done ? "--done" : "--undone");
+          if (st.card !== undefined) argv.push("--card", str(st.card, "card") || "none");
+        }
+        return board<Note>(ctx, p, argv);
+      }
       if (method !== "PATCH") throw new HttpError(405, "use PATCH or DELETE");
 
       const argv = ["note", "update", id];

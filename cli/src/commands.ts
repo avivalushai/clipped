@@ -36,7 +36,7 @@ import {
   emptyBoard,
 } from "./schema.js";
 import { looksLikeAProject, projectRootFor } from "./project.js";
-import { findNote, formatNoteDetail, formatNoteLine, sortNotes, stampNote, uncheckedDecision } from "./notes.js";
+import { findNote, formatNoteDetail, formatNoteLine, isStepPlan, planLabel, planProgress, sortNotes, stampNote, uncheckedDecision } from "./notes.js";
 import { BOARD_DIR, type Located, boardFileFor, findBoard, mutateBoard, readBoard, requireBoard, writeBoard } from "./store.js";
 
 export type Opts = Record<string, string | boolean | string[] | undefined>;
@@ -266,6 +266,12 @@ export function context(ctx: Ctx, { opts }: Args) {
       const answer = q.status === "review" && q.note ? ` — ${unchecked(q) ? "answered (my note)" : "answered"}: ${q.note}` : "";
       lines.push(`  ${q.key} ${q.title}${mark(q) ? " (mine)" : ""}${answer}`);
     }
+  }
+  // Step plans still under way: where we are, so "let's do step 3" needs no scrolling back.
+  const plans = b.notes.filter((n) => isStepPlan(n) && planProgress(b, n).next !== -1);
+  if (plans.length) {
+    lines.push("Plans:");
+    for (const n of plans) lines.push(`  ${n.id} ${n.title} — ${planLabel(b, n)}: ${n.steps[planProgress(b, n).next]!.text}`);
   }
   if (stale.length) {
     const byStatus = STATUSES.filter((s) => stale.some((f) => f.status === s))
@@ -510,6 +516,7 @@ export function merge(ctx: Ctx, { pos, opts }: Args) {
     stamp(ctx, into, by, `Merged in ${from.key} “${from.title}”`);
     if (!into.area && from.area) into.area = from.area;
     b.features = b.features.filter((f) => f !== from);
+    repointNotes(b, from.key, into.key);
     return { from, into };
   });
   emit(ctx, opts, into, `Merged ${from.key} into ${into.key} ${into.title}`);
@@ -557,12 +564,21 @@ export function touch(ctx: Ctx, { pos, opts }: Args) {
   emit(ctx, opts, { card: res.f.key, added: res.added }, `${res.f.key} + ${res.added.join(", ")}`);
 }
 
+/** A merged card's notes and plan steps follow it into the card it joined; a deleted card's let go of it. */
+function repointNotes(b: Board, from: string, to: string): void {
+  for (const n of b.notes) {
+    if (n.cards.includes(from)) n.cards = [...new Set(n.cards.map((k) => (k === from ? to : k)).filter(Boolean))];
+    for (const s of n.steps) if (s.card === from) s.card = to;
+  }
+}
+
 /** Remove a card. The UI's delete button; the skill prefers `merge`. */
 export function remove(ctx: Ctx, { pos, opts }: Args) {
   const keyArg = need(pos, 0, "card key");
   const f = mutateBoard(requireBoard(ctx), (b) => {
     const f = findFeature(b, keyArg);
     b.features = b.features.filter((x) => x !== f);
+    repointNotes(b, f.key, "");
     return f;
   });
   emit(ctx, opts, f, `Deleted ${f.key} ${f.title}`);
@@ -722,13 +738,14 @@ export function note(ctx: Ctx, { pos, opts }: Args) {
     update: noteUpdate,
     edit: noteUpdate,
     link: noteLink,
+    step: noteStep,
     confirm: noteConfirm,
     agree: noteConfirm,
     rm: noteRemove,
     delete: noteRemove,
   };
   const fn = subs[sub];
-  if (!fn) throw new UserError(`unknown: board note ${sub} — use add, list, show, update, link, confirm or rm`);
+  if (!fn) throw new UserError(`unknown: board note ${sub} — use add, list, show, update, step, link, confirm or rm`);
   fn(ctx, rest, opts);
 }
 
@@ -748,6 +765,8 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
   if (!title) throw new UserError("title can't be empty");
   const by = actor(ctx, str(opts, "by"));
   const who = decidedBy(ctx, kind, opts, by);
+  const steps = list(opts, "step").map((t) => t.trim()).filter(Boolean);
+  if (steps.length && kind !== "plan") throw new UserError("--step is only for plans");
   const loc = boardForAdding(ctx, opts);
 
   const n = mutateBoard(loc, (b) => {
@@ -763,6 +782,7 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
       url: str(opts, "url") ?? "",
       file: noteFile(ctx, loc.root, str(opts, "file")) ?? "",
       cards: noteCards(b, list(opts, "card")),
+      steps: steps.map((text) => ({ text, done: false, card: "" })),
       createdAt: at,
       updatedAt: at,
       updatedBy: by,
@@ -771,7 +791,7 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
     b.notes.push(n);
     return n;
   });
-  emit(ctx, opts, n, `Added ${n.id} ${n.title} (${n.kind})`);
+  emit(ctx, opts, n, `Added ${n.id} ${n.title} (${isStepPlan(n) ? `plan, ${n.steps.length} steps` : n.kind})`);
 }
 
 function noteList(ctx: Ctx, _pos: string[], opts: Opts) {
@@ -779,13 +799,13 @@ function noteList(ctx: Ctx, _pos: string[], opts: Opts) {
   const kind = str(opts, "kind") ? parseKind(str(opts, "kind")) : undefined;
   const ns = sortNotes(kind ? b.notes.filter((n) => n.kind === kind) : b.notes);
   const w = Math.max(0, ...ns.map((n) => n.id.length));
-  emit(ctx, opts, ns, ns.length ? ns.map((n) => formatNoteLine(n, w)) : ["No notes."]);
+  emit(ctx, opts, ns, ns.length ? ns.map((n) => formatNoteLine(n, w, b)) : ["No notes."]);
 }
 
 function noteShow(ctx: Ctx, pos: string[], opts: Opts) {
   const b = readBoard(requireBoard(ctx).file);
   const n = findNote(b, need(pos, 0, "note id (e.g. LOOP-N3)"));
-  emit(ctx, opts, n, formatNoteDetail(ctx, n));
+  emit(ctx, opts, n, formatNoteDetail(ctx, n, b));
 }
 
 function noteUpdate(ctx: Ctx, pos: string[], opts: Opts) {
@@ -803,6 +823,7 @@ function noteUpdate(ctx: Ctx, pos: string[], opts: Opts) {
     if (title !== undefined) n.title = title;
     if (str(opts, "kind") !== undefined) {
       const kind = parseKind(str(opts, "kind"));
+      if (kind !== "plan" && n.steps.length) throw new UserError(`${n.id} is a plan with steps — only a plan has steps`);
       // Turning a brainstorm into a decision names whoever wrote it down; leaving decisions drops the author.
       if (kind === "decision" && n.kind !== "decision") n.decidedBy = n.updatedBy;
       if (kind !== "decision") (n.decidedBy = ""), (n.confirmedAt = "");
@@ -842,6 +863,47 @@ function noteLink(ctx: Ctx, pos: string[], opts: Opts) {
     return { n, added };
   });
   emit(ctx, opts, n, added.length ? `${n.id} → ${added.join(", ")}` : `${n.id} already links those`);
+}
+
+/** A step plan's steps: add one, tick it, point it at the card doing it, or drop it.
+   board note step LOOP-N3 "Write the importer" · board note step LOOP-N3 2 --done · --card LOOP-9 · --remove */
+function noteStep(ctx: Ctx, pos: string[], opts: Opts) {
+  const idArg = need(pos, 0, "plan id");
+  const text = need(pos, 1, `step text or number (e.g. board note step LOOP-N3 "Write the importer")`).trim();
+  const by = actor(ctx, str(opts, "by"));
+  if (opts.done && opts.undone) throw new UserError("use --done or --undone, not both");
+  const cardArg = list(opts, "card")[0];
+
+  const { n, msg, b } = mutateBoard(requireBoard(ctx), (b) => {
+    const n = findNote(b, idArg);
+    if (n.kind !== "plan") throw new UserError(`${n.id} is a ${n.kind} — only a plan has steps`);
+    const byNum = /^\d+$/.test(text);
+    const idx = byNum ? Number(text) - 1 : n.steps.findIndex((s) => s.text.toLowerCase() === text.toLowerCase());
+    const existing = n.steps[idx];
+    if (byNum && !existing) throw new UserError(`${n.id} has no step ${text}`);
+    const card = cardArg === undefined ? undefined : /^(none|-)?$/i.test(cardArg) ? "" : findFeature(b, cardArg).key;
+
+    let msg: string;
+    if (opts.remove) {
+      if (!existing) throw new UserError(`${n.id} has no step “${text}”`);
+      n.steps.splice(idx, 1);
+      msg = `Step removed: ${existing.text}`;
+    } else if (existing) {
+      const changes: string[] = [];
+      const want = opts.undone ? false : opts.done ? true : existing.done;
+      if (want !== existing.done) (existing.done = want), changes.push(want ? "done" : "reopened");
+      if (card !== undefined && card !== existing.card) (existing.card = card), changes.push(card ? `→ ${card}` : "no card");
+      if (!changes.length) return { n, b, msg: `Step ${idx + 1} unchanged: ${existing.text}` };
+      msg = `Step ${idx + 1} ${changes.join(", ")}: ${existing.text}`;
+    } else {
+      n.steps.push({ text, done: !!opts.done, card: card ?? "" });
+      msg = `Step ${n.steps.length} added: ${text}`;
+    }
+    if (card) n.cards = [...new Set([...n.cards, card])];
+    stampNote(ctx, n, by);
+    return { n, msg, b };
+  });
+  emit(ctx, opts, n, `${n.id} ${msg}${n.steps.length ? ` (${planLabel(b, n)})` : ""}`);
 }
 
 /** You agree with a call Claude made. Only you can — Claude can't sign off its own decision. */
