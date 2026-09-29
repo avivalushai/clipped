@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clipped — never lose what you and Claude decided</title>
+<meta name="description" content="A Claude Code plugin that keeps a board for each project: what's in progress, what you left halfway, what you decided. Local files, no account.">
+<script>try { const t = localStorage.getItem("clipped.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7f4;
+  --surface: #ffffff;
+  --inset: #f1f1ed;
+  --ink: #1d1c18;
+  --muted: #6b6a63;
+  --faint: #75736b;
+  --line: rgba(29, 28, 24, .08);
+  --line-2: rgba(29, 28, 24, .14);
+  --accent: #2f5bff;
+  --active: #0e9fc2; --parked: #d9831f; --review: #7c5cf0; --done: #1fa56b;
+  --term-bg: #16161a; --term-ink: #d6d6dc; --term-dim: #85858f;
+  --shadow: 0 1px 2px rgba(29, 28, 24, .05), 0 2px 8px -2px rgba(29, 28, 24, .06);
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* one layout system for the whole page */
+  --page: 1120px;
+  --gutter: 24px;
+  --gap: 16px;
+  --section: 128px;
+  --vis: 248px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --surface: #17171a; --inset: #1e1e22;
+    --ink: #ecebe6; --muted: #9b9a94; --faint: #8a8984;
+    --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .13);
+    --accent: #7d96ff;
+    --active: #2cc1e4; --parked: #f3a64c; --review: #a88bff; --done: #3fd08f;
+    --term-bg: #0a0a0c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --surface: #17171a; --inset: #1e1e22;
+  --ink: #ecebe6; --muted: #9b9a94; --faint: #8a8984;
+  --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .13);
+  --accent: #7d96ff;
+  --active: #2cc1e4; --parked: #f3a64c; --review: #a88bff; --done: #3fd08f;
+  --term-bg: #0a0a0c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+@media (max-width: 860px) { :root { --section: 96px; --vis: 224px; } }
+@media (max-width: 600px) { :root { --gutter: 16px; --section: 80px; } }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+code { font-family: var(--mono); font-size: .92em; }
+img { display: block; max-width: 100%; height: auto; }
+.wrap { max-width: calc(var(--page) + 2 * var(--gutter)); margin: 0 auto; padding-left: var(--gutter); padding-right: var(--gutter); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* theme-aware images */
+.img-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .img-light { display: none; } :root:not([data-theme="light"]) .img-dark { display: block; } }
+:root[data-theme="dark"] .img-light { display: none; }
+:root[data-theme="dark"] .img-dark { display: block; }
+
+/* nav */
+.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid transparent; transition: border-color .2s ease; }
+.top.scrolled { border-bottom-color: var(--line); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; text-decoration: none; letter-spacing: -.01em; }
+.brand svg { width: 20px; height: 20px; }
+.top nav { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+.top nav a { color: var(--muted); text-decoration: none; transition: color .15s ease; }
+.top nav a:hover { color: var(--ink); }
+.top nav .nav-cta { color: var(--bg); background: var(--ink); padding: 7px 14px; border-radius: 999px; font-weight: 500; }
+.top nav .nav-cta:hover { color: var(--bg); opacity: .88; }
+.theme-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--muted); cursor: pointer; padding: 0; }
+.theme-btn:hover { color: var(--ink); }
+.theme-btn svg { width: 15px; height: 15px; }
+.theme-btn .sun { display: none; }
+:root[data-theme="dark"] .theme-btn .sun { display: block; } :root[data-theme="dark"] .theme-btn .moon { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .theme-btn .sun { display: block; } :root:not([data-theme="light"]) .theme-btn .moon { display: none; } }
+@media (max-width: 760px) { .top nav .hide-m { display: none; } .top nav { gap: 14px; } }
+
+/* hero */
+.hero { padding-top: 88px; padding-bottom: 96px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 56px; align-items: center; }
+@media (max-width: 960px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 48px; padding-top: 56px; padding-bottom: 72px; } }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 5px 12px 5px 6px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); text-decoration: none; margin-bottom: 28px; max-width: 100%; }
+.pill b { font-weight: 500; font-family: var(--mono); font-size: 11.5px; color: var(--ink); background: var(--inset); padding: 2px 8px; border-radius: 999px; flex: none; }
+.pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill:hover { border-color: var(--faint); }
+h1 { font-weight: 500; font-size: clamp(40px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -.045em; margin: 0 0 24px; text-wrap: balance; }
+h1.long { font-size: clamp(36px, 4.1vw, 54px); }
+h1:has(.rot) { text-wrap: wrap; }
+h1 .dim { color: var(--faint); }
+@media (max-width: 420px) { h1 { font-size: 34px; } h1.long { font-size: 30px; } }
+.rot { --c: var(--accent); display: inline-grid; justify-items: start; text-align: left; vertical-align: bottom; height: 1.14em; margin-bottom: .04em; border-radius: .2em; background: color-mix(in srgb, var(--c) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 22%, transparent); overflow: hidden; overflow-x: visible; overflow-y: clip; transition: width .5s cubic-bezier(.2, .8, .2, 1), background-color .5s ease, box-shadow .5s ease; }
+.rot span { grid-area: 1 / 1; white-space: nowrap; padding: 0 .2em; line-height: 1.12; transform: translateY(100%); opacity: 0; transition: transform .55s cubic-bezier(.2, .8, .2, 1), opacity .4s ease; }
+.rot span.on { transform: translateY(0); opacity: 1; }
+.rot span.out { transform: translateY(-100%); opacity: 0; }
+.lede { font-size: clamp(17px, 1.5vw, 19px); color: var(--muted); max-width: 52ch; margin: 0 0 36px; text-wrap: pretty; }
+
+/* install box (Clerk-style) */
+.install { max-width: 640px; margin: 0 auto; }
+.hero .install { margin: 0; max-width: none; }
+.hero .points { justify-content: flex-start; }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line-2); color: var(--ink); text-decoration: none; margin-top: 24px; transition: border-color .15s ease, background-color .15s ease; }
+.btn-ghost:hover { border-color: var(--faint); background: var(--surface); }
+.btn-ghost .k { font-family: var(--mono); opacity: .6; }
+
+/* the original hero picture: an example board */
+.peek { margin: 0; min-width: 0; }
+.peek .window { border-radius: 14px; border-bottom: 1px solid var(--line-2); box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .22), var(--shadow); }
+.peek-body { padding: 16px; display: grid; gap: 8px; background: var(--inset); }
+.peek-group { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.peek-group:first-child { margin-top: 0; }
+.peek-group span:last-child { color: var(--faint); }
+.peek-group .dot { background: var(--c); }
+.peek-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; box-shadow: var(--shadow); }
+.peek-top { display: flex; align-items: baseline; gap: 10px; }
+.peek-top code { font-size: 12px; color: var(--faint); flex: none; }
+.peek-top b { font-weight: 500; font-size: 14.5px; flex: 1; min-width: 0; }
+.peek-n { font-family: var(--mono); font-size: 12px; color: var(--faint); flex: none; }
+.peek-card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.peek-card p span { font-family: var(--mono); font-size: 12px; color: var(--c); margin-right: 6px; }
+.peek-card > b { font-weight: 500; font-size: 14px; line-height: 1.35; }
+.peek-bar { height: 4px; border-radius: 4px; background: var(--line-2); overflow: hidden; }
+.peek-bar::before { content: ""; display: block; height: 100%; width: var(--p); background: var(--c); border-radius: inherit; }
+.peek-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.peek-kind { font-family: var(--mono); font-size: 11.5px !important; text-transform: uppercase; letter-spacing: .06em; color: var(--c) !important; }
+.peek .caption { text-align: left; }
+.tabs { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--inset); border: 1px solid var(--line); margin-bottom: 12px; }
+.tabs button { font: inherit; font-size: 13px; color: var(--muted); background: none; border: 0; padding: 5px 13px; border-radius: 999px; cursor: pointer; transition: color .15s ease, background-color .15s ease; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 0 0 1px var(--line); }
+.cmd { display: flex; align-items: center; gap: 12px; text-align: left; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px 6px 6px 18px; box-shadow: var(--shadow); }
+.cmd + .cmd { margin-top: 8px; }
+.cmd .p { font-family: var(--mono); font-size: 14px; color: var(--faint); user-select: none; }
+.cmd code { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; padding: 9px 0; }
+.cmd code::-webkit-scrollbar { display: none; }
+.cmd code .hl { color: var(--accent); }
+.copy { flex: none; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; color: var(--muted); background: var(--inset); border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; cursor: pointer; transition: color .15s ease, background-color .15s ease; }
+.copy:hover { color: var(--ink); }
+.copy svg { width: 14px; height: 14px; }
+.copy.done { color: var(--done); }
+.panel[hidden] { display: none; }
+.points { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; list-style: none; padding: 0; margin: 18px 0 0; font-size: 13.5px; color: var(--muted); }
+.points li { display: inline-flex; align-items: center; gap: 7px; }
+.points svg { width: 14px; height: 14px; color: var(--done); flex: none; }
+
+/* product frame (Cursor-style) */
+.stage { position: relative; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background:
+  radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--parked) 22%, transparent), transparent 60%),
+  radial-gradient(110% 90% at 90% 10%, color-mix(in srgb, var(--review) 20%, transparent), transparent 60%),
+  radial-gradient(100% 80% at 50% 110%, color-mix(in srgb, var(--active) 18%, transparent), transparent 60%),
+  var(--inset); }
+.stage.shot-stage { padding: clamp(16px, 5vw, 64px) clamp(16px, 5vw, 64px) 0; }
+.window { border-radius: 12px 12px 0 0; overflow: hidden; background: var(--surface); border: 1px solid var(--line-2); border-bottom: 0; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .25); }
+.chrome { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+.chrome i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.chrome span { flex: 1; text-align: center; font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-right: 42px; }
+.caption { font-size: 13px; color: var(--faint); text-align: center; margin: 14px 0 0; }
+
+/* sections: every heading sits on the same left edge */
+section { padding-top: var(--section); }
+.head { max-width: 680px; margin-bottom: 48px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .02em; margin: 0 0 14px; display: inline-flex; align-items: center; gap: 8px; }
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+h2 { font-weight: 500; font-size: clamp(30px, 3.8vw, 46px); line-height: 1.08; letter-spacing: -.035em; margin: 0 0 16px; text-wrap: balance; }
+.head p { color: var(--muted); font-size: 17px; margin: 0; text-wrap: pretty; }
+h3 { font-size: 16.5px; font-weight: 500; letter-spacing: -.01em; margin: 0 0 6px; }
+
+/* the grid: three equal columns everywhere, one column on phones */
+.grid { display: grid; gap: var(--gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.span2 { grid-column: span 2; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } .span2 { grid-column: auto; } }
+
+/* cards (Cal-style): same inset, same preview height, text fills the rest */
+.card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 8px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.card .vis { min-width: 0; height: var(--vis); background: var(--inset); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: hidden; }
+.card .txt { flex: 1; padding: 20px 16px 16px; }
+.card .txt p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* before/after bubbles */
+.bubble { width: 100%; font-size: 14.5px; line-height: 1.45; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--muted); }
+.bubble.with { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.bubble small { display: block; font-family: var(--mono); font-size: 11px; color: var(--faint); margin-bottom: 4px; letter-spacing: .02em; }
+.bubble.with small { color: var(--accent); }
+
+/* mini UI inside cards */
+.mini { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); font-size: 13.5px; }
+.mini .row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.mini .row:first-child { border-top: 0; }
+.mini .id { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+.mini .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .row svg { width: 14px; height: 14px; flex: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--inset); color: var(--muted); white-space: nowrap; }
+.mini .note { padding: 0 12px 12px 30px; margin-top: -4px; color: var(--muted); font-size: 12.5px; }
+.mini .note b { font-weight: 500; color: var(--parked); font-family: var(--mono); font-size: 11.5px; margin-right: 4px; }
+.prog { height: 4px; border-radius: 4px; background: var(--inset); overflow: hidden; width: 44px; flex: none; }
+.prog i { display: block; height: 100%; border-radius: 4px; }
+.term { width: 100%; background: var(--term-bg); color: var(--term-ink); border-radius: 12px; padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+.term .d { color: var(--term-dim); } .term .a { color: #8da2ff; } .term .o { color: #f3a64c; } .term .g { color: #3fd08f; } .term .c { color: #2cc1e4; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 300px; }
+.chips span { font-size: 13.5px; padding: 7px 13px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.chips span.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.big { font-size: 64px; font-weight: 500; letter-spacing: -.05em; line-height: 1; text-align: center; }
+.big small { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: 0; color: var(--faint); margin-top: 12px; }
+
+/* numbered steps: same columns as the cards below them */
+.steps { list-style: none; padding: 0; margin: 0 0 var(--gap); counter-reset: s; }
+.steps li { counter-increment: s; border-top: 1px solid var(--line-2); padding: 20px 16px 8px 0; }
+.steps li::before { content: "0" counter(s); display: block; font-family: var(--mono); font-size: 12px; color: var(--accent); margin-bottom: 12px; }
+.steps p { margin: 0; color: var(--muted); font-size: 15px; }
+@media (max-width: 860px) { .steps { gap: 0; } }
+
+/* board split: text in column 1, screenshot across 2 and 3 */
+.split { align-items: center; }
+.split .copyblock { padding-right: 24px; }
+@media (max-width: 860px) { .split .copyblock { padding-right: 0; } }
+.feat { list-style: none; margin: 32px 0 0; padding: 0; }
+.feat li { padding: 16px 0; border-top: 1px solid var(--line); }
+.feat b { font-weight: 500; display: block; margin-bottom: 3px; }
+.feat span { color: var(--muted); font-size: 15px; }
+.split .h2 { margin-bottom: 0; }
+.shot { border-radius: 20px; padding: 32px 32px 0; background: var(--inset); border: 1px solid var(--line); overflow: hidden; }
+.shot img { border-radius: 10px 10px 0 0; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .3); height: 520px; width: 100%; object-fit: cover; object-position: top; }
+@media (max-width: 600px) { .shot { padding: 16px 16px 0; } .shot img { height: 380px; } }
+
+/* faq: heading in column 1, questions across 2 and 3 */
+.faq-head { margin: 0; }
+.faq details { border-top: 1px solid var(--line-2); }
+.faq details:last-child { border-bottom: 1px solid var(--line-2); }
+.faq summary { list-style: none; cursor: pointer; padding: 20px 0; display: flex; justify-content: space-between; gap: 20px; font-weight: 500; font-size: 16.5px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-weight: 400; color: var(--faint); font-size: 20px; line-height: 1; transition: transform .25s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 0 0 22px; color: var(--muted); max-width: 64ch; }
+
+/* final */
+.final { margin-top: var(--section); text-align: center; padding: 88px var(--gutter); }
+.final h2 { margin: 0 auto 12px; max-width: 20ch; }
+.final > p { color: var(--muted); margin: 0 auto 32px; max-width: 52ch; }
+.final .points { color: var(--ink); }
+
+footer { padding: 48px 0; color: var(--faint); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+footer a { color: var(--muted); text-underline-offset: 3px; }
+
+/* copy switcher: a testing tool, not part of the design */
+.switch { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: #1d1c18; color: #ecebe6; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .45); font-size: 13px; max-width: calc(100vw - 32px); overflow-x: auto; scrollbar-width: none; }
+.switch span { padding: 0 8px 0 10px; color: #9b9a94; font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
+.switch button { font: inherit; color: #bdbcb5; background: none; border: 0; padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.switch button[aria-pressed="true"] { background: #ecebe6; color: #1d1c18; }
+body { padding-bottom: 72px; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+.rv { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rv { opacity: 1; transform: none; transition: none; }
+  .rot, .rot span { transition: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="v3.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--bg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Clipped
+    </a>
+    <nav aria-label="Sections">
+      <a class="hide-m" href="#how">How it works</a>
+      <a class="hide-m" href="#board">The board</a>
+      <a class="hide-m" href="#limits">Privacy</a>
+      <a class="hide-m" href="#faq">FAQ</a>
+      <a class="hide-m" href="https://github.com/avivalushai/clipped">GitHub</a>
+      <button class="theme-btn" id="theme" type="button" aria-label="Switch theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a class="nav-cta" href="#install">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="hero-copy">
+    <a class="pill" href="https://github.com/avivalushai/clipped"><b>v0.6.0</b><span data-t="pill"></span></a>
+    <h1 id="h1"></h1>
+    <p class="lede" data-t="lede"></p>
+    <div class="install" id="install">
+      <div class="tabs" role="tablist" aria-label="Install method">
+        <button role="tab" aria-selected="true" aria-controls="p-shell" id="t-shell">Terminal</button>
+        <button role="tab" aria-selected="false" aria-controls="p-slash" id="t-slash">Claude Code</button>
+        <button role="tab" aria-selected="false" aria-controls="p-ask" id="t-ask">Ask Claude</button>
+      </div>
+      <div class="panel" role="tabpanel" id="p-shell" aria-labelledby="t-shell">
+        <div class="cmd"><span class="p">$</span><code>claude plugin marketplace add <span class="hl">avivalushai/clipped</span> &amp;&amp; claude plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+      </div>
+      <div class="panel" role="tabpanel" id="p-slash" aria-labelledby="t-slash" hidden>
+        <div class="cmd"><span class="p">1</span><code>/plugin marketplace add <span class="hl">avivalushai/clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+        <div class="cmd"><span class="p">2</span><code>/plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+      </div>
+      <div class="panel" role="tabpanel" id="p-ask" aria-labelledby="t-ask" hidden>
+        <div class="cmd"><span class="p">›</span><code>Install the Clipped plugin from <span class="hl">avivalushai/clipped</span></code><button class="copy" type="button" aria-label="Copy prompt"></button></div>
+      </div>
+      <ul class="points" data-t="points"></ul>
+    </div>
+    <a class="btn-ghost" href="https://github.com/avivalushai/clipped">Read the source <span class="k" aria-hidden="true">↗</span></a>
+    </div>
+
+    <figure class="peek" aria-label="An example Clipped board for a made-up CRM project">
+      <div class="window">
+        <div class="chrome"><i></i><i></i><i></i><span>board · nimbus-crm</span></div>
+        <div class="peek-body">
+          <p class="peek-group"><span class="dot" style="--c: var(--parked)"></span>Parked <span>2</span></p>
+          <div class="peek-card">
+            <div class="peek-top"><code>CRM-3</code><b>Import contacts from CSV</b><span class="peek-n">1/3</span></div>
+            <p><span style="--c: var(--parked)">stopped</span> mapping done, merge not written</p>
+            <div class="peek-bar" style="--p: 33%; --c: var(--parked)"></div>
+          </div>
+          <div class="peek-card">
+            <div class="peek-top"><code>CRM-7</code><b>Email sync drops long threads</b><span class="peek-n">0/2</span></div>
+            <p><span style="--c: var(--parked)">stopped</span> Gmail pagination, no retry yet</p>
+          </div>
+          <p class="peek-group"><span class="dot" style="--c: var(--active)"></span>In progress <span>1</span></p>
+          <div class="peek-card">
+            <div class="peek-top"><code>CRM-8</code><b>Drag a deal between pipeline stages</b><span class="peek-n">2/4</span></div>
+            <p><span style="--c: var(--active)">next</span> keep the new order after a reload</p>
+            <div class="peek-bar" style="--p: 50%; --c: var(--active)"></div>
+          </div>
+          <div class="peek-row">
+            <div class="peek-card">
+              <p class="peek-kind" style="--c: var(--review)">question</p>
+              <b>Dedupe contacts on email or phone?</b>
+            </div>
+            <div class="peek-card">
+              <p class="peek-kind" style="--c: var(--accent)">brainstorm</p>
+              <b>Pipeline view: board or table</b>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption class="caption">An example board on a made-up project.</figcaption>
+    </figure>
+  </div>
+
+<div class="wrap rv">
+    <div class="stage shot-stage">
+      <div class="window">
+        <div class="chrome"><i></i><i></i><i></i><span>localhost:4747</span></div>
+        <img class="img-light" src="../../landing/img/board-light.png" width="2416" height="1880" alt="The Clipped board: a table of cards with status, progress and next step, grouped by In progress, Parked and Your turn.">
+        <img class="img-dark" src="../../landing/img/board.png" width="2416" height="1880" alt="" aria-hidden="true">
+      </div>
+    </div>
+    <p class="caption">This project's own board. Type <code>board ui</code> and it opens in your browser, updating live while Claude works.</p>
+  </div>
+
+  <section class="wrap" id="problem">
+    <div class="head rv">
+      <p class="eyebrow" data-t="probEyebrow"></p>
+      <h2 data-t="probTitle"></h2>
+      <p data-t="probBody"></p>
+    </div>
+    <div class="grid">
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>You open a project after two weeks. What was half done?</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Every parked card says where you stopped and what's next.</div>
+        </div>
+        <div class="txt"><h3>Half-done work</h3><p>Picking it up weeks later is cheap.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>Why did you pick that approach? It's 400 messages up.</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Decisions and brainstorms get their own tab, linked to the work.</div>
+        </div>
+        <div class="txt"><h3>Decisions</h3><p>The reasoning stays next to what it led to.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="bubble"><small>WITHOUT</small>A new session starts and Claude remembers nothing.</div>
+          <div class="bubble with"><small>WITH CLIPPED</small>Every session opens with a short brief of where things stand.</div>
+        </div>
+        <div class="txt"><h3>A fresh session</h3><p>Claude already knows what's open before you type.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="how">
+    <div class="head rv">
+      <p class="eyebrow">How it works</p>
+      <h2>How does it actually work?</h2>
+      <p>No setup per project and nothing new to learn. You keep working the way you do.</p>
+    </div>
+    <ol class="steps grid rv">
+      <li><h3>Connects once</h3><p>Two commands add a plugin to Claude Code: the rules Claude follows, and three small hooks. Nothing to set up per project.</p></li>
+      <li><h3>Listens and sorts</h3><p>As you work, Claude sorts what's happening into a feature, a bug, a question or a brainstorm. Small talk isn't recorded.</p></li>
+      <li><h3>Lands on your board</h3><p>Each project gets a board file in its own folder: what's in progress, what's parked halfway, what's waiting on you.</p></li>
+    </ol>
+    <div class="grid">
+      <div class="card span2 rv">
+        <div class="vis">
+<div class="term"><span class="d">~/code/nimbus-crm ❯</span> claude
+<span class="d">⎿ SessionStart hook · clipped</span>
+<span class="a">Clipped board:</span> Nimbus CRM — 1 active, 2 parked
+<span class="o">Parked:</span> CRM-3 Import contacts from CSV (1/3)
+  <span class="d">stopped: mapping done, merge not written</span>
+<span class="c">Active:</span> CRM-8 Drag a deal between stages (2/4)
+<span class="a">›</span> the csv import thing — let's finish it
+<span class="g">Board:</span> CRM-3 → in progress · 2/3 steps</div>
+        </div>
+        <div class="txt"><h3>Every session starts with a recap</h3><p>Claude reads the board before you type. So "the csv import thing" is enough.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--parked)"></span><span class="id">CRM-3</span><span class="t">Import contacts from CSV</span></div>
+            <div class="note"><b>stopped</b>mapping done, merge not written</div>
+          </div>
+        </div>
+        <div class="txt"><h3>It remembers where you stopped</h3><p>Switch topics or call it a day, and the card is parked with a note on what's next.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--active)"></span><span class="t">Drag deals between stages</span><span class="prog"><i style="width: 50%; background: var(--active)"></i></span></div>
+            <div class="row"><span class="dot" style="background: var(--review)"></span><span class="t">Dedupe on email or phone?</span><span class="tag">question</span></div>
+            <div class="row"><span class="dot" style="background: var(--done)"></span><span class="t">Pipeline view: board</span><span class="tag">decided</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>It notices what you're doing</h3><p>A feature, a bug, a question, thinking out loud. It writes it down right away.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><span class="dot" style="background: var(--review)"></span><span class="t">Your turn</span><span class="tag">3</span></div>
+            <div class="row"><span class="id">LE-19</span><span class="t">A landing page to send friends</span></div>
+            <div class="row"><span class="id">LE-25</span><span class="t">An install guide page</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>You stay in charge</h3><p>Unsure? It lands in Your turn. Nothing is Done until you say so.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="chips"><span class="on">Work</span><span>Questions</span><span>Brainstorms</span><span>Plans</span><span>References</span></div>
+        </div>
+        <div class="txt"><h3>Nothing lives only in the chat</h3><p>Cards for work with a next step. Notes for the thinking around it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="board">
+    <div class="grid split">
+      <div class="copyblock rv">
+        <p class="eyebrow">The board</p>
+        <h2>Open a card, see the whole piece of work</h2>
+        <ul class="feat">
+          <li><b>Next step</b><span>When a card is parked, this is where you stopped.</span></li>
+          <li><b>Steps</b><span>A checklist Claude ticks off as it goes.</span></li>
+          <li><b>Continue with Claude</b><span>A ready prompt to paste into a new session.</span></li>
+          <li><b>Files and activity</b><span>Every file touched, and who changed what.</span></li>
+        </ul>
+      </div>
+      <div class="shot span2 rv">
+        <img class="img-light" src="../../landing/img/card-light.png" width="960" height="1370" alt="A single card open: status, next step, a checklist of steps, and a Continue with Claude prompt.">
+        <img class="img-dark" src="../../landing/img/card.png" width="960" height="1370" alt="" aria-hidden="true">
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="limits">
+    <div class="head rv">
+      <p class="eyebrow">What it is, and isn't</p>
+      <h2>I'd rather you know the limits before you install it</h2>
+    </div>
+    <div class="grid">
+      <div class="card rv">
+        <div class="vis"><div class="big">0 bytes<small>leave your machine</small></div></div>
+        <div class="txt"><h3>It stays on your computer</h3><p>No account, no sign-in, no server. Commit the board or <code>.gitignore</code> it — your call.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Keeps the board unasked</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Labels its own guesses</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--done)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="t">Shows every project in one place</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>What it does</h3><p>A card only Claude ever touched is marked as its note, so a wrong guess can't harden into fact.</p></div>
+      </div>
+      <div class="card rv">
+        <div class="vis">
+          <div class="mini">
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Touch your git</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Close cards on a guess</span></div>
+            <div class="row"><svg viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg><span class="t">Work for teams, yet</span></div>
+          </div>
+        </div>
+        <div class="txt"><h3>What it doesn't</h3><p>No commits or pushes. It writes one file: <code>.board/board.json</code>. One person, one machine.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="faq">
+    <div class="grid">
+      <div class="faq-head rv">
+        <p class="eyebrow">Questions</p>
+        <h2>Before you install</h2>
+      </div>
+      <div class="faq span2 rv">
+        <details><summary>What if it writes down something wrong?</summary><p>Correct it in the chat or on the board. The brief Claude reads at the start of a session leaves out notes it wrote that nobody checked, so its own guesses don't come back as project state. A card left unchecked for a fortnight drops out of the brief entirely.</p></details>
+        <details><summary>Does it cost tokens?</summary><p>A little. The session brief is a few hundred tokens — about 440 for this repo's 25 cards — because it carries titles, not every note. The end-of-turn nudge adds one short step only when the board fell behind.</p></details>
+        <details><summary>Does it matter what language or stack I use?</summary><p>No. The board tracks the work, not the code, so it works in any project Claude Code works in.</p></details>
+        <details><summary>Can I edit the board myself?</summary><p>Yes. Add, move or rewrite cards in the board page, or just tell Claude. Both write through the same code.</p></details>
+        <details><summary>Should I commit <code>.board/board.json</code>?</summary><p>Your call. It's plain JSON. Commit it to keep the history with the code, or add it to <code>.gitignore</code>.</p></details>
+        <details><summary>Does it need an internet connection?</summary><p>No. The board, the page and the commands all run on your machine.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="final stage rv">
+      <h2 data-t="finalTitle"></h2>
+      <p data-t="finalBody"></p>
+      <div class="install">
+        <div class="cmd"><span class="p">$</span><code>claude plugin marketplace add <span class="hl">avivalushai/clipped</span> &amp;&amp; claude plugin install <span class="hl">clipped@clipped</span></code><button class="copy" type="button" aria-label="Copy command"></button></div>
+        <ul class="points"><li><a href="install.html">Other ways to install</a></li><li><a href="https://github.com/avivalushai/clipped">Read the source</a></li></ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Made by Aviv Alush. Open source, MIT. <a href="https://github.com/avivalushai/clipped">Source on GitHub</a>.</span>
+    <span>Something broke or confused you? <a href="https://github.com/avivalushai/clipped/issues">Tell me</a>.</span>
+  </div>
+</footer>
+
+<div class="switch" role="group" aria-label="Copy version (testing only)">
+  <span>copy</span>
+  <button type="button" data-v="current">Current</button>
+  <button type="button" data-v="sharp">1 · Sharp</button>
+  <button type="button" data-v="story">2 · Story</button>
+  <button type="button" data-v="short">3 · Short</button>
+</div>
+
+<script>
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Copy versions to compare. {rot} in a headline is where the rotating word goes.
+const COPY = {
+  current: {
+    pill: "A plugin for Claude Code · MIT · local-only",
+    h1: "Never lose what<br>you {rot}",
+    words: [["decided", "--accent"], ["left half-done", "--parked"], ["brainstormed", "--review"], ["planned", "--active"], ["shipped", "--done"]],
+    lede: "A session with Claude gets a lot done. A week later it's buried in the chat. Clipped writes it down as you go, on a board Claude keeps for you.",
+    points: ["No account", "Nothing leaves your machine", "Works in any stack"],
+    probEyebrow: "Sound familiar?",
+    probTitle: "Where did that go?",
+    probBody: "Three things that happen to everyone who builds with Claude, and what changes with Clipped.",
+    finalTitle: "Pick up exactly where you left off",
+    finalBody: "One line in your terminal. Restart Claude Code and keep working.",
+  },
+  sharp: {
+    pill: "Meet Clipped · a plugin for Claude Code",
+    h1: "The speed of AI coding is thrilling.<br><span class=\"dim\">The aftermath is chaos.</span>",
+    long: true,
+    lede: "Clipped is a quiet product manager for your Claude Code sessions. Install it once, and it maps the features, ideas, questions and bugs from your sessions onto a clean, living board.",
+    points: ["Zero effort: runs while you code", "Zero context loss", "You build. Clipped organizes."],
+    probEyebrow: "The aftermath",
+    probTitle: "Three sessions later, half of it is buried",
+    probBody: "You start a session to research. You spin up another for a quick feature. You brainstorm a pivot in a third. Three days later, your best ideas, half-built features and research notes are buried under miles of chat history.",
+    finalTitle: "Think Jira for vibe coders, minus the data entry",
+    finalBody: "You build. Clipped organizes. One line to install.",
+  },
+  story: {
+    pill: "A plugin for Claude Code",
+    h1: "Where did we put<br>that {rot}?",
+    words: [["idea", "--accent"], ["decision", "--review"], ["half-done feature", "--parked"], ["edge case", "--active"], ["research", "--done"]],
+    lede: "Clipped plugs into Claude Code and works as your silent product manager, sorting your research, questions and features onto an organized board as you go.",
+    points: ["Install once", "Code as usual", "Never lose a thought"],
+    probEyebrow: "You know the drill",
+    probTitle: "By Friday, your chat history looks like a crime scene",
+    probBody: "Session 1: architecture and research. Session 2: the core logic. Session 3: a quick fix because something broke. You know you discussed an incredible feature — but in which chat? Did you finish it? Did you leave an edge case behind?",
+    finalTitle: "Install once. Code forever. Never lose a thought.",
+    finalBody: "Clipped captures the debris of your development cycle, so the next session starts where the last one stopped.",
+  },
+  short: {
+    pill: "One-time install · plugin for Claude Code",
+    h1: "Turn your Claude sessions into a product board. <span class=\"dim\">Automatically.</span>",
+    long: true,
+    lede: "Clipped is a one-time-install plugin that logs your research, brainstorms and features straight from Claude Code. Like an AI PM that cleans up the chaos, so you can focus on building.",
+    points: ["No workflow changes", "No account", "Nothing leaves your machine"],
+    probEyebrow: "Why",
+    probTitle: "Your sessions do the work. The chat forgets it.",
+    probBody: "A session with Claude gets a lot done. A week later it's buried in the chat, and the next session starts from nothing.",
+    finalTitle: "Install Clipped",
+    finalBody: "No workflow changes required. Copy one line, restart Claude Code.",
+  },
+};
+
+const tick = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const h1 = document.getElementById("h1");
+let rotTimer = null, rotFit = null;
+
+// Headline word: slide one up and out, the next up and in, and ease the box to its width.
+function startRotation(words) {
+  const rot = h1.querySelector(".rot"), sr = h1.querySelector(".sr");
+  const spans = [...rot.children];
+  let i = 0;
+  rotFit = () => { rot.style.width = spans[i].getBoundingClientRect().width + "px"; rot.style.setProperty("--c", `var(${words[i][1]})`); };
+  rotFit();
+  if (reduce) return;
+  rotTimer = setInterval(() => {
+    const cur = spans[i]; i = (i + 1) % spans.length; const next = spans[i];
+    cur.classList.remove("on"); cur.classList.add("out");
+    next.classList.remove("out"); next.classList.add("on");
+    rotFit();
+    sr.textContent = words[i][0];
+    setTimeout(() => cur.classList.remove("out"), 600);
+  }, 2400);
+}
+
+function apply(name) {
+  const c = COPY[name] || COPY.current;
+  clearInterval(rotTimer); rotFit = null;
+  h1.classList.toggle("long", !!c.long);
+  if (c.words) {
+    const spans = c.words.map(([w, col], k) => `<span class="${k ? "" : "on"}" style="color: var(${col})">${esc(w)}</span>`).join("");
+    h1.innerHTML = c.h1.replace("{rot}", `<span class="rot" aria-hidden="true">${spans}</span><span class="sr">${esc(c.words[0][0])}</span>`);
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => startRotation(c.words));
+  } else {
+    h1.innerHTML = c.h1;
+  }
+  document.querySelectorAll("[data-t]").forEach((el) => {
+    const v = c[el.dataset.t];
+    if (Array.isArray(v)) el.innerHTML = v.map((p) => `<li>${tick}${esc(p)}</li>`).join("");
+    else el.textContent = v;
+  });
+  document.querySelectorAll(".switch button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === name));
+  const url = new URL(location.href);
+  if (name === "current") url.searchParams.delete("copy"); else url.searchParams.set("copy", name);
+  history.replaceState(null, "", url);
+}
+document.querySelectorAll(".switch button").forEach((b) => b.addEventListener("click", () => apply(b.dataset.v)));
+apply(new URLSearchParams(location.search).get("copy") || "current");
+addEventListener("resize", () => rotFit && rotFit());
+
+// Install tabs.
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+tabs.forEach((t) => t.addEventListener("click", () => {
+  tabs.forEach((o) => {
+    const on = o === t;
+    o.setAttribute("aria-selected", on);
+    document.getElementById(o.getAttribute("aria-controls")).hidden = !on;
+  });
+}));
+
+// Copy buttons.
+const copyIcon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="2"/><path d="M3 10.5V4a1.5 1.5 0 0 1 1.5-1.5H11"/></svg>';
+document.querySelectorAll(".copy").forEach((b) => {
+  b.innerHTML = copyIcon + "<span>Copy</span>";
+  b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(b.previousElementSibling.textContent.trim()); } catch (e) { return; }
+    b.classList.add("done"); b.innerHTML = tick + "<span>Copied</span>";
+    setTimeout(() => { b.classList.remove("done"); b.innerHTML = copyIcon + "<span>Copy</span>"; }, 1600);
+  });
+});
+
+// Theme toggle (shares the key with the current page).
+document.getElementById("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("clipped.theme", root.dataset.theme); } catch (e) {}
+});
+
+// Nav border once you scroll, and a gentle reveal for sections.
+const topBar = document.getElementById("top");
+addEventListener("scroll", () => topBar.classList.toggle("scrolled", scrollY > 8), { passive: true });
+if (reduce || !("IntersectionObserver" in window)) document.querySelectorAll(".rv").forEach((e) => e.classList.add("in"));
+else {
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rv").forEach((e) => io.observe(e));
+}
+</script>
+</body>
+</html>
