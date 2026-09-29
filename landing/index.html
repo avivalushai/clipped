@@ -466,7 +466,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
       <p>No setup per project and nothing new to learn. You keep working the way you do.</p>
     </div>
     <ol class="steps grid rv">
-      <li><h3>Connects once</h3><p>Two commands add a plugin to Claude Code: the rules Claude follows, and three small hooks. Nothing to set up per project.</p></li>
+      <li><h3>Connects once</h3><p>Two commands add a plugin to Claude Code: the rules Claude follows, and a few small hooks. Nothing to set up per project.</p></li>
       <li><h3>Listens and sorts</h3><p>As you work, Claude sorts what's happening into a feature, a bug, a question or a brainstorm. Small talk isn't recorded.</p></li>
       <li><h3>Lands on your board</h3><p>Each project gets a board file in its own folder: what's in progress, what's parked halfway, what's waiting on you.</p></li>
     </ol>
@@ -515,9 +515,9 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
       </div>
       <div class="card rv">
         <div class="vis">
-          <div class="chips"><span class="on">Work</span><span>Questions</span><span>Brainstorms</span><span>Plans</span><span>References</span></div>
+          <div class="chips"><span class="on">Work</span><span>Questions</span><span>Brainstorms</span><span>Plans</span><span>Design</span><span>References</span><span>Outputs</span></div>
         </div>
-        <div class="txt"><h3>Nothing lives only in the chat</h3><p>Cards for work with a next step. Notes for the thinking around it.</p></div>
+        <div class="txt"><h3>Nothing lives only in the chat</h3><p>Cards for work with a next step. Notes for the thinking around it. Design calls and what Claude made get their own tabs.</p></div>
       </div>
     </div>
   </section>
@@ -562,6 +562,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
         <div class="hdr"><h3>Notes — the thinking around it</h3><p>Linked to the cards they led to.</p></div>
         <ul class="types">
           <li><span class="dot" style="background: var(--active)"></span><b>Brainstorm</b><span>A conversation that reached a decision. It says what was decided, not everything that was said.</span></li>
+          <li><span class="dot" style="background: var(--accent)"></span><b>Design decision</b><span>A call on how the product looks or reads — made by you or by Claude. The ones Claude made wait for you to check, in the Design tab.</span></li>
           <li><span class="dot" style="background: var(--done)"></span><b>Plan</b><span>A spec or plan you wrote. The document keeps the reasoning; the board tracks what came of it.</span></li>
           <li><span class="dot" style="background: var(--muted)"></span><b>Reference</b><span>A link you'd look up twice — only the ones that were actually used.</span></li>
         </ul>
@@ -586,6 +587,8 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
           <li><b>Next step</b><span>When a card is parked, this is where you stopped.</span></li>
           <li><b>Steps</b><span>A checklist Claude ticks off as it goes.</span></li>
           <li><b>Continue with Claude</b><span>A ready prompt to paste into a new session.</span></li>
+          <li><b>Area</b><span>Which part of the product it touches, guessed from its files. Filter the board by it.</span></li>
+          <li><b>Outputs</b><span>What Claude made that you can open — a local app, a deploy, a pull request — one click away.</span></li>
           <li><b>Files and activity</b><span>Every file touched, and who changed what.</span></li>
         </ul>
       </div>
@@ -598,11 +601,11 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
       <div class="stage shot-stage">
         <div class="window">
           <div class="chrome"><i></i><i></i><i></i><span>clipped.localhost:4747</span></div>
-          <img class="img-light" src="img/board-light.png" width="2416" height="1880" alt="The Clipped board: a table of cards with status, progress and next step, grouped by In progress, Parked and Your turn." loading="lazy">
+          <img class="img-light" src="img/board-light.png" width="2416" height="1880" alt="The Clipped board: cards in columns from Idea to Done, with tabs for Work, Questions, Brainstorms, Plans, Design, References and Outputs." loading="lazy">
           <img class="img-dark" src="img/board.png" width="2416" height="1880" alt="" aria-hidden="true" loading="lazy">
         </div>
       </div>
-      <p class="caption">This project's own board. Type <code>board ui</code> and it opens in your browser, updating live while Claude works.</p>
+      <p class="caption">This project's own board. Ask Claude to open the board, or type <code>board ui</code>. It updates live while Claude works.</p>
     </div>
   </section>
 

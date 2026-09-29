@@ -453,7 +453,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
         <p>It does <b>not</b> work in the regular Claude chat (the Chat tab, or claude.ai in a browser). The board is a file inside your project folder, and Claude updates it by running a small command on your computer. Chat can't reach either.</p>
 
         <h3>Node 20 or newer</h3>
-        <p>The board command and the three hooks are small Node scripts. To check, open a terminal and run:</p>
+        <p>The board command and its hooks are small Node scripts. To check, open a terminal and run:</p>
         <div class="cmds">
               <div class="cmd"><span class="p">$</span><code>node -v</code><button class="copy" type="button" aria-label="Copy"></button></div>
             </div>
@@ -533,7 +533,7 @@ footer a { color: var(--muted); text-underline-offset: 3px; }
         <div class="cmds">
               <div class="cmd"><span class="p">›</span><code>/clipped:board</code><button class="copy" type="button" aria-label="Copy"></button></div>
             </div>
-        <p>The board opens in your browser at <code>clipped.localhost:4747</code> (<code>localhost:4747</code> works too). The sidebar lists every project on this computer that has a board. Keep the tab open: it updates live while Claude works, and new projects appear on their own.</p>
+        <p>The board opens in your browser at <code>clipped.localhost:4747</code> (<code>localhost:4747</code> works too). Saying "open the board" to Claude does the same. The first time, a welcome page lists your projects and fills in live as Claude records the first task. The sidebar lists every project on this computer that has a board, and each project has tabs for Work, Questions, Brainstorms, Plans, Design, References and Outputs. Keep the tab open: it updates live while Claude works, and new projects appear on their own.</p>
         <p><code>/clipped:board status</code> prints the same summary in the chat instead.</p>
       </section>
 
