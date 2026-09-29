@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 125,
+  "nextNum": 126,
   "features": [
     {
       "key": "LE-1",
@@ -5386,7 +5386,7 @@
       "key": "LE-122",
       "title": "The Clipped logo: Clipp·d with a paperclip e, in Quicksand",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Wordmark in landing + install headers and board sidebar (paperclip alone when the sidebar is collapsed); new favicon shows in the browser tab",
       "doneWhen": [],
       "steps": [],
@@ -5396,10 +5396,13 @@
         "ui/index.html",
         "landing/index.html"
       ],
-      "links": [],
+      "links": [
+        "f4c66b7",
+        "22b3d08"
+      ],
       "area": "Landing",
       "createdAt": "2026-09-29T11:50:13Z",
-      "updatedAt": "2026-09-29T12:37:18Z",
+      "updatedAt": "2026-09-29T12:42:06Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -5501,6 +5504,16 @@
           "at": "2026-09-29T12:37:18Z",
           "by": "claude",
           "text": "Moved to review — Wordmark in landing + install headers and board sidebar (paperclip alone when the sidebar is collapsed); new favicon shows in the browser tab"
+        },
+        {
+          "at": "2026-09-29T12:42:06Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-29T12:42:06Z",
+          "by": "claude",
+          "text": "Proof: f4c66b7, 22b3d08"
         }
       ]
     },
@@ -5589,6 +5602,31 @@
           "at": "2026-09-29T11:58:30Z",
           "by": "claude",
           "text": "Note: Shipped in 0.9.15 — check Design → UI work"
+        }
+      ]
+    },
+    {
+      "key": "LE-125",
+      "title": "The collapsed sidebar mark is the wordmark's own e",
+      "type": "feature",
+      "status": "review",
+      "note": "Mark, icon and favicon rebuilt from the e in the wordmark; collapsed mark drawn at the same scale (1.83px wire in both)",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html",
+        "landing/img/logo/clipped-mark.svg"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T12:45:05Z",
+      "updatedAt": "2026-09-29T12:45:05Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T12:45:05Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }
