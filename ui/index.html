@@ -281,8 +281,13 @@ textarea.title-in.scrolls{overflow-y:auto}
 .checklist label:hover{background:var(--sunk)}
 .checklist input{margin-top:3px;accent-color:var(--accent)}
 .checklist .done span{text-decoration:line-through;color:var(--faint)}
-.addstep{display:flex;gap:6px}
-.addstep input{flex:1;min-width:0;border:1px dashed var(--line);background:none;border-radius:6px;padding:5px 8px}
+.addstep{display:flex;gap:8px;align-items:center}
+.addstep input{flex:1;min-width:0;border:1px dashed var(--line-2);background:none}
+/* One size for every one-line control in a panel: inputs, the Add fields, dropdowns. */
+.drawer-b input:not([type=checkbox]):not([type=radio]),.drawer-b .sel select:not(.status):not(.areachip){height:36px;box-sizing:border-box;font-size:14px;padding:0 12px;border-radius:var(--r-ctl);line-height:normal}
+.drawer-b input.mono:not([type=checkbox]),.drawer-b input#nUrl:not([type=checkbox]),.drawer-b input#nFile:not([type=checkbox]){font-size:13px}
+.drawer-b .sel select:not(.status):not(.areachip){padding-right:30px}
+.addstep .btn.sm{height:36px;padding:0 14px}
 .files{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
 .files li{background:var(--ground);border-radius:6px;padding:4px 8px;overflow-x:auto;white-space:nowrap}
 .log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}

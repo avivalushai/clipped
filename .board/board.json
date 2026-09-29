@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 107,
+  "nextNum": 109,
   "features": [
     {
       "key": "LE-1",
@@ -4444,18 +4444,20 @@
       "key": "LE-106",
       "title": "Tables open sorted: in progress, your turn, parked, idea, done last",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Open any table: In progress first, then Your turn, Parked, Idea, Done at the bottom — in every grouping. Clicking a column header still sorts by it. Not committed.",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "6e192ee"
+      ],
       "area": "",
       "createdAt": "2026-09-29T10:40:08Z",
-      "updatedAt": "2026-09-29T10:40:08Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-29T10:46:32Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-29T10:40:08Z",
@@ -4466,6 +4468,69 @@
           "at": "2026-09-29T10:40:08Z",
           "by": "claude",
           "text": "Moved to review — Open any table: In progress first, then Your turn, Parked, Idea, Done at the bottom — in every grouping. Clicking a column header still sorts by it. Not committed."
+        },
+        {
+          "at": "2026-09-29T10:45:45Z",
+          "by": "claude",
+          "text": "Proof: 6e192ee"
+        },
+        {
+          "at": "2026-09-29T10:46:32Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-107",
+      "title": "UI work sits inside the Design tab, and a closed Getting started stays closed",
+      "type": "feature",
+      "status": "review",
+      "note": "Branch design-ui-work (0.9.3, in ../loose-ends-uiwork), not merged: main has another session's uncommitted ui/index.html. Design → UI work is a plain table; Close on Getting started survives other addresses and browsers.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [
+        "f24fe1c"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T10:48:22Z",
+      "updatedAt": "2026-09-29T10:48:22Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T10:48:22Z",
+          "by": "claude",
+          "text": "Created — review"
+        }
+      ]
+    },
+    {
+      "key": "LE-108",
+      "title": "UI audit: every panel's inputs, dropdowns and Add rows share one size",
+      "type": "feature",
+      "status": "review",
+      "note": "Open a card and a reference: Area, link, step and URL fields are all 36px with the same corners; Add buttons line up. Rows in every table and grouping are 44px (34px compact). Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T10:48:34Z",
+      "updatedAt": "2026-09-29T10:48:34Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T10:48:34Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T10:48:34Z",
+          "by": "claude",
+          "text": "Moved to review — Open a card and a reference: Area, link, step and URL fields are all 36px with the same corners; Add buttons line up. Rows in every table and grouping are 44px (34px compact). Not committed."
         }
       ]
     }
