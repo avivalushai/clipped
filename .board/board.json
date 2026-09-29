@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 104,
+  "nextNum": 105,
   "features": [
     {
       "key": "LE-1",
@@ -4285,10 +4285,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "0f7df22"
+      ],
       "area": "",
       "createdAt": "2026-09-29T10:18:59Z",
-      "updatedAt": "2026-09-29T10:18:59Z",
+      "updatedAt": "2026-09-29T10:19:43Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4300,6 +4302,40 @@
           "at": "2026-09-29T10:18:59Z",
           "by": "claude",
           "text": "Moved to review — On the board, Getting started shows a 'Close ×' button; clicking it hides the checklist with an Undo. Not committed."
+        },
+        {
+          "at": "2026-09-29T10:19:43Z",
+          "by": "claude",
+          "text": "Proof: 0f7df22"
+        }
+      ]
+    },
+    {
+      "key": "LE-104",
+      "title": "Every table's header stays pinned, and every row is the same height",
+      "type": "bug",
+      "status": "review",
+      "note": "In every tab (Work, Questions, Brainstorms, Plans, References, Decisions), scroll the table: the header stays at the top; rows are all 44px (34px compact). Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T10:24:46Z",
+      "updatedAt": "2026-09-29T10:24:46Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T10:24:46Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T10:24:46Z",
+          "by": "claude",
+          "text": "Moved to review — In every tab (Work, Questions, Brainstorms, Plans, References, Decisions), scroll the table: the header stays at the top; rows are all 44px (34px compact). Not committed."
         }
       ]
     }
