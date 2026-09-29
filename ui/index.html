@@ -1372,7 +1372,8 @@ function renderUiWork(isHome){
 
 function renderNotesPage(isHome){
   if(uiWork()) return renderUiWork(isHome);
-  const ns=scopeNotes().sort((a,b)=>b.updatedAt-a.updatedAt), cols=noteCols(isHome);
+  // Claude's calls nobody has checked come first: they're the only rows waiting on you.
+  const ns=scopeNotes().sort((a,b)=>unchecked(b)-unchecked(a)||b.updatedAt-a.updatedAt), cols=noteCols(isHome);
   const f=NOTEFIELD[TAB().note];
   let rows=S.projects.length&&composing?noteComposer(cols,isHome):'';
   for(const n of ns) rows+=`<tr data-nrow="${n.id}">${cols.map(c=>noteCell(c,n,isHome)).join('')}</tr>`;
