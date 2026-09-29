@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -631,12 +632,16 @@ export function ui(ctx: Ctx, { opts }: Args) {
     }
 
     const url = boardLink(port);
+    // Tell the page which project you opened it from — by its short id, never its path —
+    // so a first visit can start with "You're in 247News".
+    const here = projectRootFor(ctx.cwd);
+    const from = here !== os.homedir() ? `/?from=${crypto.createHash("sha1").update(here).digest("hex").slice(0, 8)}` : "";
     const projects = readRegistry(ctx).length;
     ctx.out(`Clipped → ${url}`);
     ctx.out(
       `${projects} project${projects === 1 ? "" : "s"} · board data stays on this machine · ${found.clipped ? "already running" : "runs in the background"} · board ui --stop to stop`,
     );
-    if (!opts["no-open"]) openBrowser(url);
+    if (!opts["no-open"]) openBrowser(url + from);
   })().catch(fail);
 }
 

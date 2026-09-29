@@ -454,6 +454,127 @@ summary.opt b{font-weight:500;color:var(--ink);max-width:140px;overflow:hidden;t
   h1{font-size:25px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ---------- welcome (first run) ---------- */
+.welcome{max-width:1060px;margin:36px auto 60px;display:grid;gap:26px}
+.wl-head{display:grid;gap:12px;justify-items:start;max-width:720px}
+.fr-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+.fr-live{width:8px;height:8px;border-radius:50%;background:var(--s-done);animation:fr-pulse 1.8s ease-out infinite;display:inline-block;flex:none}
+@keyframes fr-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--s-done) 50%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+.welcome h1{font-size:46px;letter-spacing:-.045em;line-height:1.02}
+.wl-lede{margin:0;color:var(--muted);font-size:16px;line-height:1.6;max-width:60ch}
+.wl-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:stretch}
+.welcome section{margin:0}
+.wl-left{display:flex;flex-direction:column;gap:14px}
+.wl-left>.wl-new{flex:1}   /* the left column ends where the live stream does */
+.wl-card-h{display:flex;gap:12px;align-items:flex-start}
+.wl-card-h>div:last-child{display:grid;gap:4px}
+.wl-where{margin:4px 0 0;color:var(--faint);font-size:12px}
+.wl-live{align-content:start}
+.lv-title{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+@media (max-width:900px){.wl-body{grid-template-columns:1fr}.wl-live{position:static;min-height:0}}
+.wl-card{display:flex;flex-direction:column;gap:12px;padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);box-shadow:var(--shadow);transition:border-color .15s ease}
+.wl-card:hover,.wl-card:focus-within{border-color:var(--line-2)}
+.wl-new{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+.wl-icon{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--sunk);color:var(--ink)}
+.wl-new .wl-icon{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent)}
+.wl-card h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.wl-sub{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+.wl-empty{margin:0;color:var(--muted);font-size:13px}
+.wl-empty code{font-family:var(--mono);font-size:12px;background:var(--sunk);padding:1px 6px;border-radius:5px}
+.wl-note{color:var(--faint);font-size:12px}
+.wl-note .mono{color:var(--muted)}
+.fr-folders{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.fr-folder{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:1px;text-align:left;font:inherit;color:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--surface);cursor:pointer;transition:border-color .15s ease,background-color .15s ease,box-shadow .15s ease}
+.fr-folder:hover,.fr-folder:focus-visible{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);outline:none}
+.fr-folder .fr-fname,.fr-folder .fr-about{grid-column:1}
+.fr-chev{grid-column:2;grid-row:1;align-self:center;color:var(--faint);transition:rotate .2s ease,color .15s ease}
+.fr-folder:hover .fr-chev{color:var(--accent)}
+.fr-folders li.open .fr-folder{border-color:var(--accent);border-bottom-left-radius:0;border-bottom-right-radius:0}
+.fr-folders li.open .fr-chev{rotate:180deg;color:var(--accent)}
+.fr-drawer{display:grid;gap:4px;padding:12px 14px;border:1px solid var(--accent);border-top:0;border-radius:0 0 var(--r-ctl) var(--r-ctl);background:color-mix(in srgb,var(--accent) 5%,var(--surface));font-size:13px;line-height:1.5;animation:drawer-in .2s cubic-bezier(.2,.8,.2,1);transform-origin:top}
+.fr-drawer b{font-weight:600;font-size:13.5px}
+.fr-drawer span{color:var(--muted)}
+.fr-drpath{font-size:11.5px;color:var(--faint)!important}
+@keyframes drawer-in{from{opacity:0;scale:1 .92}}
+.wl-live.nudge{animation:nudge 1.2s ease-out}
+@keyframes nudge{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 35%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.fr-drawer,.wl-live.nudge{animation:none}}
+.fr-path{grid-row:3;color:var(--faint);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-folder.here{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.fr-fname{font-weight:500;font-size:13.5px}
+.fr-about{grid-row:2;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-lang,.fr-herepill{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:6px}
+.fr-herepill{color:var(--accent)}
+.fr-copy{grid-row:1/4;grid-column:2;align-self:center;border:0;background:none;padding:4px 6px;border-radius:6px;font:inherit;font-size:12px;color:var(--accent);font-weight:500;cursor:pointer}
+.fr-copy:hover{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.wl-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.wl-steps li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5}
+.wl-steps b{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);font-family:var(--mono);font-size:11px}
+.wl-steps i{color:var(--muted)}
+.wl-how{display:grid;gap:8px;margin-top:6px;padding:12px 14px;background:var(--ground);border:1px solid var(--line);border-radius:var(--r-ctl);font-size:13px;line-height:1.5}
+.wl-how>div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:2px 10px;align-items:baseline}
+.wl-how>div>b{font-weight:600;font-size:12.5px}
+.wl-how>div>span{color:var(--muted)}
+.wl-how>div>span b{color:var(--ink);font-weight:500}
+.wl-how code{grid-column:2;font-family:var(--mono);font-size:11.5px;color:var(--ink);background:var(--sunk);padding:4px 8px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+.wl-how .btn.sm{padding:3px 10px;margin-right:4px}
+.wl-live{display:grid;gap:12px;padding:18px 20px;background:var(--surface);border:1px dashed var(--line-2);border-radius:var(--r-panel)}
+.wl-live.has{border-style:solid;border-color:color-mix(in srgb,var(--s-done) 40%,var(--line));box-shadow:var(--shadow)}
+.lv-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lv-head>div:first-child{display:grid;gap:2px}
+.lv-head b{display:inline-flex;align-items:center;gap:8px;font-size:15px}
+.lv-head span{color:var(--muted);font-size:13px}
+.lv-go{margin-left:auto;display:flex;gap:8px;align-items:center}
+.lv-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lv-list li{display:grid;grid-template-columns:8px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-ctl);font-size:13.5px}
+.lv-list li .dot{width:8px;height:8px;border-radius:50%}
+.lv-list li b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}
+.lv-note{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-tag{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.lv-list li.fresh{animation:lv-in .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes lv-in{from{opacity:0;translate:0 10px;background:color-mix(in srgb,var(--s-done) 14%,var(--surface))}to{opacity:1;translate:0 0}}
+.lv-empty{display:grid;gap:6px}
+.lv-empty i{height:36px;border-radius:var(--r-ctl);background:linear-gradient(90deg,var(--sunk),color-mix(in srgb,var(--sunk) 40%,var(--surface)),var(--sunk));background-size:200% 100%;animation:lv-shimmer 2.4s linear infinite;opacity:.7}
+.lv-empty i:nth-child(2){opacity:.5}.lv-empty i:nth-child(3){opacity:.3}
+@keyframes lv-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.lv-list li.fresh,.lv-empty i{animation:none}}
+.fr-prompts{display:flex;gap:6px;flex-wrap:wrap}
+.fr-chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--muted);transition:border-color .15s ease,color .15s ease}
+.fr-chip:hover{border-color:var(--accent);color:var(--ink)}
+.fr-cmd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 10px 10px 14px;background:var(--ink);color:var(--ground);border-radius:var(--r-ctl)}
+.fr-cmd code{font-family:var(--mono);font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.fr-cmd .btn{color:var(--ink);background:var(--surface);border-color:transparent}
+.fr-foot{margin:0;color:var(--faint);font-size:12.5px;text-align:center}
+.fr-foot .linkbtn{margin-left:6px}
+.fr-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2);flex:none;display:inline-grid;place-items:center}
+li.done .fr-check{background:var(--s-done);border-color:var(--s-done)}
+li.done .fr-check::after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;rotate:-45deg;translate:0 -1px}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80}
+@media (max-width:860px){.welcome h1{font-size:34px}}
+@media (prefers-reduced-motion:reduce){.fr-live{animation:none}}
+.landed-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;margin-bottom:18px;border-radius:var(--r-ctl);font-size:13.5px}
+.landed-bar{border:1px solid color-mix(in srgb,var(--s-done) 40%,transparent);background:color-mix(in srgb,var(--s-done) 9%,var(--surface))}
+.landed-bar .xbtn{margin-left:auto}
+.grid tbody tr.landed td{animation:landed 2.4s ease-out 2}
+@keyframes landed{0%{background:color-mix(in srgb,var(--s-done) 22%,var(--surface))}100%{background:var(--surface)}}
+.ob{display:grid;gap:10px;padding:14px 16px;margin-bottom:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);box-shadow:var(--shadow)}
+.ob-h{display:flex;align-items:center;gap:12px}
+.ob-h>div{display:grid}
+.ob-h>div span{color:var(--muted);font-size:12.5px}
+.ob-h .xbtn{margin-left:auto}
+.ob-ring{--p:0;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--s-done) calc(var(--p)*360deg),var(--sunk) 0);flex:none}
+.ob-ring b{width:30px;height:30px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--mono);font-size:10.5px}
+.ob-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px}
+.ob-list li{display:flex;align-items:center;gap:8px;font-size:13px}
+.ob-list li.done{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line-2)}
+#tour{position:fixed;inset:0;z-index:60;pointer-events:none}
+.tour-spot{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(20,19,16,.42);transition:all .2s ease;pointer-events:none}
+.tour-pop{position:fixed;width:340px;max-width:calc(100vw - 32px);pointer-events:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg,0 12px 32px rgba(0,0,0,.18));padding:16px;display:grid;gap:6px;animation:menu-in .18s cubic-bezier(.2,.8,.2,1)}
+.tour-pop p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.tour-n{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.tour-b{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:6px}
+.tour-b .linkbtn{margin-right:auto}
+@media (prefers-reduced-motion:reduce){.fr-live,.fr-pv-row,.grid tbody tr.landed td{animation:none;opacity:1}.fr-steps>li:hover{translate:none}}
 /* The menu folded by hand: the same rail as on a narrow screen, still showing each project's badge. */
 .app.side-shut{grid-template-columns:64px minmax(0,1fr)}
 .app.side-shut .side{padding:14px 8px;align-items:center}
@@ -617,6 +738,8 @@ const COLS=[
 /* Served by `board ui` → talk to this origin. Hosted on the site → talk to the local server. */
 const LOCAL=/^https?:\/\/(localhost|clipped\.localhost|127\.0\.0\.1)(:\d+)?$/;
 const API=LOCAL.test(location.origin)?location.origin:'http://localhost:4747';
+
+const realProjects=()=>S.projects;
 
 async function api(path,opts){
   const r=await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});
@@ -801,7 +924,7 @@ function renderNav(){
   let h=`<div class="nav-label"><span>Overview</span></div>
   <button class="nav-item" data-go="home" aria-current="${view==='home'}" title="All projects">
     <span class="pkey all"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><rect x="1" y="1" width="4" height="4" rx="1" fill="currentColor"/><rect x="7" y="1" width="4" height="4" rx="1" fill="currentColor"/><rect x="1" y="7" width="4" height="4" rx="1" fill="currentColor"/><rect x="7" y="7" width="4" height="4" rx="1" fill="currentColor"/></svg></span><span class="name">All projects</span><span></span></button>
-  <div class="nav-label" style="margin-top:14px"><span>Projects · ${S.projects.length}</span><button id="addProjBtn" title="Add project" aria-label="Add project">+</button></div>`;
+  <div class="nav-label" style="margin-top:14px"><span>Projects · ${realProjects().length}</span><button id="addProjBtn" title="Add project" aria-label="Add project">+</button></div>`;
   if(false) h+=`<form class="newproj" id="newProjForm"><input id="npName" placeholder="Project name" aria-label="Project name" required><input id="npPath" class="mono" placeholder="~/code/my-app" aria-label="Project folder"><div class="r"><button type="button" class="btn sm ghost" id="npCancel">Cancel</button><button class="btn sm primary">Add</button></div></form>`;
   for(const p of S.projects){
     const pr=doneShare(pf(p.id));
@@ -878,12 +1001,152 @@ function homeSub(parked){
   }
   return `${parked} card${parked===1?'':'s'} parked ${across}. Parked work is listed first.`;
 }
+/* ---------- first run ----------
+   A new user has nothing yet, and doesn't need to do anything: the board fills itself
+   while they work with Claude. So the first screen says that, points at the folders they
+   already use Claude Code in, and waits — live — for the first card. */
+let firstLanded=null;   /* id of the first real card, once it arrives while this page is open */
+function copyText(t,msg){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg),()=>toast('Copy failed — select the text instead')) }
+const frFolders=()=>[...S.unlinked].sort((a,b)=>Date.parse(b.lastSeen||0)-Date.parse(a.lastSeen||0)).slice(0,4);
+/* Opened with `board ui` from inside a project? It says which, by id — never by path. */
+const FROM=(()=>{try{const v=new URLSearchParams(location.search).get('from');if(v){history.replaceState(null,'',location.pathname)}return v&&/^[0-9a-f]{8}$/.test(v)?v:null}catch(e){return null}})();
+
+/* ---------- welcome ----------
+   Two ways in: a project you already use Claude Code in, or a new one. Either way the user
+   works in Claude Code, and the tasks populate right here, live — the page stays put until
+   they choose "See your board". Only the user's own tasks and projects appear here. */
+let inWelcome=false, boardChosen=false, openRow=null;   /* openRow: the project whose drawer is open */   /* boardChosen: they asked for the board — show it even before it has tasks */          /* the welcome page stays up, even once tasks land, until "See your board" */
+const liveSeen=new Set();     /* task ids already shown, so only new ones animate in */
+function liveRows(){
+  return S.features.slice().sort((a,b)=>a.createdAt-b.createdAt)
+    .map(f=>({id:f.id,status:f.type==='question'?'active':f.status,label:f.type==='question'?'Question':sl(f.status),title:f.title,note:f.note,project:proj(f.project)?.name||''}));
+}
+function livePanel(){
+  const rows=liveRows(), n=rows.length, projects=[...new Set(rows.map(r=>r.project))];
+  const head=n?`<b>${n} task${n===1?'':'s'} so far</b><span>in ${esc(projects.join(', '))} — more land as Claude works.</span>`
+    :`<b>Waiting for your first task</b><span>Work in Claude — this list fills by itself.</span>`;
+  const go=n?`<button class="btn primary" id="liveGo">See your board →</button>`:'';
+  const html=rows.slice(-8).map(r=>{const fresh=!liveSeen.has(r.id); liveSeen.add(r.id);
+    return `<li class="${fresh?'fresh':''}"><span class="dot" style="background:${color(r.status)}"></span><b>${esc(r.title)}</b><span class="lv-note">${esc(r.note||'')}</span><span class="lv-tag">${esc(r.label)}</span></li>`}).join('');
+  return `<section class="wl-live ${n?'has':''}" id="livePanel" aria-live="polite" aria-label="Your tasks">
+    <div class="lv-title"><span class="fr-live" aria-hidden="true"></span>Live from Claude</div>
+    <div class="lv-head"><div>${head}</div><div class="lv-go">${go}</div></div>
+    ${n?`<ol class="lv-list">${html}</ol>`:`<div class="lv-empty">${[0,1,2,3,4].map(()=>'<i></i>').join('')}</div>`}
+  </section>`;
+}
+function renderFirstRun(){
+  const folders=frFolders();
+  return `<section class="welcome" aria-labelledby="wlTitle">
+    <header class="wl-head">
+      <h1 id="wlTitle">Welcome to Clipped</h1>
+      <p class="wl-lede">Clipped keeps a board of everything you build with Claude — features, ideas, questions, and work you leave halfway. You don't fill it in: Claude does, while you work.</p>
+    </header>
+    <div class="wl-body">
+      <div class="wl-left">
+        <section class="wl-card" aria-labelledby="wlOpen">
+          <div class="wl-card-h"><div class="wl-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+            <div><h2 id="wlOpen">Here are your projects</h2><p class="wl-sub">Open one in Claude, start working, and watch the tasks appear here.</p></div></div>
+          ${folders.length?`<ul class="fr-folders">${folders.map(f=>`<li class="${openRow===f.id?'open':''}"><button class="fr-folder ${f.id===FROM?'here':''}" data-row="${f.id}" aria-expanded="${openRow===f.id}" aria-controls="dr-${f.id}"><span class="fr-fname">${esc(f.name)}${f.id===FROM?' <i class="fr-herepill">you’re here</i>':''}</span><span class="fr-chev" aria-hidden="true">${CHEVRON}</span></button>
+            ${openRow===f.id?`<div class="fr-drawer" id="dr-${f.id}"><b>Go to ${esc(f.name)} in Claude</b><span>Start working there as usual — every task, idea and question shows up on the right as you go.</span><span class="fr-drpath mono">${esc(tilde(f.path))}</span></div>`:''}</li>`).join('')}</ul>`
+            :`<p class="wl-empty">No projects yet — start a new one below.</p>`}
+        </section>
+        <section class="wl-card wl-new" aria-labelledby="wlNew">
+          <div class="wl-card-h"><div class="wl-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <div><h2 id="wlNew">Start a new project</h2><p class="wl-sub">Open Claude in a new folder and tell it what you want to build — <i>“a recipe app that plans my week.”</i> The tasks appear here as it works.</p>
+              <p class="wl-where">Claude works from the Claude app, VS Code or Terminal — whichever you use.</p></div></div>
+        </section>
+      </div>
+      ${livePanel()}
+    </div>
+    <p class="fr-foot">Your boards stay on this computer — nothing here is uploaded.</p>
+  </section>`;
+}
+function bindFirstRun(){
+  document.querySelectorAll('.fr-folder[data-row]').forEach(b=>b.onclick=()=>{ const id=b.dataset.row; openRow=openRow===id?null:id; render();
+    if(openRow){ const lp=$('livePanel'); lp.classList.remove('nudge'); void lp.offsetWidth; lp.classList.add('nudge') } });
+  /* Your real board — the one that's filling up. */
+  if($('liveGo')) $('liveGo').onclick=()=>{ inWelcome=false; boardChosen=true; firstLanded=null; view='home'; render(); window.scrollTo(0,0) };
+}
+
+/* ---------- confetti, once: the first task landing ---------- */
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c=document.createElement('canvas'); c.className='confetti'; c.width=innerWidth*devicePixelRatio; c.height=innerHeight*devicePixelRatio;
+  document.body.appendChild(c); const g=c.getContext('2d'); g.scale(devicePixelRatio,devicePixelRatio);
+  const css=getComputedStyle(document.documentElement), col=['--accent','--s-done','--s-review','--s-active','--s-parked'].map(v=>css.getPropertyValue(v).trim()||'#2F5BFF');
+  const bits=Array.from({length:140},(_,i)=>({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.28,vx:(Math.random()-.5)*11,vy:-(Math.random()*9+5),
+    r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,w:6+Math.random()*5,h:3+Math.random()*4,c:col[i%col.length]}));
+  const t0=performance.now();
+  (function frame(t){
+    const age=t-t0; g.clearRect(0,0,innerWidth,innerHeight);
+    for(const b of bits){ b.vy+=.28; b.vx*=.99; b.x+=b.vx; b.y+=b.vy; b.r+=b.vr;
+      g.save(); g.globalAlpha=Math.max(0,1-age/2200); g.translate(b.x,b.y); g.rotate(b.r); g.fillStyle=b.c; g.fillRect(-b.w/2,-b.h/2,b.w,b.h); g.restore() }
+    if(age<2200) requestAnimationFrame(frame); else c.remove();
+  })(t0);
+}
+
+/* ---------- getting started: a checklist that ticks itself ---------- */
+function obSteps(){
+  const real=S.features;
+  return [
+    {done:realProjects().length>0,t:'Open Claude Code in a project'},
+    {done:real.length>0,t:'Your first card appears'},
+    {done:!!(P.ob&&P.ob.opened),t:'Open a card to see its details'},
+    {done:real.some(f=>f.status==='done'&&f.by==='you'),t:'Check something in Your turn and mark it Done'},
+    {done:!!P.tourDone,t:'Take the 30-second tour',tour:true},
+  ];
+}
+function gettingStarted(){
+  if(P.obHidden||!realProjects().length) return '';
+  const st=obSteps(), n=st.filter(x=>x.done).length;
+  if(n===st.length) return '';
+  return `<section class="ob" aria-label="Getting started">
+    <div class="ob-h"><span class="ob-ring" style="--p:${n/st.length}"><b>${n}/${st.length}</b></span><div><b>Getting started</b><span>Ticks itself as you go.</span></div>
+      <button class="xbtn" id="obHide" aria-label="Hide getting started" title="Hide">×</button></div>
+    <ol class="ob-list">${st.map(x=>`<li class="${x.done?'done':''}"><span class="fr-check"></span>${esc(x.t)}${x.tour&&!x.done?` <button class="btn sm primary" id="obTour">Start</button>`:''}</li>`).join('')}</ol>
+  </section>`;
+}
+
+/* ---------- the tour: five stops on the real board ---------- */
+const TOUR=[
+  {sel:'.chips',t:'Filter by status',b:'Parked is work left halfway. Your turn is what Claude handed back for you to check.'},
+  {sel:'tbody tr[data-row]',t:'Open any card',b:'Click a row to see its steps, files and notes — and copy the prompt that picks it up in Claude.'},
+  {sel:'.stat.waiting,.stat',t:'What’s waiting on you',b:'The purple count is everything Claude finished and wants you to check.'},
+  {sel:'details.areas,.opt',t:'Areas of the product',b:'Each card sits in an area worked out from its files. Filter by one or several.'},
+  {sel:'#newBtn',t:'Add your own',b:'Claude adds most cards, but you can too. Try it any time.'},
+];
+let tourAt=-1;
+function startTour(){ openId=null; if(P.mode!=='table'){P.mode='table';savePrefs()} render(); tourAt=0; showTour() }
+function endTour(done){ tourAt=-1; document.getElementById('tour')?.remove(); if(done){P.tourDone=true;savePrefs();render()} }
+function showTour(){
+  document.getElementById('tour')?.remove();
+  const step=TOUR[tourAt]; if(!step) return endTour(true);
+  const el=step.sel.split(',').map(x=>document.querySelector(x)).find(Boolean);
+  if(!el){ tourAt++; return showTour() }
+  el.scrollIntoView({block:'center',behavior:'instant'});
+  const r=el.getBoundingClientRect(), pad=6;
+  const box=document.createElement('div'); box.id='tour';
+  const below=r.bottom+180<innerHeight;
+  box.innerHTML=`<div class="tour-spot" style="left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+pad*2}px;height:${r.height+pad*2}px"></div>
+    <div class="tour-pop" role="dialog" aria-label="${esc(step.t)}" style="left:${Math.max(16,Math.min(r.left,innerWidth-356))}px;${below?`top:${r.bottom+14}px`:`bottom:${innerHeight-r.top+14}px`}">
+      <span class="tour-n">${tourAt+1} of ${TOUR.length}</span><b>${esc(step.t)}</b><p>${esc(step.b)}</p>
+      <div class="tour-b"><button class="linkbtn" id="tourSkip">Skip</button>${tourAt?'<button class="btn sm" id="tourBack">Back</button>':''}<button class="btn sm primary" id="tourNext">${tourAt===TOUR.length-1?'Done':'Next'}</button></div></div>`;
+  document.body.appendChild(box);
+  $('tourNext').onclick=()=>{tourAt++;showTour()}; $('tourSkip').onclick=()=>endTour(true);
+  if($('tourBack')) $('tourBack').onclick=()=>{tourAt--;showTour()};
+  $('tourNext').focus();
+}
+addEventListener('keydown',e=>{ if(tourAt<0) return; if(e.key==='Escape') endTour(true); if(e.key==='ArrowRight'){tourAt++;showTour()} if(e.key==='ArrowLeft'&&tourAt>0){tourAt--;showTour()} },true);
+addEventListener('resize',()=>{ if(tourAt>=0) showTour() });
+
 function renderPage(){
+  if(view==='home'&&!boardChosen&&(inWelcome||!realProjects().length)) return renderFirstRun();
   const p=proj(view), isHome=!p, all=tabCards();
   const c=s=>all.filter(f=>f.status===s).length;
   const parked=S.features.filter(f=>(!p||f.project===p.id)&&f.type!=='question'&&f.status==='parked').length;
   const noun=P.tab==='questions'?'question':'card';
-  let h=`<div class="head"><div>
+  const landed=firstLanded&&S.features.find(f=>f.id===firstLanded);
+  let h=`${isHome?gettingStarted():''}${landed?`<div class="landed-bar" role="status"><b>🎉 Your first task just landed.</b> Claude added <button class="linkbtn" data-open="${landed.id}">${esc(landed.title)}</button> while you worked — that's how the board fills. <button class="xbtn" id="landedX" aria-label="Dismiss">×</button></div>`:''}<div class="head"><div>
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
          :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
@@ -1078,9 +1341,9 @@ function renderTable(fs,isHome){
     const shut=g.id&&(P.collapsed||[]).includes(g.id);
     if(g.id) rows+=`<tr class="grp" data-grprow="${g.id}"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}" aria-label="${shut?'Show':'Hide'} this group">${CHEVRON}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
     if(shut) continue;
-    for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
+    for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.id===firstLanded?'landed':''} ${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
   }
-  if(!fs.length) rows+=`<tr><td colspan="${cols.length}" class="empty">Nothing here yet. Add one in the row above.</td></tr>`;
+  if(!fs.length) rows+=`<tr><td colspan="${cols.length}" class="empty">Nothing here yet — Claude adds cards as you work, or click + New card.</td></tr>`;
   const minW=cols.reduce((a,c)=>a+cw('colW',c),0);
   return `${bulkBar()}<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}"><table style="min-width:${minW}px;width:100%"><thead><tr>${cols.map(th).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
@@ -1173,10 +1436,19 @@ function renderTimeline(fs,isHome){
 /* ---------- render & bind ---------- */
 function render(){
   $('app').classList.toggle('side-shut',!!P.sideShut);
+  const realCards=S.features;
+  if(firstRunWatch&&realProjects().length&&realCards.length){   /* the board just got its first real card */
+    firstRunWatch=false; firstLanded=[...realCards].sort((a,b)=>a.createdAt-b.createdAt)[0].id;
+    setTimeout(confetti,60);   /* it works — show it */
+  }
   $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu';
   renderNav();
   $('mainEl').innerHTML=renderPage();
+  if(view==='home'&&!boardChosen&&(inWelcome||!realProjects().length)){ bindFirstRun(); return }
   bindPage();
+  if($('landedX')) $('landedX').onclick=()=>{firstLanded=null;render()};
+  if($('obTour')) $('obTour').onclick=startTour;
+  if($('obHide')) $('obHide').onclick=()=>{P.obHidden=true;savePrefs();render()};
   renderDrawer();
   if(editCell){
     const n=document.querySelector('td.vcell.editing input');
@@ -1457,6 +1729,7 @@ function renderDrawer(){
   const f=S.features.find(x=>x.id===openId);
   if(!f){$('drawerRoot').innerHTML='';return}
   markSeen(f);
+  if(!(P.ob&&P.ob.opened)){P.ob={...(P.ob||{}),opened:true};savePrefs()}
   const isQ=f.type==='question', noteLbl=noteLabel(f);
   const done=f.steps.filter(s=>s.done).length;
   const parking=pendingPark===f.id;
@@ -1701,8 +1974,17 @@ async function reload(projectId){
   render();
 }
 
+/* Each open tab holds one live connection, and browsers allow only 6 per address — the 7th
+   tab would hang on a blank page. So a tab in the background lets go, and catches up when
+   it's looked at again. */
+let es=null;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){ if(es){es.close();es=null} }
+  else if(!es){ connect(); reload() }
+});
 function connect(){
-  const es=new EventSource(API+'/api/events');
+  if(document.hidden) return;
+  es=new EventSource(API+'/api/events');
   es.addEventListener('hello',()=>{setConn('live','Live');reload()});
   es.addEventListener('board',ev=>{ let d={}; try{d=JSON.parse(ev.data)}catch(e){}
     reload(d.project||undefined) });
@@ -1714,8 +1996,13 @@ setInterval(async()=>{ if(document.hidden) return; await loadStats(); if(!editin
 
 document.addEventListener('focusout',()=>{ if(dirty&&!editing()){dirty=false;reload()} });
 
+/* While the board is empty, look again every few seconds: a brand-new project's first card
+   can land before the server is watching that project's folder. */
+let firstRunWatch=false;
+setInterval(()=>{ if((firstRunWatch||inWelcome)&&!document.hidden&&!editing()) reload() },3000);
+
 (async function boot(){
-  try{ await loadAll(); setConn('live','Live'); }
+  try{ await loadAll(); setConn('live','Live'); firstRunWatch=inWelcome=!realProjects().length; }
   catch(e){
     setConn('off','No server');
     $('mainEl').innerHTML=`<div class="head"><div><h1>No local server</h1>

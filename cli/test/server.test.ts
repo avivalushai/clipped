@@ -239,6 +239,22 @@ describe("serving the UI and staying local", () => {
     expect(status).toBe(403); // DNS rebinding: a public hostname pointed at 127.0.0.1
   });
 
+  it("refuses changes from other websites, and keeps accepting its own page and the CLI", async () => {
+    const sb = seeded();
+    const { url, id } = await serve(sb);
+    const add = (headers: Record<string, string>) =>
+      fetch(`${url}/api/projects/${id}/features`, { method: "POST", headers, body: JSON.stringify({ title: "from " + JSON.stringify(headers) }) });
+    // A page on another site sends a plain-text form: no preflight, so the server must say no itself.
+    expect((await add({ "Content-Type": "text/plain", Origin: "https://evil.example" })).status).toBe(403);
+    expect((await add({ "Content-Type": "text/plain", Origin: "http://localhost:3000" })).status).toBe(403); // another local app
+    expect((await add({ "Content-Type": "text/plain", Origin: "null" })).status).toBe(403); // a sandboxed or file page
+    expect(sb.read().features.some((f: any) => f.title.includes("evil") || f.title.includes("3000") || f.title.includes("null"))).toBe(false);
+    // The board's own page (same origin) and tools with no origin still work.
+    const own = new URL(url).host;
+    expect((await add({ "Content-Type": "application/json", Origin: `http://${own}` })).status).toBe(201);
+    expect((await add({ "Content-Type": "application/json" })).status).toBe(201);
+  });
+
   it("answers at clipped.localhost, the address the board opens at, and no other .localhost name", async () => {
     const { url } = await serve(seeded());
     const port = Number(new URL(url).port);
@@ -347,3 +363,4 @@ describe("notes over the API", () => {
     expect(body).toMatchObject({ type: "question", status: "idea" });
   });
 });
+

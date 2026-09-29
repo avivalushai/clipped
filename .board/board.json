@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 90,
+  "nextNum": 103,
   "features": [
     {
       "key": "LE-1",
@@ -337,10 +337,11 @@
         "cli/test/sessions.test.ts",
         "cli/src/areas.ts",
         "cli/test/structure.test.ts",
-        "cli/test/board-ui.test.ts"
+        "cli/test/board-ui.test.ts",
+        "server/src/launch.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-28T17:15:13Z",
+      "updatedAt": "2026-09-29T09:28:05Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3610,10 +3611,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "1616f96"
+      ],
       "area": "",
       "createdAt": "2026-09-28T17:35:43Z",
-      "updatedAt": "2026-09-28T17:35:44Z",
+      "updatedAt": "2026-09-28T17:41:23Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3625,11 +3628,633 @@
           "at": "2026-09-28T17:35:44Z",
           "by": "claude",
           "text": "Moved to review — Next to 'N new since you looked': the link reads 'Clear the new dots'; clicking it says no card changed status and offers Undo"
+        },
+        {
+          "at": "2026-09-28T17:41:23Z",
+          "by": "claude",
+          "text": "Proof: 1616f96"
+        }
+      ]
+    },
+    {
+      "key": "LE-90",
+      "title": "A builder cut of the week video",
+      "type": "feature",
+      "status": "review",
+      "note": "Watch the updated clipped-week-builder-mess.mp4",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Builder voiceover, interlude and end card",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": true
+        },
+        {
+          "text": "Messy opening: chats multiply, counter to 2,309,209",
+          "done": true
+        },
+        {
+          "text": "Split view: equal window heights and margins",
+          "done": true
+        }
+      ],
+      "files": [
+        "video/real/voiceover-week-builder.txt"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T17:46:34Z",
+      "updatedAt": "2026-09-28T18:34:03Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T17:46:34Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T17:46:41Z",
+          "by": "claude",
+          "text": "Step done: Builder voiceover, interlude and end card"
+        },
+        {
+          "at": "2026-09-28T17:51:38Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-28T17:51:38Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-week-builder.mp4 and say what to change"
+        },
+        {
+          "at": "2026-09-28T17:59:27Z",
+          "by": "claude",
+          "text": "Started — Messy-opening version rendering, then send"
+        },
+        {
+          "at": "2026-09-28T17:59:27Z",
+          "by": "claude",
+          "text": "Step added (done): Messy opening: chats multiply, counter to 2,309,209"
+        },
+        {
+          "at": "2026-09-28T18:06:20Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-week-builder-mess.mp4 and say what to change"
+        },
+        {
+          "at": "2026-09-28T18:28:12Z",
+          "by": "claude",
+          "text": "Started — Symmetric split-view re-render running, then send"
+        },
+        {
+          "at": "2026-09-28T18:28:12Z",
+          "by": "claude",
+          "text": "Step added (done): Split view: equal window heights and margins"
+        },
+        {
+          "at": "2026-09-28T18:34:03Z",
+          "by": "claude",
+          "text": "Moved to review — Watch the updated clipped-week-builder-mess.mp4"
+        }
+      ]
+    },
+    {
+      "key": "LE-91",
+      "title": "Empty table says 'Add one in the row above' but there's no row",
+      "type": "bug",
+      "status": "review",
+      "note": "Empty table reads 'Nothing here yet — Claude adds cards as you work, or click + New card.'",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T18:34:47Z",
+      "updatedAt": "2026-09-28T18:34:53Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T18:34:47Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T18:34:53Z",
+          "by": "claude",
+          "text": "Moved to review — Empty table reads 'Nothing here yet — Claude adds cards as you work, or click + New card.'"
+        }
+      ]
+    },
+    {
+      "key": "LE-92",
+      "title": "Welcome page: your projects or a new one, tasks populate live, then See your board",
+      "type": "feature",
+      "status": "review",
+      "note": "Local only: localhost:4790/?from=3b601464. 'Here are your projects' / 'Start a new project'; the live panel below fills as Claude creates tasks (confetti on the first) and offers See your board; 'See how tasks populate' plays a demo that ends in the sample board. Not committed.",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Plain 'How do I open it?' (Claude app / VS Code / Terminal) instead of a raw command",
+          "done": true
+        },
+        {
+          "text": "Simplified: projects and new-project widgets stacked left, live stream on the right",
+          "done": true
+        },
+        {
+          "text": "Project rows: hover focus, click opens a drawer ('Go to X in Claude…') and nudges the live stream",
+          "done": true
+        },
+        {
+          "text": "Ready for release: no demo, no sample board — only the user's own projects and tasks",
+          "done": true
+        }
+      ],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T18:47:10Z",
+      "updatedAt": "2026-09-29T10:10:41Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T18:47:10Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-28T18:47:10Z",
+          "by": "claude",
+          "text": "Moved to review — Local only: open localhost:4790 (empty test board) — 'Your board fills itself', your Claude Code folders with Copy command, a first prompt; add a card and it lands with a banner. Not committed."
+        },
+        {
+          "at": "2026-09-28T18:53:57Z",
+          "by": "claude",
+          "text": "Renamed from “First-time users see a guide, not an empty dashboard”"
+        },
+        {
+          "at": "2026-09-28T18:53:57Z",
+          "by": "claude",
+          "text": "Note: Local only: open localhost:4790 (empty test board). Try: the animated preview, Explore a sample board (edits refused), the tour (5 stops), folder and prompt copy buttons; add a card and watch the banner and the Getting started checklist (ticks itself). Not committed."
+        },
+        {
+          "at": "2026-09-28T23:24:33Z",
+          "by": "claude",
+          "text": "Note: Local only: open localhost:4790/?from=3b601464 (empty test board, as if opened from 247News). Try it in 2 minutes: scratch folder or this project, one copied line, then the live 'Your test run' checklist (feature with steps, idea, question, your turn) ending 'That's Clipped'. Folders show their own descriptions. Sample board, checklist and tour as before. Not committed."
+        },
+        {
+          "at": "2026-09-29T09:21:24Z",
+          "by": "claude",
+          "text": "Renamed from “First-time users get a guide: a live welcome, a sample board, a checklist and a tour”"
+        },
+        {
+          "at": "2026-09-29T09:21:24Z",
+          "by": "claude",
+          "text": "Note: Local only: open localhost:4790/?from=3b601464. Welcome to Clipped + two widgets: Open an existing project (your Claude Code folders with descriptions) and Start something new (write an idea → one line makes the folder and starts Claude). The first task lands with confetti and a banner. Not committed."
+        },
+        {
+          "at": "2026-09-29T09:39:51Z",
+          "by": "claude",
+          "text": "Renamed from “First-time users are welcomed: open a project or start a new one, with confetti on the first task”"
+        },
+        {
+          "at": "2026-09-29T09:39:51Z",
+          "by": "claude",
+          "text": "Note: Local only: localhost:4790/?from=3b601464. 'Here are your projects' / 'Start a new project'; the live panel below fills as Claude creates tasks (confetti on the first) and offers See your board; 'See how tasks populate' plays a demo that ends in the sample board. Not committed."
+        },
+        {
+          "at": "2026-09-29T09:44:09Z",
+          "by": "claude",
+          "text": "Step added (done): Plain 'How do I open it?' (Claude app / VS Code / Terminal) instead of a raw command"
+        },
+        {
+          "at": "2026-09-29T09:46:50Z",
+          "by": "claude",
+          "text": "Step added (done): Simplified: projects and new-project widgets stacked left, live stream on the right"
+        },
+        {
+          "at": "2026-09-29T10:02:37Z",
+          "by": "claude",
+          "text": "Step added (done): Project rows: hover focus, click opens a drawer ('Go to X in Claude…') and nudges the live stream"
+        },
+        {
+          "at": "2026-09-29T10:10:41Z",
+          "by": "claude",
+          "text": "Step added (done): Ready for release: no demo, no sample board — only the user's own projects and tasks"
+        }
+      ]
+    },
+    {
+      "key": "LE-93",
+      "title": "Design decisions have a home: DESIGN.md, a decision log, and a Design tab",
+      "type": "feature",
+      "status": "review",
+      "note": "Committed on design-decisions (bf3b8c2, 85d0c46), 0.8.0. Release waits on LE-92 being committed in main; then merge (2 small conflicts in ui/index.html), plugin:sync, import decisions.",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "DESIGN.md from the shipped UI and landing",
+          "done": true
+        },
+        {
+          "text": "Decision log recovered from git, board and transcripts",
+          "done": true
+        },
+        {
+          "text": "decision note kind with decidedBy (schema v5 + migration)",
+          "done": true
+        },
+        {
+          "text": "UI: Decisions tab and note drawer",
+          "done": true
+        },
+        {
+          "text": "Skill records decisions as they happen",
+          "done": true
+        },
+        {
+          "text": "Hooks catch UI changes: new colors/fonts/tokens ask for a decision; design picks become decisions",
+          "done": true
+        },
+        {
+          "text": "Design tab shows decisions and UI work (the same cards as Work)",
+          "done": true
+        }
+      ],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:23:50Z",
+      "updatedAt": "2026-09-29T09:30:16Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:23:50Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Started — Worktree ../loose-ends-decisions on branch design-decisions"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Renamed from “Design decisions and rejected variants have a home on the board”"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Step added: DESIGN.md from the shipped UI and landing"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Step added: Decision log recovered from git, board and transcripts"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Step added: decision note kind with decidedBy (schema v5 + migration)"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Step added: UI: Decisions tab and note drawer"
+        },
+        {
+          "at": "2026-09-28T23:51:02Z",
+          "by": "claude",
+          "text": "Step added: Skill records decisions as they happen"
+        },
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Step done: DESIGN.md from the shipped UI and landing"
+        },
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Step done: decision note kind with decidedBy (schema v5 + migration)"
+        },
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Step done: UI: Decisions tab and note drawer"
+        },
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Step done: Skill records decisions as they happen"
+        },
+        {
+          "at": "2026-09-28T23:57:49Z",
+          "by": "claude",
+          "text": "Note: Decision log still being written; then import with scripts/import-decisions.mjs (dry run) — needs v5 released first"
+        },
+        {
+          "at": "2026-09-29T00:01:10Z",
+          "by": "claude",
+          "text": "Renamed from “Design decisions have a home: DESIGN.md, a decision log, and a decision note kind”"
+        },
+        {
+          "at": "2026-09-29T01:03:23Z",
+          "by": "claude",
+          "text": "Step done: Decision log recovered from git, board and transcripts"
+        },
+        {
+          "at": "2026-09-29T01:03:23Z",
+          "by": "claude",
+          "text": "Moved to review — Open localhost:4791 → Design tab (45 real decisions from docs/decisions.md). Read DESIGN.md and docs/decisions.md in ../loose-ends-decisions. Open: Design-only vs a Design/Docs/Product filter. Not committed; schema v5 must ship with a plugin release before it touches real boards."
+        },
+        {
+          "at": "2026-09-29T09:17:24Z",
+          "by": "claude",
+          "text": "Step added: Hooks catch UI changes: new colors/fonts/tokens ask for a decision; design picks become decisions"
+        },
+        {
+          "at": "2026-09-29T09:17:24Z",
+          "by": "claude",
+          "text": "Step done: Hooks catch UI changes: new colors/fonts/tokens ask for a decision; design picks become decisions"
+        },
+        {
+          "at": "2026-09-29T09:22:46Z",
+          "by": "claude",
+          "text": "Step added: Design tab shows decisions and UI work (the same cards as Work)"
+        },
+        {
+          "at": "2026-09-29T09:22:46Z",
+          "by": "claude",
+          "text": "Step done: Design tab shows decisions and UI work (the same cards as Work)"
+        },
+        {
+          "at": "2026-09-29T09:22:46Z",
+          "by": "claude",
+          "text": "Updated — localhost:4791 → Design → switch Decisions (25 design/UX/copy decisions) and UI work (46 cards, same as in Work). Not committed; needs a plugin release (schema v5)."
+        },
+        {
+          "at": "2026-09-29T09:30:16Z",
+          "by": "claude",
+          "text": "Note: Committed on design-decisions (bf3b8c2, 85d0c46), 0.8.0. Release waits on LE-92 being committed in main; then merge (2 small conflicts in ui/index.html), plugin:sync, import decisions."
+        }
+      ]
+    },
+    {
+      "key": "LE-94",
+      "title": "Status pills pass AA contrast in light mode (Parked is 2.65:1)",
+      "type": "bug",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-95",
+      "title": "Drop the orphaned landing/style.css and the old prototype palette in SPEC §6/§10",
+      "type": "chore",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-96",
+      "title": "The drawer moves focus into itself and traps it",
+      "type": "bug",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-97",
+      "title": "Deleting a card or note can be undone instead of a confirm() prompt",
+      "type": "feature",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-98",
+      "title": "One type scale and one focus style on the board (16 sizes, 4 focus styles today)",
+      "type": "chore",
+      "status": "idea",
+      "note": "",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-28T23:57:17Z",
+          "by": "claude",
+          "text": "Created"
+        }
+      ]
+    },
+    {
+      "key": "LE-99",
+      "title": "Any website can write to the board: the server accepts changes from other sites",
+      "type": "bug",
+      "status": "review",
+      "note": "A page on another site (or another localhost app) can't add, edit or delete cards: 403. The board page and the CLI still work. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T09:24:16Z",
+      "updatedAt": "2026-09-29T09:29:55Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T09:24:16Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T09:29:55Z",
+          "by": "claude",
+          "text": "Moved to review — A page on another site (or another localhost app) can't add, edit or delete cards: 403. The board page and the CLI still work. Not committed."
+        }
+      ]
+    },
+    {
+      "key": "LE-100",
+      "title": "Can the board skip the terminal paste and fill itself automatically?",
+      "type": "question",
+      "status": "done",
+      "note": "Decided: fix LE-99 first, then build A (Open in Claude) locally. B (fill the board automatically) later.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T09:24:31Z",
+      "updatedAt": "2026-09-29T09:29:55Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-29T09:24:31Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T09:24:31Z",
+          "by": "claude",
+          "text": "Moved to review — Yes. The page can't start programs, but the local board server can. A: 'Open in Claude' opens a Terminal already running claude in the folder with the idea typed (for new projects). B: 'Fill my board from this project' runs claude -p in the background to read code/TODOs/README/git and add cards as ideas to confirm — no terminal (for existing projects). Past conversations only as a separate opt-in. Needs LE-99 fixed first; fixed actions only; uses the user's Claude plan (~1 min/project)."
+        },
+        {
+          "at": "2026-09-29T09:29:55Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-101",
+      "title": "Open in Claude (removed): the page tried to start Claude in a terminal",
+      "type": "feature",
+      "status": "idea",
+      "note": "Removed after the user tried it and it didn't open Claude; replaced by the live tasks panel (LE-92).",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "server/src/launch.ts",
+        "server/src/api.ts",
+        "ui/index.html",
+        "cli/test/server.test.ts"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T09:29:55Z",
+      "updatedAt": "2026-09-29T09:39:51Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T09:29:55Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T09:29:55Z",
+          "by": "claude",
+          "text": "Moved to review — Local only: localhost:4790 — click a folder or write an idea and press Open in Claude: a terminal opens running Claude there; the first task lands with confetti. Not committed."
+        },
+        {
+          "at": "2026-09-29T09:39:51Z",
+          "by": "claude",
+          "text": "Renamed from “Open in Claude: the welcome page starts Claude in a terminal, no copy-paste”"
+        },
+        {
+          "at": "2026-09-29T09:39:51Z",
+          "by": "claude",
+          "text": "Note: Removed after the user tried it and it didn't open Claude; replaced by the live tasks panel (LE-92)."
+        },
+        {
+          "at": "2026-09-29T09:39:51Z",
+          "by": "claude",
+          "text": "Moved to ideas"
+        }
+      ]
+    },
+    {
+      "key": "LE-102",
+      "title": "A 7th board tab hangs on a blank page",
+      "type": "bug",
+      "status": "review",
+      "note": "Open 7+ board tabs: the newest still loads; background tabs catch up when you return to them. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T09:41:40Z",
+      "updatedAt": "2026-09-29T09:41:40Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T09:41:40Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T09:41:40Z",
+          "by": "claude",
+          "text": "Moved to review — Open 7+ board tabs: the newest still loads; background tabs catch up when you return to them. Not committed."
         }
       ]
     }
   ],
-  "nextNoteNum": 9,
+  "nextNoteNum": 12,
   "notes": [
     {
       "id": "LE-N1",
@@ -3762,6 +4387,51 @@
       ],
       "createdAt": "2026-09-28T16:54:33Z",
       "updatedAt": "2026-09-28T16:54:33Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N9",
+      "kind": "brainstorm",
+      "title": "First-time user: from empty state to guide",
+      "body": "Today a new user sees 'All work', 0% done, zeros, '0 cards parked across 0 projects', 'Nothing here yet. Add one in the row above' (no row exists any more — bug), + New card with no project; the sidebar lists Claude Code folders under 'No board yet'. Message should be: you don't need to do anything, work with Claude and this fills itself. Ideas: (1) honest empty state panel, hide zero stats and + New card; (2) 'Start here' from their own Claude Code folders; (3) live 'listening for your first card' + first-card animation; (4) read-only sample project (Ledgerly) to explore, hideable; (5) 3-step checklist that ticks itself; (6) tour of board parts once ~3 cards exist; (7) a copyable first prompt. Lean: 1+2+3 first, 4 next, 6 only if users get lost.",
+      "considered": "A tour on the empty screen (nothing to point at yet); fake cards on the user's real board (confusing, pollutes it).",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-92"
+      ],
+      "createdAt": "2026-09-28T18:34:47Z",
+      "updatedAt": "2026-09-28T18:47:10Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N10",
+      "kind": "brainstorm",
+      "title": "First run: what we know, and a guided test session",
+      "body": "Known at first open, locally: every folder they've used Claude Code in (name, path, last used) and per-folder session counts/active time. Not known: what the projects are about (we never read conversations). Could add safely: project name/description from package.json or README, language, git state. They almost always open the board via /clipped:board inside a session, so board ui can pass the current folder: 'You're in 247News — want to see Clipped work there?'. Guided test: 'Try it in 2 minutes' copies one line — mkdir -p ~/clipped-try && cd ~/clipped-try && claude \"<prompt that yields a feature with steps, an idea, a question, a review>\" — and the page becomes a live checklist that ticks and explains each card type as it lands, ending 'That's Clipped'. Limits: Claude is steered not controlled (celebrate what happened, don't wait forever); the browser can't start Claude (one paste); scratch folder is the safe default.",
+      "considered": "Reading past conversations to pre-fill boards (breaks the 'never read what was said' promise); auto-running Claude from the browser (not possible).",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-92"
+      ],
+      "createdAt": "2026-09-28T22:18:32Z",
+      "updatedAt": "2026-09-28T22:18:32Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N11",
+      "kind": "brainstorm",
+      "title": "A UI change is a card for the work plus a design decision for each call it made",
+      "body": "The user wants UI changes and design decisions to reliably land on the board. Reusing DESIGN.md values isn't a call; new colors, fonts or tokens are. (Becomes a decision once v5 ships.)",
+      "considered": "Skill instructions only: Claude forgets the silent calls. A nudge on every UI edit: too many tokens per turn.",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-93"
+      ],
+      "createdAt": "2026-09-29T09:17:29Z",
+      "updatedAt": "2026-09-29T09:17:29Z",
       "updatedBy": "claude"
     }
   ],

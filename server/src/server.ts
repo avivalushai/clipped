@@ -52,6 +52,19 @@ function cors(req: http.IncomingMessage, res: http.ServerResponse): void {
   }
 }
 
+/* A change to a board — or anything that starts a program — may only come from the board's
+   own page (same origin), the hosted board, or a tool with no web origin at all (the CLI,
+   the hooks, curl). A browser lets any website send a plain-text POST to localhost without
+   asking; without this check, any page you visit could add, edit or delete your cards. */
+const HOSTED_ORIGIN = /^https:\/\/(www\.)?clipped\.dev$/;
+export function changeAllowed(req: http.IncomingMessage): boolean {
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return true;
+  if (req.headers["sec-fetch-site"] === "cross-site" && !HOSTED_ORIGIN.test(String(req.headers.origin ?? ""))) return false;
+  const origin = req.headers.origin;
+  if (!origin || origin === "null") return !origin; // "null" = a sandboxed or file page: refuse
+  return origin === `http://${req.headers.host}` || HOSTED_ORIGIN.test(origin);
+}
+
 const json = (res: http.ServerResponse, status: number, body: unknown) => {
   const text = JSON.stringify(body, null, 2);
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Content-Length": Buffer.byteLength(text) });
@@ -115,6 +128,7 @@ export function createServer(ctx: Ctx, options: ServerOptions = {}) {
         return void res.end();
       }
       if (!ALLOWED_HOST.test(req.headers.host ?? "")) return json(res, 403, { error: "loopback only" });
+      if (!changeAllowed(req)) return json(res, 403, { error: "changes are only accepted from the board's own page" });
 
       // So `board ui` can tell its own board from some other app on the port, and stop it.
       if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });

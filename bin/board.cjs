@@ -706,207 +706,11 @@ var init_store = __esm({
   }
 });
 
-// server/src/discover.ts
-function cwdFromSession(file) {
-  let text;
-  try {
-    const fd = import_node_fs7.default.openSync(file, "r");
-    const buf = Buffer.alloc(64 * 1024);
-    const read = import_node_fs7.default.readSync(fd, buf, 0, buf.length, 0);
-    import_node_fs7.default.closeSync(fd);
-    text = buf.subarray(0, read).toString("utf8");
-  } catch {
-    return null;
-  }
-  for (const line of text.split("\n")) {
-    if (!line.includes('"cwd"')) continue;
-    try {
-      const cwd = JSON.parse(line).cwd;
-      if (typeof cwd === "string" && cwd.startsWith("/")) return cwd;
-    } catch {
-    }
-  }
-  return null;
-}
-function discoverProjects(ctx) {
-  const dir = import_node_path7.default.join(claudeHome(ctx), "projects");
-  if (!import_node_fs7.default.existsSync(dir)) return [];
-  const registered = new Set(readRegistry(ctx).map((e) => e.path));
-  const found = /* @__PURE__ */ new Map();
-  for (const entry of import_node_fs7.default.readdirSync(dir)) {
-    const projectDir = import_node_path7.default.join(dir, entry);
-    let sessions;
-    try {
-      if (!import_node_fs7.default.statSync(projectDir).isDirectory()) continue;
-      sessions = import_node_fs7.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
-    } catch {
-      continue;
-    }
-    if (!sessions.length) continue;
-    const newest = sessions.map((f) => import_node_path7.default.join(projectDir, f)).sort((a, b) => import_node_fs7.default.statSync(b).mtimeMs - import_node_fs7.default.statSync(a).mtimeMs)[0];
-    const cwd = cwdFromSession(newest);
-    if (!cwd || registered.has(cwd) || found.has(cwd)) continue;
-    if (!import_node_fs7.default.existsSync(cwd) || import_node_fs7.default.existsSync(boardFileFor(cwd))) continue;
-    if (!looksLikeAProject(ctx, cwd)) continue;
-    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs7.default.statSync(newest).mtimeMs).toISOString() });
-  }
-  return [...found.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
-}
-var import_node_fs7, import_node_path7, isKnownProject;
-var init_discover = __esm({
-  "server/src/discover.ts"() {
-    "use strict";
-    import_node_fs7 = __toESM(require("node:fs"), 1);
-    import_node_path7 = __toESM(require("node:path"), 1);
-    init_commands();
-    init_project();
-    init_registry();
-    init_store();
-    isKnownProject = (ctx, candidate) => discoverProjects(ctx).some((c) => c.path === import_node_path7.default.resolve(candidate));
-  }
-});
-
-// server/src/sessions.ts
-function consume(t, text) {
-  if (t.cwd === null) {
-    const m = CWD_RE.exec(text);
-    if (m) {
-      try {
-        t.cwd = JSON.parse(`"${m[1]}"`);
-      } catch {
-      }
-    }
-  }
-  for (const m of text.matchAll(TS_RE)) {
-    const ts = Date.parse(m[1]);
-    if (!Number.isFinite(ts)) continue;
-    if (!t.firstAt || ts < t.firstAt) t.firstAt = ts;
-    if (t.lastAt) t.activeMs += Math.min(Math.max(ts - t.lastAt, 0), IDLE_CAP_MS);
-    if (ts > t.lastAt) t.lastAt = ts;
-  }
-}
-function advance(file, t, size) {
-  let fd;
-  try {
-    fd = import_node_fs8.default.openSync(file, "r");
-  } catch {
-    return;
-  }
-  try {
-    const buf = Buffer.alloc(CHUNK);
-    let pos = t.offset;
-    while (pos < size) {
-      const n = import_node_fs8.default.readSync(fd, buf, 0, Math.min(CHUNK, size - pos), pos);
-      if (n <= 0) break;
-      const end = buf.lastIndexOf(10, n - 1);
-      if (end < 0) {
-        if (n < CHUNK) break;
-        pos += n;
-        t.offset = pos;
-        continue;
-      }
-      consume(t, buf.toString("utf8", 0, end + 1));
-      pos += end + 1;
-      t.offset = pos;
-    }
-  } finally {
-    import_node_fs8.default.closeSync(fd);
-  }
-}
-function peekCwd(file) {
-  try {
-    const fd = import_node_fs8.default.openSync(file, "r");
-    const buf = Buffer.alloc(64 * 1024);
-    const n = import_node_fs8.default.readSync(fd, buf, 0, buf.length, 0);
-    import_node_fs8.default.closeSync(fd);
-    const m = CWD_RE.exec(buf.toString("utf8", 0, n));
-    return m ? JSON.parse(`"${m[1]}"`) : null;
-  } catch {
-    return null;
-  }
-}
-function statsFor(file, wanted) {
-  let st;
-  try {
-    st = import_node_fs8.default.statSync(file);
-  } catch {
-    cache.delete(file);
-    return null;
-  }
-  let t = cache.get(file);
-  if (!t || st.size < t.offset) {
-    t = { cwd: null, firstAt: 0, lastAt: 0, activeMs: 0, offset: 0, mtimeMs: 0 };
-    cache.set(file, t);
-  }
-  if (wanted && t.offset === 0) {
-    const cwd = t.cwd ?? peekCwd(file);
-    t.cwd = cwd;
-    if (!cwd || !wanted(cwd)) return null;
-  }
-  if (st.size > t.offset && st.mtimeMs !== t.mtimeMs) advance(file, t, st.size);
-  t.mtimeMs = st.mtimeMs;
-  return t.firstAt ? t : null;
-}
-function allSessions(ctx, wanted) {
-  const dir = import_node_path8.default.join(claudeHome(ctx), "projects");
-  let entries;
-  try {
-    entries = import_node_fs8.default.readdirSync(dir);
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const entry of entries) {
-    const projectDir = import_node_path8.default.join(dir, entry);
-    let files;
-    try {
-      files = import_node_fs8.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
-    } catch {
-      continue;
-    }
-    for (const f of files) {
-      const s2 = statsFor(import_node_path8.default.join(projectDir, f), wanted);
-      if (s2?.cwd) out.push(s2);
-    }
-  }
-  return out;
-}
-function sessionStats(ctx, roots) {
-  const sessions = allSessions(ctx, (cwd) => roots.some((r) => inside(cwd, r)));
-  const result = /* @__PURE__ */ new Map();
-  for (const root of roots) {
-    const mine = sessions.filter((s2) => inside(s2.cwd, root) && !roots.some((r) => r !== root && r.length > root.length && inside(s2.cwd, r)));
-    const lastAt = mine.reduce((a, s2) => Math.max(a, s2.lastAt), 0);
-    result.set(root, {
-      sessions: mine.length,
-      activeMs: mine.reduce((a, s2) => a + s2.activeMs, 0),
-      openMs: mine.reduce((a, s2) => a + (s2.lastAt - s2.firstAt), 0),
-      lastAt: lastAt ? new Date(lastAt).toISOString() : null
-    });
-  }
-  return result;
-}
-var import_node_fs8, import_node_path8, IDLE_CAP_MS, cache, CWD_RE, TS_RE, CHUNK, inside;
-var init_sessions = __esm({
-  "server/src/sessions.ts"() {
-    "use strict";
-    import_node_fs8 = __toESM(require("node:fs"), 1);
-    import_node_path8 = __toESM(require("node:path"), 1);
-    init_project();
-    IDLE_CAP_MS = 5 * 6e4;
-    cache = /* @__PURE__ */ new Map();
-    CWD_RE = /"cwd":"((?:[^"\\]|\\.)*)"/;
-    TS_RE = /"timestamp":"([0-9T:.\-+Z]+)"/g;
-    CHUNK = 8 * 1024 * 1024;
-    inside = (cwd, root) => cwd === root || cwd.startsWith(root.endsWith("/") ? root : root + "/");
-  }
-});
-
 // server/src/projects.ts
 function repoUrl(dir) {
   let cfg;
   try {
-    cfg = import_node_fs9.default.readFileSync(`${dir}/.git/config`, "utf8");
+    cfg = import_node_fs7.default.readFileSync(`${dir}/.git/config`, "utf8");
   } catch {
     return void 0;
   }
@@ -916,7 +720,7 @@ function repoUrl(dir) {
   return m ? `https://${m[1]}/${m[2]}` : void 0;
 }
 function listProjects(ctx) {
-  return readRegistry(ctx).filter((e) => import_node_fs9.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
+  return readRegistry(ctx).filter((e) => import_node_fs7.default.existsSync(boardFileFor(e.path))).map((e) => ({ id: projectId(e.path), name: e.name, key: e.key, path: e.path, addedAt: e.addedAt }));
 }
 function findProject(ctx, id) {
   return listProjects(ctx).find((p) => p.id === id);
@@ -944,16 +748,251 @@ function summarize(project2) {
     repoUrl: repoUrl(project2.path)
   };
 }
-var import_node_crypto2, import_node_fs9, projectId;
+var import_node_crypto2, import_node_fs7, projectId;
 var init_projects = __esm({
   "server/src/projects.ts"() {
     "use strict";
     import_node_crypto2 = __toESM(require("node:crypto"), 1);
-    import_node_fs9 = __toESM(require("node:fs"), 1);
+    import_node_fs7 = __toESM(require("node:fs"), 1);
     init_registry();
     init_schema();
     init_store();
     projectId = (path13) => import_node_crypto2.default.createHash("sha1").update(path13).digest("hex").slice(0, 8);
+  }
+});
+
+// server/src/discover.ts
+function describeFolder(dir) {
+  const out = {};
+  try {
+    const names = new Set(import_node_fs8.default.readdirSync(dir));
+    const hit = LANGS.find(([f]) => names.has(f));
+    if (hit) out.lang = hit[1];
+    else if ([...names].some((n) => n.endsWith(".xcodeproj"))) out.lang = "Swift";
+    if (names.has("package.json")) {
+      const d = JSON.parse(import_node_fs8.default.readFileSync(import_node_path7.default.join(dir, "package.json"), "utf8")).description;
+      if (typeof d === "string" && d.trim()) out.about = clip3(d.trim(), 90);
+    }
+    const readme = [...names].find((n) => /^readme(\.md|\.txt)?$/i.test(n));
+    if (!out.about && readme) {
+      const lines = import_node_fs8.default.readFileSync(import_node_path7.default.join(dir, readme), "utf8").slice(0, 4e3).split("\n");
+      const skip = (l) => /^(#|!\[|\[!|<|---|```|=+$|-+$)/.test(l);
+      const t = lines.map((l) => l.trim());
+      const start = t.findIndex((l) => l && !skip(l));
+      let line = "";
+      for (let i = start; start >= 0 && i < t.length && t[i] && !skip(t[i]); i++) line += (line ? " " : "") + t[i];
+      if (line) out.about = clip3(line.replace(/[*_`]/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1"), 90);
+    }
+  } catch {
+  }
+  return out;
+}
+function cwdFromSession(file) {
+  let text;
+  try {
+    const fd = import_node_fs8.default.openSync(file, "r");
+    const buf = Buffer.alloc(64 * 1024);
+    const read = import_node_fs8.default.readSync(fd, buf, 0, buf.length, 0);
+    import_node_fs8.default.closeSync(fd);
+    text = buf.subarray(0, read).toString("utf8");
+  } catch {
+    return null;
+  }
+  for (const line of text.split("\n")) {
+    if (!line.includes('"cwd"')) continue;
+    try {
+      const cwd = JSON.parse(line).cwd;
+      if (typeof cwd === "string" && cwd.startsWith("/")) return cwd;
+    } catch {
+    }
+  }
+  return null;
+}
+function discoverProjects(ctx) {
+  const dir = import_node_path7.default.join(claudeHome(ctx), "projects");
+  if (!import_node_fs8.default.existsSync(dir)) return [];
+  const registered = new Set(readRegistry(ctx).map((e) => e.path));
+  const found = /* @__PURE__ */ new Map();
+  for (const entry of import_node_fs8.default.readdirSync(dir)) {
+    const projectDir = import_node_path7.default.join(dir, entry);
+    let sessions;
+    try {
+      if (!import_node_fs8.default.statSync(projectDir).isDirectory()) continue;
+      sessions = import_node_fs8.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
+    } catch {
+      continue;
+    }
+    if (!sessions.length) continue;
+    const newest = sessions.map((f) => import_node_path7.default.join(projectDir, f)).sort((a, b) => import_node_fs8.default.statSync(b).mtimeMs - import_node_fs8.default.statSync(a).mtimeMs)[0];
+    const cwd = cwdFromSession(newest);
+    if (!cwd || registered.has(cwd) || found.has(cwd)) continue;
+    if (!import_node_fs8.default.existsSync(cwd) || import_node_fs8.default.existsSync(boardFileFor(cwd))) continue;
+    if (!looksLikeAProject(ctx, cwd)) continue;
+    found.set(cwd, { id: projectId(cwd), path: cwd, name: prettyName(cwd), lastSeen: new Date(import_node_fs8.default.statSync(newest).mtimeMs).toISOString(), ...describeFolder(cwd) });
+  }
+  return [...found.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
+}
+var import_node_fs8, import_node_path7, LANGS, clip3, isKnownProject;
+var init_discover = __esm({
+  "server/src/discover.ts"() {
+    "use strict";
+    import_node_fs8 = __toESM(require("node:fs"), 1);
+    import_node_path7 = __toESM(require("node:path"), 1);
+    init_commands();
+    init_project();
+    init_registry();
+    init_store();
+    init_projects();
+    LANGS = [
+      ["tsconfig.json", "TypeScript"],
+      ["package.json", "JavaScript"],
+      ["pyproject.toml", "Python"],
+      ["requirements.txt", "Python"],
+      ["Cargo.toml", "Rust"],
+      ["go.mod", "Go"],
+      ["Package.swift", "Swift"],
+      ["Gemfile", "Ruby"],
+      ["pom.xml", "Java"],
+      ["build.gradle", "Kotlin/Java"]
+    ];
+    clip3 = (s2, n) => s2.length > n ? s2.slice(0, n - 1).trimEnd() + "\u2026" : s2;
+    isKnownProject = (ctx, candidate) => discoverProjects(ctx).some((c) => c.path === import_node_path7.default.resolve(candidate));
+  }
+});
+
+// server/src/sessions.ts
+function consume(t, text) {
+  if (t.cwd === null) {
+    const m = CWD_RE.exec(text);
+    if (m) {
+      try {
+        t.cwd = JSON.parse(`"${m[1]}"`);
+      } catch {
+      }
+    }
+  }
+  for (const m of text.matchAll(TS_RE)) {
+    const ts = Date.parse(m[1]);
+    if (!Number.isFinite(ts)) continue;
+    if (!t.firstAt || ts < t.firstAt) t.firstAt = ts;
+    if (t.lastAt) t.activeMs += Math.min(Math.max(ts - t.lastAt, 0), IDLE_CAP_MS);
+    if (ts > t.lastAt) t.lastAt = ts;
+  }
+}
+function advance(file, t, size) {
+  let fd;
+  try {
+    fd = import_node_fs9.default.openSync(file, "r");
+  } catch {
+    return;
+  }
+  try {
+    const buf = Buffer.alloc(CHUNK);
+    let pos = t.offset;
+    while (pos < size) {
+      const n = import_node_fs9.default.readSync(fd, buf, 0, Math.min(CHUNK, size - pos), pos);
+      if (n <= 0) break;
+      const end = buf.lastIndexOf(10, n - 1);
+      if (end < 0) {
+        if (n < CHUNK) break;
+        pos += n;
+        t.offset = pos;
+        continue;
+      }
+      consume(t, buf.toString("utf8", 0, end + 1));
+      pos += end + 1;
+      t.offset = pos;
+    }
+  } finally {
+    import_node_fs9.default.closeSync(fd);
+  }
+}
+function peekCwd(file) {
+  try {
+    const fd = import_node_fs9.default.openSync(file, "r");
+    const buf = Buffer.alloc(64 * 1024);
+    const n = import_node_fs9.default.readSync(fd, buf, 0, buf.length, 0);
+    import_node_fs9.default.closeSync(fd);
+    const m = CWD_RE.exec(buf.toString("utf8", 0, n));
+    return m ? JSON.parse(`"${m[1]}"`) : null;
+  } catch {
+    return null;
+  }
+}
+function statsFor(file, wanted) {
+  let st;
+  try {
+    st = import_node_fs9.default.statSync(file);
+  } catch {
+    cache.delete(file);
+    return null;
+  }
+  let t = cache.get(file);
+  if (!t || st.size < t.offset) {
+    t = { cwd: null, firstAt: 0, lastAt: 0, activeMs: 0, offset: 0, mtimeMs: 0 };
+    cache.set(file, t);
+  }
+  if (wanted && t.offset === 0) {
+    const cwd = t.cwd ?? peekCwd(file);
+    t.cwd = cwd;
+    if (!cwd || !wanted(cwd)) return null;
+  }
+  if (st.size > t.offset && st.mtimeMs !== t.mtimeMs) advance(file, t, st.size);
+  t.mtimeMs = st.mtimeMs;
+  return t.firstAt ? t : null;
+}
+function allSessions(ctx, wanted) {
+  const dir = import_node_path8.default.join(claudeHome(ctx), "projects");
+  let entries;
+  try {
+    entries = import_node_fs9.default.readdirSync(dir);
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const entry of entries) {
+    const projectDir = import_node_path8.default.join(dir, entry);
+    let files;
+    try {
+      files = import_node_fs9.default.readdirSync(projectDir).filter((f) => f.endsWith(".jsonl"));
+    } catch {
+      continue;
+    }
+    for (const f of files) {
+      const s2 = statsFor(import_node_path8.default.join(projectDir, f), wanted);
+      if (s2?.cwd) out.push(s2);
+    }
+  }
+  return out;
+}
+function sessionStats(ctx, roots) {
+  const sessions = allSessions(ctx, (cwd) => roots.some((r) => inside(cwd, r)));
+  const result = /* @__PURE__ */ new Map();
+  for (const root of roots) {
+    const mine = sessions.filter((s2) => inside(s2.cwd, root) && !roots.some((r) => r !== root && r.length > root.length && inside(s2.cwd, r)));
+    const lastAt = mine.reduce((a, s2) => Math.max(a, s2.lastAt), 0);
+    result.set(root, {
+      sessions: mine.length,
+      activeMs: mine.reduce((a, s2) => a + s2.activeMs, 0),
+      openMs: mine.reduce((a, s2) => a + (s2.lastAt - s2.firstAt), 0),
+      lastAt: lastAt ? new Date(lastAt).toISOString() : null
+    });
+  }
+  return result;
+}
+var import_node_fs9, import_node_path8, IDLE_CAP_MS, cache, CWD_RE, TS_RE, CHUNK, inside;
+var init_sessions = __esm({
+  "server/src/sessions.ts"() {
+    "use strict";
+    import_node_fs9 = __toESM(require("node:fs"), 1);
+    import_node_path8 = __toESM(require("node:path"), 1);
+    init_project();
+    IDLE_CAP_MS = 5 * 6e4;
+    cache = /* @__PURE__ */ new Map();
+    CWD_RE = /"cwd":"((?:[^"\\]|\\.)*)"/;
+    TS_RE = /"timestamp":"([0-9T:.\-+Z]+)"/g;
+    CHUNK = 8 * 1024 * 1024;
+    inside = (cwd, root) => cwd === root || cwd.startsWith(root.endsWith("/") ? root : root + "/");
   }
 });
 
@@ -1181,7 +1220,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.7.4";
+    VERSION = "0.8.0";
   }
 });
 
@@ -1189,6 +1228,7 @@ var init_version = __esm({
 var server_exports = {};
 __export(server_exports, {
   DEFAULT_PORT: () => DEFAULT_PORT,
+  changeAllowed: () => changeAllowed,
   createServer: () => createServer,
   listen: () => listen
 });
@@ -1208,6 +1248,13 @@ function cors(req, res) {
     if (req.headers["access-control-request-private-network"] === "true")
       res.setHeader("Access-Control-Allow-Private-Network", "true");
   }
+}
+function changeAllowed(req) {
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return true;
+  if (req.headers["sec-fetch-site"] === "cross-site" && !HOSTED_ORIGIN.test(String(req.headers.origin ?? ""))) return false;
+  const origin = req.headers.origin;
+  if (!origin || origin === "null") return !origin;
+  return origin === `http://${req.headers.host}` || HOSTED_ORIGIN.test(origin);
 }
 async function readBody(req) {
   const chunks = [];
@@ -1260,6 +1307,7 @@ data: ${JSON.stringify(data)}
         return void res.end();
       }
       if (!ALLOWED_HOST.test(req.headers.host ?? "")) return json(res, 403, { error: "loopback only" });
+      if (!changeAllowed(req)) return json(res, 403, { error: "changes are only accepted from the board's own page" });
       if (urlPath === "/api/hello") return json(res, 200, { app: "clipped", version: VERSION, pid: process.pid });
       if (urlPath === "/api/events") {
         res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
@@ -1309,7 +1357,7 @@ function listen(ctx, port = DEFAULT_PORT, options = {}) {
     });
   });
 }
-var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, json;
+var import_node_fs11, import_node_http, import_node_path10, import_node_url, DEFAULT_PORT, ALLOWED_ORIGIN, ALLOWED_HOST, MIME, HOSTED_ORIGIN, json;
 var init_server = __esm({
   "server/src/server.ts"() {
     "use strict";
@@ -1331,6 +1379,7 @@ var init_server = __esm({
       ".svg": "image/svg+xml",
       ".ico": "image/x-icon"
     };
+    HOSTED_ORIGIN = /^https:\/\/(www\.)?clipped\.dev$/;
     json = (res, status, body) => {
       const text = JSON.stringify(body, null, 2);
       res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Content-Length": Buffer.byteLength(text) });
@@ -1811,12 +1860,14 @@ function ui(ctx, { opts }) {
       if (!(await probe(port)).clipped) throw new Error("the board didn't start \u2014 run board ui --foreground to see why");
     }
     const url = boardLink(port);
+    const here = projectRootFor(ctx.cwd);
+    const from = here !== import_node_os3.default.homedir() ? `/?from=${import_node_crypto3.default.createHash("sha1").update(here).digest("hex").slice(0, 8)}` : "";
     const projects = readRegistry(ctx).length;
     ctx.out(`Clipped \u2192 ${url}`);
     ctx.out(
       `${projects} project${projects === 1 ? "" : "s"} \xB7 board data stays on this machine \xB7 ${found.clipped ? "already running" : "runs in the background"} \xB7 board ui --stop to stop`
     );
-    if (!opts["no-open"]) openBrowser(url);
+    if (!opts["no-open"]) openBrowser(url + from);
   })().catch(fail);
 }
 function openBrowser(url) {
@@ -2089,11 +2140,12 @@ function area2(ctx, { pos, opts }) {
   }
   throw new UserError(`unknown: board area ${sub} \u2014 use list, add, rename or rm`);
 }
-var import_node_child_process, import_node_fs12, import_node_os3, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, BOARD_PORT, boardLink, wait;
+var import_node_child_process, import_node_crypto3, import_node_fs12, import_node_os3, import_node_path11, str2, list, STALE_DAYS, linksOf, park, review, done, BOARD_PORT, boardLink, wait;
 var init_commands = __esm({
   "cli/src/commands.ts"() {
     "use strict";
     import_node_child_process = require("node:child_process");
+    import_node_crypto3 = __toESM(require("node:crypto"), 1);
     import_node_fs12 = __toESM(require("node:fs"), 1);
     import_node_os3 = __toESM(require("node:os"), 1);
     import_node_path11 = __toESM(require("node:path"), 1);

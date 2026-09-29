@@ -24,6 +24,24 @@ const withClaude = () => {
 };
 
 describe("finding projects that have no board", () => {
+  it("says what each folder is, from its own package.json or README, and gives it an id", () => {
+    const sb = withClaude();
+    fs.writeFileSync(path.join(sb.root, "package.json"), JSON.stringify({ name: "x", description: "A globe of the news" }));
+    fs.writeFileSync(path.join(sb.root, "tsconfig.json"), "{}");
+    claudeSession(sb, sb.root);
+    const [found] = discoverProjects({ cwd: sb.root, env: sb.env, out: () => {}, err: () => {} });
+    expect(found).toMatchObject({ about: "A globe of the news", lang: "TypeScript" });
+    expect(found!.id).toMatch(/^[0-9a-f]{8}$/);
+  });
+
+  it("falls back to the README's first paragraph, joined across wrapped lines", () => {
+    const sb = withClaude();
+    fs.writeFileSync(path.join(sb.root, "README.md"), "# Title\n\n![badge](x.svg)\n\nSave links into a list,\neach with a thumbnail.\n\nMore later.\n");
+    claudeSession(sb, sb.root);
+    const [found] = discoverProjects({ cwd: sb.root, env: sb.env, out: () => {}, err: () => {} });
+    expect(found!.about).toBe("Save links into a list, each with a thumbnail.");
+  });
+
   it("reads the real path from the session file, not the folder name", () => {
     const sb = withClaude();
     // the encoded name is lossy — "my-app" and "my/app" encode the same

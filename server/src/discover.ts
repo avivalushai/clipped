@@ -12,11 +12,50 @@ import type { Ctx } from "../../cli/src/context.js";
 import { claudeHome, looksLikeAProject } from "../../cli/src/project.js";
 import { readRegistry } from "../../cli/src/registry.js";
 import { boardFileFor } from "../../cli/src/store.js";
+import { projectId } from "./projects.js";
 
 export interface Candidate {
+  id: string;
   path: string;
   name: string;
   lastSeen: string;
+  /** One line on what the project is, from its own package.json or README. */
+  about?: string;
+  lang?: string;
+}
+
+/* What a folder is, from the folder itself — the project's own files, never a conversation. */
+const LANGS: [string, string][] = [
+  ["tsconfig.json", "TypeScript"], ["package.json", "JavaScript"], ["pyproject.toml", "Python"], ["requirements.txt", "Python"],
+  ["Cargo.toml", "Rust"], ["go.mod", "Go"], ["Package.swift", "Swift"], ["Gemfile", "Ruby"], ["pom.xml", "Java"], ["build.gradle", "Kotlin/Java"],
+];
+const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+export function describeFolder(dir: string): { about?: string; lang?: string } {
+  const out: { about?: string; lang?: string } = {};
+  try {
+    const names = new Set(fs.readdirSync(dir));
+    const hit = LANGS.find(([f]) => names.has(f));
+    if (hit) out.lang = hit[1];
+    else if ([...names].some((n) => n.endsWith(".xcodeproj"))) out.lang = "Swift";
+    if (names.has("package.json")) {
+      const d = JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8")).description;
+      if (typeof d === "string" && d.trim()) out.about = clip(d.trim(), 90);
+    }
+    const readme = [...names].find((n) => /^readme(\.md|\.txt)?$/i.test(n));
+    if (!out.about && readme) {
+      const lines = fs.readFileSync(path.join(dir, readme), "utf8").slice(0, 4000).split("\n");
+      // The first paragraph of prose: skip headings, badges, html and rules; join its wrapped lines.
+      const skip = (l: string) => /^(#|!\[|\[!|<|---|```|=+$|-+$)/.test(l);
+      const t = lines.map((l) => l.trim());
+      const start = t.findIndex((l) => l && !skip(l));
+      let line = "";
+      for (let i = start; start >= 0 && i < t.length && t[i] && !skip(t[i]!); i++) line += (line ? " " : "") + t[i];
+      if (line) out.about = clip(line.replace(/[*_`]/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1"), 90);
+    }
+  } catch {
+    /* unreadable folder: say nothing */
+  }
+  return out;
 }
 
 /** First `cwd` in a session file. Reads a bounded prefix — transcripts get large. */
@@ -69,7 +108,7 @@ export function discoverProjects(ctx: Ctx): Candidate[] {
     if (!fs.existsSync(cwd) || fs.existsSync(boardFileFor(cwd))) continue;
     if (!looksLikeAProject(ctx, cwd)) continue;
 
-    found.set(cwd, { path: cwd, name: prettyName(cwd), lastSeen: new Date(fs.statSync(newest).mtimeMs).toISOString() });
+    found.set(cwd, { id: projectId(cwd), path: cwd, name: prettyName(cwd), lastSeen: new Date(fs.statSync(newest).mtimeMs).toISOString(), ...describeFolder(cwd) });
   }
 
   return [...found.values()].sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
