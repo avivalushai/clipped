@@ -1832,6 +1832,7 @@ function bindPage(){
     el.addEventListener('change',()=>{
       const f=S.features.find(x=>x.id===el.dataset.id); if(!f) return; const k=el.dataset.edit, v=el.value.trim();
       if(k==='status'){setStatus(f.id,v);return}
+      if(k==='area'){editCell=null;pickArea(f,el.value,el);return}
       if(k==='title'&&!v){el.value=f.title;return}
       if(v===f[k]){editCell=null;render();return}
       editCell=null;
@@ -1908,6 +1909,17 @@ function proofItem(f,x){
   const label=isSha(x)?'commit '+x.slice(0,7):x.replace(/^https?:\/\/(www\.)?/,'');
   return `<li>${href?`<a class="ext" href="${esc(href)}" target="_blank" rel="noreferrer noopener" title="${esc(x)}">${esc(label)}</a>`:`<span class="mono">${esc(label)}</span>`}<button class="xbtn" data-unlink="${esc(x)}" title="Remove" aria-label="Remove ${esc(label)}">×</button></li>`;
 }
+/* Who put the card in its area: the last "Area:" line in its log. Claude's pick is a guess
+   (it gives way to the card's files once it has some); yours sticks. */
+const areaBy=f=>{for(let i=f.log.length-1;i>=0;i--) if(f.log[i].text.startsWith('Area:')) return f.log[i].by; return f.area?'you':''};
+const NEW_AREA='__new_area__';
+/* "New area…" in either area dropdown: ask for a name, then put the card there. */
+function pickArea(f,v,el){
+  if(v!==NEW_AREA) return saveCard(f,{area:v}).then(ok=>ok&&toast('Saved'));
+  const name=(prompt('Name the new area (a page, a feature, a part of the product):')||'').trim();
+  if(!name){ if(el) el.value=f.area||''; return Promise.resolve() }
+  return saveCard(f,{area:name}).then(ok=>ok&&toast(`Moved to ${name}`));
+}
 /* The area chip is a dropdown, like the status chip: click it to move the card.
    The first option puts it back where its files say. Dashed = guessed from folders, not named yet. */
 function areaChoices(pid){
@@ -1918,10 +1930,12 @@ function areaChoices(pid){
 const areaTag=f=>{
   const {named,all}=areaChoices(f.project), guess=f.inArea&&!named.includes(f.inArea);
   const auto=f.area?'':f.inArea;
-  const tip=!f.inArea?'No area yet — pick one':f.area?'Put here by hand':guess?'Guessed from folder names':'From its files';
+  const byClaude=f.area&&areaBy(f)==='claude';
+  const tip=!f.inArea?'No area yet \u2014 pick one':byClaude?(f.inArea===f.area?'Claude\u2019s guess \u2014 change it if it\u2019s wrong':'Claude guessed '+f.area+'; its files say '+f.inArea):f.area?'Put here by hand':guess?'Guessed from folder names':'From its files';
   return `<span class="sel areasel"><select class="areachip ${guess?'guess':''} ${f.inArea?'':'none'}" data-edit="area" data-id="${f.id}" aria-label="Area" title="${tip}">
     <option value="" ${f.area?'':'selected'}>${auto?esc(auto):f.area?'From its files':'No area'}</option>
-    ${all.filter(n=>n!==auto).map(n=>`<option value="${esc(n)}" ${f.area===n?'selected':''}>${esc(n)}</option>`).join('')}</select></span>` };
+    ${all.filter(n=>n!==auto).map(n=>`<option value="${esc(n)}" ${f.area===n?'selected':''}>${esc(n)}${f.area===n&&byClaude?' (guess)':''}</option>`).join('')}
+    <option value="${NEW_AREA}">New area\u2026</option></select></span>` };
 
 /* The part of the product a card is in. Claude works it out from the files; this is for when it guessed wrong. */
 function structureFields(f){
@@ -1930,7 +1944,8 @@ function structureFields(f){
   const auto=f.area?'':f.inArea;
   return `<div class="field"><label class="lbl" for="areaSel">Area</label><span class="sel"><select id="areaSel">
       <option value="" ${f.area?'':'selected'}>${auto?`From its files: ${esc(auto)}`:'From its files (none yet)'}</option>
-      ${[...named,...guessed].map(n=>`<option value="${esc(n)}" ${f.area===n?'selected':''}>${esc(n)}</option>`).join('')}</select></span></div>`;
+      ${[...named,...guessed].map(n=>`<option value="${esc(n)}" ${f.area===n?'selected':''}>${esc(n)}${f.area===n&&areaBy(f)==='claude'?' (Claude\u2019s guess)':''}</option>`).join('')}
+      <option value="${NEW_AREA}">New area\u2026</option></select></span>${f.area&&areaBy(f)==='claude'?`<span class="hint">Claude guessed this from the title. Pick another and it\u2019s yours; leave it and the card\u2019s files decide once it has some.</span>`:''}</div>`;
 }
 function renderDrawer(){
   if(openNote) return renderNoteDrawer();
@@ -1988,7 +2003,7 @@ function renderDrawer(){
     commit().then(()=>saveCard(f,{links:[...f.links,t]})).then(()=>$('linkIn')?.focus())};
   document.querySelectorAll('[data-unlink]').forEach(b=>b.onclick=()=>commit().then(()=>saveCard(f,{links:f.links.filter(x=>x!==b.dataset.unlink)})));
   if($('handoffBtn')) $('handoffBtn').onclick=()=>commit().then(()=>copyPrompt(f));
-  if($('areaSel')) $('areaSel').onchange=e=>commit().then(()=>saveCard(f,{area:e.target.value}));
+  if($('areaSel')) $('areaSel').onchange=e=>commit().then(()=>pickArea(f,e.target.value,e.target));
   document.querySelectorAll('[data-nopen]').forEach(b=>b.onclick=()=>commit().then(()=>openTheNote(b.dataset.nopen)));
   $('dDel').onclick=()=>{ if(!confirm('Delete '+fkey(f)+' "'+f.title+'"? Merging it into another card keeps the history.')) return;
     deleteCard(f).then(ok=>{if(ok){openId=null;render();toast('Deleted')}})};

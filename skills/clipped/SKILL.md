@@ -138,8 +138,15 @@ board reads like the product, not the repo:
   Name an area when three or more cards sit under a guess.
 - A card whose files mislead (a settings change for the invoice PDF) →
   `board update LE-3 --area "Invoice PDF"`.
-- Don't create areas for one-off folders, and don't file cards by hand when
-  their files already say where they belong. The user only corrects.
+- **Guess an area for every new card.** A card with no files yet — an idea, a
+  question, a check — has nothing else to go on, so add it with your best guess:
+  `board add "Dropdowns look like the rest of the board" --area "UI"`. Reuse a
+  name from `board area list` (named or folder guess) whenever one fits; invent a
+  new one only when none does. If you can't tell, leave it blank — a wrong area
+  is worse than none.
+- Your guess is only a guess: once the card has files, they decide. An area the
+  user picks on the board always wins — never change it back.
+- Don't create areas for one-off folders.
 
 ## What is a feature?
 

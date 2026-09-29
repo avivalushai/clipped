@@ -236,10 +236,13 @@ function guessArea(file) {
   const words = d.replace(/[-_]+/g, " ").trim();
   return words.length <= 3 ? words.toUpperCase() : words[0].toUpperCase() + words.slice(1);
 }
-function areaOf(board2, f) {
-  if (f.area) return board2.areas.find((a) => a.name.toLowerCase() === f.area.toLowerCase())?.name ?? f.area;
+function areaSetBy(f) {
+  for (let i = (f.log?.length ?? 0) - 1; i >= 0; i--) if (f.log[i].text.startsWith("Area:")) return f.log[i].by;
+  return "";
+}
+function areaOfFiles(board2, files) {
   const votes = /* @__PURE__ */ new Map();
-  for (const file of f.files) {
+  for (const file of files) {
     const name = areaOfFile(board2.areas, file)?.name ?? guessArea(file);
     if (name) votes.set(name, (votes.get(name) ?? 0) + 1);
   }
@@ -247,6 +250,15 @@ function areaOf(board2, f) {
   let n = 0;
   for (const [name, c] of votes) if (c > n) [best, n] = [name, c];
   return best;
+}
+function areaOf(board2, f) {
+  const fromFiles = areaOfFiles(board2, f.files);
+  if (f.area) {
+    const guessed = f.log && areaSetBy({ log: f.log }) === "claude";
+    if (guessed && fromFiles) return fromFiles;
+    return board2.areas.find((a) => a.name.toLowerCase() === f.area.toLowerCase())?.name ?? f.area;
+  }
+  return fromFiles;
 }
 function findArea(board2, name) {
   return board2.areas.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
@@ -1174,18 +1186,18 @@ function handleApi(ctx, req) {
       if (b[key] !== void 0 && b[key] !== "") argv.push(flag2, str(b[key], key));
     for (const s2 of b.steps ?? []) argv.push("--step", str(s2?.text, "step text"));
     for (const d of b.doneWhen ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
-    return board(ctx, p, argv);
+    return withArea(p, board(ctx, p, argv));
   }
   if (seg.length === 4) {
     const key = seg[3].toUpperCase();
     feature(p, key);
-    if (method === "PATCH") return applyPatch(ctx, p, key, req.body ?? {});
+    if (method === "PATCH") return withArea(p, applyPatch(ctx, p, key, req.body ?? {}));
     if (method === "DELETE") return board(ctx, p, ["delete", key]);
     throw new HttpError(405, "use PATCH or DELETE");
   }
   throw new HttpError(404, `no route ${path14}`);
 }
-var HttpError, feature, note, str;
+var HttpError, withArea, feature, note, str;
 var init_api = __esm({
   "server/src/api.ts"() {
     "use strict";
@@ -1201,6 +1213,7 @@ var init_api = __esm({
         this.status = status;
       }
     };
+    withArea = (project2, f) => ({ ...f, inArea: areaOf(loadBoard(project2), f) });
     feature = (project2, key) => {
       const f = loadBoard(project2).features.find((x) => x.key === key);
       if (!f) throw new HttpError(404, `no card ${key}`);
@@ -1285,7 +1298,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.9.10";
+    VERSION = "0.9.11";
   }
 });
 
@@ -1563,7 +1576,7 @@ function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const f = findFeature(board2, need(pos, 0, "card key (e.g. LOOP-3)"));
   const area3 = areaOf(board2, f);
-  emit(ctx, opts, { ...f, inArea: area3 }, [formatDetail(ctx, f), ...area3 ? [`Area: ${area3}${f.area ? "" : " (from its files)"}`] : []]);
+  emit(ctx, opts, { ...f, inArea: area3 }, [formatDetail(ctx, f), ...area3 ? [`Area: ${area3}${!f.area || area3 !== f.area ? " (from its files)" : areaSetBy(f) === "claude" ? " (my guess)" : ""}`] : []]);
 }
 function context(ctx, { opts }) {
   const loc = findBoard(ctx.cwd);
@@ -1708,7 +1721,10 @@ function add(ctx, { pos, opts }) {
       log: [{ at, by, text: status === "idea" ? "Created" : `Created \u2014 ${status}` }]
     };
     if (status === "parked" && !note3.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
-    if (str2(opts, "area")) setArea(b, f2, str2(opts, "area"));
+    if (str2(opts, "area")) {
+      const line = setArea(b, f2, str2(opts, "area"));
+      if (line) f2.log.push({ at: f2.createdAt, by, text: line });
+    }
     b.nextNum++;
     b.features.push(f2);
     return f2;
@@ -1754,7 +1770,10 @@ function update(ctx, { pos, opts }) {
       logs.push(`Removed files: ${dropped.join(", ")}`);
     }
     logs.push(...addLinks(f2, list(opts, "link")));
-    if (str2(opts, "area") !== void 0) logs.push(setArea(b, f2, str2(opts, "area")));
+    if (str2(opts, "area") !== void 0) {
+      const line = setArea(b, f2, str2(opts, "area"));
+      logs.push(line || (f2.area && areaSetBy(f2) !== by ? `Area: ${f2.area}` : ""));
+    }
     const unlink = linksOf(list(opts, "unlink")).filter((x) => f2.links.includes(x));
     if (unlink.length) {
       f2.links = f2.links.filter((x) => !unlink.includes(x));

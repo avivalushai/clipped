@@ -33,6 +33,9 @@ function board<T>(ctx: Ctx, project: Project, argv: string[]): T {
   return JSON.parse(out.join("\n") || "null") as T;
 }
 
+/** A card as the UI shows it: with the area it's actually in, which the board read also carries. */
+const withArea = (project: Project, f: Feature) => ({ ...f, inArea: areaOf(loadBoard(project), f) });
+
 const feature = (project: Project, key: string): Feature => {
   const f = loadBoard(project).features.find((x) => x.key === key);
   if (!f) throw new HttpError(404, `no card ${key}`);
@@ -210,14 +213,14 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
       if (b[key] !== undefined && b[key] !== "") argv.push(flag, str(b[key], key));
     for (const s of (b.steps as Step[]) ?? []) argv.push("--step", str(s?.text, "step text"));
     for (const d of (b.doneWhen as string[]) ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
-    return board<Feature>(ctx, p, argv);
+    return withArea(p, board<Feature>(ctx, p, argv));
   }
 
   // PATCH|DELETE /api/projects/:id/features/:key
   if (seg.length === 4) {
     const key = seg[3]!.toUpperCase();
     feature(p, key); // 404 before any write
-    if (method === "PATCH") return applyPatch(ctx, p, key, (req.body ?? {}) as FeaturePatch);
+    if (method === "PATCH") return withArea(p, applyPatch(ctx, p, key, (req.body ?? {}) as FeaturePatch) as Feature);
     if (method === "DELETE") return board<Feature>(ctx, p, ["delete", key]);
     throw new HttpError(405, "use PATCH or DELETE");
   }

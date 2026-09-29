@@ -43,6 +43,22 @@ describe("areas", () => {
     expect(validateBoard(sb.read())).toEqual([]);
   });
 
+  it("Claude's guess holds until the card has files; the user's pick always wins", () => {
+    const sb = withBoard(); // acts as claude
+    sb.json("add", "Dropdowns look like the rest of the board", "--area", "Settings");
+    expect(sb.read().features[0].log.at(-1)).toMatchObject({ by: "claude", text: "Area: Settings" });
+    expect(sb.board("show", "APP-1").out).toContain("Area: Settings");
+
+    // work starts in ui/: the files outvote the guess
+    sb.json("update", "APP-1", "--file", "ui/index.html");
+    expect(areaOf(sb.read(), sb.read().features[0])).toBe("UI");
+
+    // the user moves it back: now it sticks, whatever the files say
+    sb.json("update", "APP-1", "--area", "Settings", "--by", "user");
+    expect(areaOf(sb.read(), sb.read().features[0])).toBe("Settings");
+    expect(validateBoard(sb.read())).toEqual([]);
+  });
+
   it("refuses a card in an area the board doesn't have", () => {
     const sb = withBoard();
     sb.json("add", "Totals");
@@ -63,5 +79,18 @@ describe("schema v4", () => {
     expect(to).toBe(SCHEMA_VERSION);
     expect(board).toMatchObject({ areas: [], features: [{ area: "" }] });
     expect(validateBoard(board)).toEqual([]);
+  });
+});
+
+describe("the API and areas", () => {
+  it("returns the area a card is actually in after an edit, not only after a reload", async () => {
+    const { handleApi } = await import("../../server/src/api.js");
+    const { projectId } = await import("../../server/src/projects.js");
+    const sb = withBoard();
+    sb.json("add", "Shortcuts sheet", "--area", "UI");
+    const api = (method: string, route: string, body?: unknown) =>
+      handleApi({ cwd: sb.root, env: sb.env, out: () => {}, err: () => {} }, { method, path: route, body }) as any;
+    const f = api("PATCH", `/api/projects/${projectId(sb.root)}/features/APP-1`, { area: "Shortcuts" });
+    expect(f).toMatchObject({ area: "Shortcuts", inArea: "Shortcuts" });
   });
 });

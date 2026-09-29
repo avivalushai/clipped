@@ -119,6 +119,8 @@ user makes the call.
 - No status, no steps, no progress: a note has no next step, which is exactly what keeps it off the work tabs
 - Every schema change bumps `schemaVersion`; the CLI migrates old files automatically.
 
+**Areas** — `areas: [{ name, paths[] }]` name the parts of the product. A card's area: one the user picked always wins; one Claude guessed (the last `Area:` line in its log is by claude) holds only until the card has files, then its files decide; otherwise the area most of its files fall in (a named area's paths, else the file's top folder). Claude guesses an area for every new card (`board add --area`), reusing existing names. On the board, the Area dropdown marks Claude's guess and offers **New area…**.
+
 Registry `~/.clipped/projects.json`: `[{ "path": "/Users/x/code/looper", "name": "Looper", "key": "LOOP", "addedAt": "..." }]`
 
 UI choices `~/.clipped/ui.json`: `{ "obHidden": true, "tourDone": true }` — only these true/false keys (`GET|PATCH /api/prefs`). Closing Getting started or finishing the tour is kept here, not only in localStorage, because the board has more than one address and localStorage is per address and per browser.

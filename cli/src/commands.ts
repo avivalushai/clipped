@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { clearAuth, readAuth, readSettings, siteUrl, writeAuth, writeSettings } from "./account.js";
 import { track } from "./analytics.js";
-import { areaOf, findArea } from "./areas.js";
+import { areaOf, areaSetBy, findArea } from "./areas.js";
 import { type Ctx, UserError, actor, nowIso } from "./context.js";
 import {
   activeFeature,
@@ -170,7 +170,7 @@ export function show(ctx: Ctx, { pos, opts }: Args) {
   const board = readBoard(requireBoard(ctx).file);
   const f = findFeature(board, need(pos, 0, "card key (e.g. LOOP-3)"));
   const area = areaOf(board, f);
-  emit(ctx, opts, { ...f, inArea: area }, [formatDetail(ctx, f), ...(area ? [`Area: ${area}${f.area ? "" : " (from its files)"}`] : [])]);
+  emit(ctx, opts, { ...f, inArea: area }, [formatDetail(ctx, f), ...(area ? [`Area: ${area}${!f.area || area !== f.area ? " (from its files)" : areaSetBy(f) === "claude" ? " (my guess)" : ""}`] : [])]);
 }
 
 /** After a fortnight, a card I opened and nobody checked has stopped being news. */
@@ -343,7 +343,10 @@ export function add(ctx: Ctx, { pos, opts }: Args) {
       log: [{ at, by, text: status === "idea" ? "Created" : `Created — ${status}` }],
     };
     if (status === "parked" && !note.trim()) throw new UserError(`parking needs a line saying where you stopped (--stopped "...")`);
-    if (str(opts, "area")) setArea(b, f, str(opts, "area")!);
+    if (str(opts, "area")) {
+      const line = setArea(b, f, str(opts, "area")!);
+      if (line) f.log.push({ at: f.createdAt, by, text: line }); // says whose guess it is
+    }
     b.nextNum++;
     b.features.push(f);
     return f;
@@ -392,7 +395,11 @@ export function update(ctx: Ctx, { pos, opts }: Args) {
       logs.push(`Removed files: ${dropped.join(", ")}`);
     }
     logs.push(...addLinks(f, list(opts, "link")));
-    if (str(opts, "area") !== undefined) logs.push(setArea(b, f, str(opts, "area")!));
+    if (str(opts, "area") !== undefined) {
+      const line = setArea(b, f, str(opts, "area")!);
+      // Picking the area Claude guessed makes it yours: say so, or it stays a guess.
+      logs.push(line || (f.area && areaSetBy(f) !== by ? `Area: ${f.area}` : ""));
+    }
     const unlink = linksOf(list(opts, "unlink")).filter((x) => f.links.includes(x));
     if (unlink.length) {
       f.links = f.links.filter((x) => !unlink.includes(x));
