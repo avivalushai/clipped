@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 116,
+  "nextNum": 118,
   "features": [
     {
       "key": "LE-1",
@@ -4652,8 +4652,8 @@
       "key": "LE-112",
       "title": "Redo the videos on the 0.9.6 UI with the symmetric split view",
       "type": "feature",
-      "status": "active",
-      "note": "Both renders running, then send",
+      "status": "review",
+      "note": "Watch both videos on the new UI",
       "doneWhen": [],
       "steps": [
         {
@@ -4666,7 +4666,7 @@
         },
         {
           "text": "Render the week builder cut and Clipped in use",
-          "done": false
+          "done": true
         }
       ],
       "files": [
@@ -4676,7 +4676,7 @@
       "links": [],
       "area": "",
       "createdAt": "2026-09-29T11:01:14Z",
-      "updatedAt": "2026-09-29T11:01:20Z",
+      "updatedAt": "2026-09-29T11:11:53Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4693,6 +4693,16 @@
           "at": "2026-09-29T11:01:20Z",
           "by": "claude",
           "text": "Step done: Recapture both stories on the committed 0.9.6 build"
+        },
+        {
+          "at": "2026-09-29T11:11:53Z",
+          "by": "claude",
+          "text": "Step done: Render the week builder cut and Clipped in use"
+        },
+        {
+          "at": "2026-09-29T11:11:53Z",
+          "by": "claude",
+          "text": "Moved to review — Watch both videos on the new UI"
         }
       ]
     },
@@ -4785,10 +4795,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "d3333b3"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:10:37Z",
-      "updatedAt": "2026-09-29T11:10:37Z",
+      "updatedAt": "2026-09-29T11:11:30Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4800,6 +4812,62 @@
           "at": "2026-09-29T11:10:37Z",
           "by": "claude",
           "text": "Moved to review — Design → UI work on All projects: badge and project name on one line; rows 44px. Not committed."
+        },
+        {
+          "at": "2026-09-29T11:11:30Z",
+          "by": "claude",
+          "text": "Proof: d3333b3"
+        }
+      ]
+    },
+    {
+      "key": "LE-116",
+      "title": "UI work uses the same table as Work, plus a Design decisions column",
+      "type": "feature",
+      "status": "review",
+      "note": "Design → UI work looks and works like Work: status chip, area chip, groups, sorting, resizing, pinned header; a Design decisions column with chips. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:15:09Z",
+      "updatedAt": "2026-09-29T11:15:09Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:15:09Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T11:15:09Z",
+          "by": "claude",
+          "text": "Moved to review — Design → UI work looks and works like Work: status chip, area chip, groups, sorting, resizing, pinned header; a Design decisions column with chips. Not committed."
+        }
+      ]
+    },
+    {
+      "key": "LE-117",
+      "title": "Every card gets an area: Claude guesses one, the user can change it",
+      "type": "feature",
+      "status": "review",
+      "note": "Branch area-guess (0.9.10) in ../loose-ends-area, not merged: main has the other session's uncommitted ui/index.html (reworking UI work). Then: merge, sync, restart :4747, push, and guess areas for the 48 cards that have none.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:15:27Z",
+      "updatedAt": "2026-09-29T11:15:27Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:15:27Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }

@@ -259,9 +259,6 @@ tr.grp:hover td{background:var(--sunk);color:var(--ink)}
 .who.you b{background:var(--ink);color:var(--surface)}
 .hint{font-size:12px;color:var(--muted)}
 .call{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
-.uirow{cursor:pointer}
-.uirow:hover>td{background:var(--sunk)}
-.uist{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .struck{text-decoration:line-through;color:var(--muted)}
 .callrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 
@@ -446,7 +443,7 @@ summary.opt b{font-weight:500;color:var(--ink);max-width:140px;overflow:hidden;t
 .tabs button{display:inline-flex;align-items:center;gap:6px}
 .tabs svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
 .grid.compact td{height:34px;padding:2px 8px}
-.grid tbody tr[data-row]>td,.grid tbody tr[data-nrow]>td,.grid tbody tr.uirow>td{height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.grid tbody tr[data-row]>td,.grid tbody tr[data-nrow]>td{height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .grid.compact tbody tr[data-row]>td,.grid.compact tbody tr[data-nrow]>td{height:34px}
 .grid.compact .cell-in{padding:2px 6px}
 .grid.compact .status{padding:1px 20px 1px 7px;font-size:11px}
@@ -782,6 +779,7 @@ const COLS=[
   {id:'project',label:'Project',w:124,sort:'project',home:true,lock:true},   /* on All projects, always: which project a row is from */
   {id:'title',label:'Card',w:380,sort:'title',lock:true},
   {id:'area',label:'Area',w:150,sort:'area'},
+  {id:'calls',label:'Design decisions',w:180,ui:true},   /* UI work only: the calls each card made */
   {id:'status',label:'Status',w:136,sort:'status'},
   {id:'note',label:'Next step / where stopped',w:300,flex:true},
   {id:'progress',label:'Progress',w:120,sort:'progress'},
@@ -1263,7 +1261,7 @@ function renderPage(){
         <option value="comfy" ${P.density==='comfy'?'selected':''}>Comfortable</option>
         <option value="compact" ${P.density==='compact'?'selected':''}>Compact</option></select></span>
       <details class="cols"><summary class="opt" style="padding-right:9px">Columns · ${visibleCols(isHome).length}</summary><div class="menu">
-        ${COLS.filter(c=>!c.home||isHome).map(c=>`<label><input type="checkbox" data-col="${c.id}" ${c.lock||!P.hidden.includes(c.id)?'checked':''} ${c.lock?'disabled':''}>${colLabel(c)}</label>`).join('')}
+        ${COLS.filter(c=>(!c.home||isHome)&&(!c.ui||uiWork())).map(c=>`<label><input type="checkbox" data-col="${c.id}" ${c.lock||!P.hidden.includes(c.id)?'checked':''} ${c.lock?'disabled':''}>${colLabel(c)}</label>`).join('')}
         ${P.colW&&Object.keys(P.colW).length?`<button class="linkbtn colreset" id="colReset" type="button">Reset widths</button>`:''}
       </div></details>`:''}
       <label class="opt"><input type="checkbox" id="hideDone" ${P.hideDone?'checked':''}>Hide done</label>
@@ -1277,7 +1275,7 @@ function renderPage(){
 /* Column widths the user dragged, per table kind; the default otherwise. */
 const cw=(map,c)=>(P[map]&&P[map][c.id])||c.w;
 const grip=(map,c)=>`<span class="colgrip" data-grip="${c.id}" data-map="${map}" title="Drag to resize · double-click to reset" aria-hidden="true"></span>`;
-const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&(c.id==='project'||!P.hidden.includes(c.id))&&!(c.id==='area'&&P.group==='area'));
+const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&(!c.ui||uiWork())&&(c.id==='project'||!P.hidden.includes(c.id))&&!(c.id==='area'&&P.group==='area'));
 
 function groupsOf(fs,isHome){
   const g=P.group==='project'&&!isHome?'status':P.group;
@@ -1364,31 +1362,9 @@ function noteComposer(cols,isHome){
   return `<tr class="composer">${out}</tr>`;
 }
 
-/* UI work: the cards behind the design, in a plain table like the decisions next to it.
-   Each row opens the card; its decision chips open the calls it made. */
-function renderUiWork(isHome){
-  const q=query.toLowerCase();
-  const fs=tabCards().filter(f=>!q||f.title.toLowerCase().includes(q)||f.key.toLowerCase().includes(q)||(f.inArea||'').toLowerCase().includes(q))
-    .sort((a,b)=>(GORDER[a.status]??9)-(GORDER[b.status]??9)||b.updatedAt-a.updatedAt);
-  const cols=[{id:'key',label:'Key',w:92},...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'title',label:'Card',w:360},
-    {id:'status',label:'Status',w:130},{id:'area',label:'Area',w:120},{id:'calls',label:'Design decisions',w:200},{id:'updated',label:'Updated',w:92}];
-  const calls=f=>S.notes.filter(n=>n.kind==='decision'&&n.project===f.project&&n.cards.includes(f.key));
-  const cell=(c,f)=>{switch(c.id){
-    case 'key': return `<td class="mono">${esc(f.key)}</td>`;
-    case 'project': return `<td><span class="projcell">${pbadge(proj(f.project),true)}${esc(proj(f.project).name)}</span></td>`;
-    case 'title': return `<td class="title"><span class="${f.status==='done'?'struck':''}">${esc(f.title)}</span></td>`;
-    case 'status': return `<td><span class="uist"><span class="dot" style="background:${color(f.status)}"></span>${esc(stLabel(f))}</span></td>`;
-    case 'area': return `<td>${f.inArea||f.area?esc(f.inArea||f.area):'<span class="muted">—</span>'}</td>`;
-    case 'calls': {const ns=calls(f); return `<td>${ns.length?ns.map(n=>`<button class="clink" data-nopen="${n.id}" title="${esc(n.title)}">${esc(n.nid.slice(n.nid.indexOf('-')+1))}</button>`).join(' '):'<span class="muted">—</span>'}</td>`}
-    case 'updated': return `<td class="mono">${ago(f.updatedAt)}</td>`;
-  }return '<td></td>'};
-  let rows=fs.map(f=>`<tr class="uirow" data-open="${f.id}" tabindex="0">${cols.map(c=>cell(c,f)).join('')}</tr>`).join('');
-  if(!fs.length) rows=`<tr><td colspan="${cols.length}" class="empty">${q?'No UI work matches that.':'No UI work yet. A card shows here when its area is the UI, most of its files are UI files, or a design decision links to it.'}</td></tr>`;
-  const minW=cols.reduce((a,c)=>a+c.w,0);
-  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
-    <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="hint">The same cards as in Work — changes to one show in both. Click a row to open the card; click a decision to see the call it made.</p>`;
-}
+/* UI work: the cards behind the design — drawn by the same table as Work (same rows, chips,
+   groups, sorting and resizing), with the design decisions each one made as an extra column. */
+function renderUiWork(isHome){ return renderTable(scopeFeatures(),isHome) }
 
 /* ---------- outputs ----------
    Everything Claude made that you can open — an app on localhost, a deployed site, a pull
@@ -1491,6 +1467,8 @@ function cell(c,f){
       return extra?td.replace(/<\/div><\/td>$/,extra+'</div></td>'):td;
     }
     case 'area': return `<td>${areaTag(f)}</td>`;
+    case 'calls': { const ns=S.notes.filter(n=>n.kind==='decision'&&n.project===f.project&&n.cards.includes(f.key));
+      return `<td>${ns.length?ns.map(n=>`<button class="clink" data-nopen="${n.id}" title="${esc(n.title)}">${esc(n.nid.slice(n.nid.indexOf('-')+1))}</button>`).join(' '):'<span class="muted">—</span>'}</td>` }
     case 'status': return `<td><span class="sel ${f.status}"><select class="status ${f.status}" data-edit="status" data-id="${f.id}" aria-label="Status">${STATUSES.map(s=>`<option value="${s.id}" ${s.id===f.status?'selected':''}>${sl(s.id)}</option>`).join('')}</select></span></td>`;
     case 'note': {
       const ph=f.status==='parked'?'Where did you stop?':f.status==='done'?'':noteLabel(f);
@@ -1811,14 +1789,14 @@ function bindPage(){
   if(p&&$('showJson')) $('showJson').onclick=()=>api('/api/projects/'+p.id+'/board')
     .then(b=>openDialog(tilde(p.path)+'/.board/board.json',JSON.stringify(b,null,2)))
     .catch(e=>toast(e.message));
-  if(isNoteTab()) return bindNotes(p,isHome);
+  if(isNoteTab()&&!uiWork()) return bindNotes(p,isHome);
   if(isOutTab()) return bindOutputs();
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{P.mode=b.dataset.mode;savePrefs();render()});
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const k=b.dataset.sort;sort=sort.k===k?{k,dir:-sort.dir}:{k,dir:1};render()});
   if($('groupSel')) $('groupSel').onchange=e=>{P.group=e.target.value;savePrefs();render()};
   if($('densSel')) $('densSel').onchange=e=>{P.density=e.target.value;savePrefs();render()};
-  $('hideDone').onchange=e=>{P.hideDone=e.target.checked;savePrefs();render()};
+  if($('hideDone')) $('hideDone').onchange=e=>{P.hideDone=e.target.checked;savePrefs();render()};
   /* The whole group row opens and closes it; the chevron is the keyboard's way in. */
   document.querySelectorAll('tr[data-grprow]').forEach(tr=>tr.onclick=()=>{const id=tr.dataset.grprow;
     P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render();
