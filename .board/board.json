@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 122,
+  "nextNum": 125,
   "features": [
     {
       "key": "LE-1",
@@ -5190,7 +5190,7 @@
       "key": "LE-119",
       "title": "A paperclip logo: app icon and wordmark",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Paperclip mark in the landing header and board sidebar; blue tile favicon in the browser tab; landing/img/logo/*.svg",
       "doneWhen": [],
       "steps": [],
@@ -5200,10 +5200,13 @@
         "landing/index.html",
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "9aace9a",
+        "32c9812"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:22:32Z",
-      "updatedAt": "2026-09-29T11:36:44Z",
+      "updatedAt": "2026-09-29T11:44:34Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -5230,6 +5233,21 @@
           "at": "2026-09-29T11:36:44Z",
           "by": "claude",
           "text": "Moved to review — Paperclip mark in the landing header and board sidebar; blue tile favicon in the browser tab; landing/img/logo/*.svg"
+        },
+        {
+          "at": "2026-09-29T11:42:39Z",
+          "by": "claude",
+          "text": "Proof: 9aace9a"
+        },
+        {
+          "at": "2026-09-29T11:44:34Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:44:34Z",
+          "by": "claude",
+          "text": "Proof: 32c9812"
         }
       ]
     },
@@ -5284,20 +5302,32 @@
       "key": "LE-121",
       "title": "Filters and grouping per tab: Type on Work, Who decided on Design, Kind and Running on Outputs",
       "type": "feature",
-      "status": "idea",
-      "note": "Suggested: Work — Type filter, group by Type or Last touched; Design — Who decided filter (yours / Claude's unchecked / agreed), group by card; Outputs — Kind filter, Running now, hide done cards' outputs, group by card; Brainstorms — Led to work / Nothing yet; Plans & References — search is enough",
+      "status": "review",
+      "note": "Check the Type, Design Area and Outputs filters at clipped.localhost:4796 — not committed",
       "doneWhen": [],
       "steps": [
         {
           "text": "Grouping first: one Group by control on every tab, options per tab",
-          "done": false
+          "done": true
+        },
+        {
+          "text": "Search sits at the right end of the grouping and filter row on every tab",
+          "done": true
+        },
+        {
+          "text": "Filters: Type on Work, Area on Design, Running now + Hide done on Outputs",
+          "done": true
         }
       ],
-      "files": [],
-      "links": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [
+        "3f403e5"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:38:33Z",
-      "updatedAt": "2026-09-29T11:40:27Z",
+      "updatedAt": "2026-09-29T11:55:54Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -5309,6 +5339,256 @@
           "at": "2026-09-29T11:40:27Z",
           "by": "claude",
           "text": "Step added: Grouping first: one Group by control on every tab, options per tab"
+        },
+        {
+          "at": "2026-09-29T11:44:43Z",
+          "by": "claude",
+          "text": "Step done: Grouping first: one Group by control on every tab, options per tab"
+        },
+        {
+          "at": "2026-09-29T11:44:43Z",
+          "by": "claude",
+          "text": "Moved to review — Check the Group by on Questions, Design, Brainstorms, References and Outputs at clipped.localhost:4796 — not committed"
+        },
+        {
+          "at": "2026-09-29T11:44:43Z",
+          "by": "claude",
+          "text": "Files: ui/index.html"
+        },
+        {
+          "at": "2026-09-29T11:47:36Z",
+          "by": "claude",
+          "text": "Step added (done): Search sits at the right end of the grouping and filter row on every tab"
+        },
+        {
+          "at": "2026-09-29T11:47:37Z",
+          "by": "claude",
+          "text": "Step added: Filters: Type on Work, Area on Design, Running now + Hide done on Outputs"
+        },
+        {
+          "at": "2026-09-29T11:50:45Z",
+          "by": "claude",
+          "text": "Step done: Filters: Type on Work, Area on Design, Running now + Hide done on Outputs"
+        },
+        {
+          "at": "2026-09-29T11:50:58Z",
+          "by": "claude",
+          "text": "Note: Check the Type, Design Area and Outputs filters at clipped.localhost:4796 — not committed"
+        },
+        {
+          "at": "2026-09-29T11:55:54Z",
+          "by": "claude",
+          "text": "Proof: 3f403e5"
+        }
+      ]
+    },
+    {
+      "key": "LE-122",
+      "title": "The Clipped logo: Clipp·d with a paperclip e, in Quicksand",
+      "type": "feature",
+      "status": "review",
+      "note": "Wordmark in landing + install headers and board sidebar (paperclip alone when the sidebar is collapsed); new favicon shows in the browser tab",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/img/logo/clipped-wordmark.svg",
+        "landing/img/logo/clipped-icon.svg",
+        "ui/index.html",
+        "landing/index.html"
+      ],
+      "links": [],
+      "area": "Landing",
+      "createdAt": "2026-09-29T11:50:13Z",
+      "updatedAt": "2026-09-29T12:37:18Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:50:13Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:50:13Z",
+          "by": "claude",
+          "text": "Area: Landing"
+        },
+        {
+          "at": "2026-09-29T11:53:45Z",
+          "by": "claude",
+          "text": "Note: Capitals version: CLIPPED with a paperclip e — pick A (x-height e) / B (cap-height e) / C (wide spacing) / D (ink)"
+        },
+        {
+          "at": "2026-09-29T11:55:50Z",
+          "by": "claude",
+          "text": "Note: Round e bent from one wire with a free-floating inner loop; pick 1–4 (leaning 3: lighter wire, loop under the bar)"
+        },
+        {
+          "at": "2026-09-29T11:58:16Z",
+          "by": "claude",
+          "text": "Note: Flat paperclip e (user's reference): wire tail along the bottom, long top wire, crossbar, small inner turn into the eye. Pick 1 wide/thin, 2 narrower, 3 heavy, 4 ink (leaning 2)"
+        },
+        {
+          "at": "2026-09-29T12:04:21Z",
+          "by": "claude",
+          "text": "Note: Options: paperclip e at C width (e1 thin, e2 medium) or paperclip as the C (C1/C2 flat, C3 round, C4 ink). Leaning e1; C3 if the C route"
+        },
+        {
+          "at": "2026-09-29T12:16:41Z",
+          "by": "claude",
+          "text": "Note: Paperclip C with the top turn curving into the C (A1 a little, A2 further, A3 thin, A4 ink); leaning A2"
+        },
+        {
+          "at": "2026-09-29T12:19:05Z",
+          "by": "claude",
+          "text": "Note: Reference paperclip as the leading C: 1 C width, 2 wider (82), 3 wide like reference, 4 medium wire, 5 ink. Leaning 2"
+        },
+        {
+          "at": "2026-09-29T12:19:50Z",
+          "by": "claude",
+          "text": "Note: Chosen direction: option 4 (paperclip C, width 82, medium wire) all in ink. Next: final light/dark files + icon + header swap"
+        },
+        {
+          "at": "2026-09-29T12:21:21Z",
+          "by": "claude",
+          "text": "Note: Wire = letter stroke: A SemiBold/13, B Medium/10.8, C Regular/8.6 (all ink). Leaning B"
+        },
+        {
+          "at": "2026-09-29T12:24:37Z",
+          "by": "claude",
+          "text": "Note: Font trial for the paperclip-C wordmark: Geist Medium, Quicksand, Nunito, Outfit, Jost, Space Grotesk, Manrope, DM Sans, Sora. Leaning Quicksand / Outfit / Geist Medium"
+        },
+        {
+          "at": "2026-09-29T12:25:58Z",
+          "by": "claude",
+          "text": "Note: Big comparison done: Quicksand vs Outfit (plus C-alone icon). Leaning Quicksand; then final files + header swap"
+        },
+        {
+          "at": "2026-09-29T12:27:29Z",
+          "by": "claude",
+          "text": "Note: Quicksand chosen; comparing weights 600/500/400 (leaning 500). Then final files + header swap"
+        },
+        {
+          "at": "2026-09-29T12:29:06Z",
+          "by": "claude",
+          "text": "Note: Quicksand 500: comparing CLIPPED (paperclip C) vs Clipp·d (paperclip e, x-height; B normal, C wider). Same icon either way"
+        },
+        {
+          "at": "2026-09-29T12:31:51Z",
+          "by": "claude",
+          "text": "Note: Clipp·d (B/C) font trial: Quicksand, Comfortaa, Varela Round, Nunito, Outfit, Poppins, Lexend, Jost, Geist Medium. Shortlist: Quicksand, Comfortaa, Varela Round, Poppins"
+        },
+        {
+          "at": "2026-09-29T12:33:44Z",
+          "by": "claude",
+          "text": "Note: Second font round (mono, rounded, grotesque, wide, serif): JetBrains/Plex/Space Mono, Fredoka, Baloo 2, Bricolage, Syne, Unbounded, Fraunces, Instrument Serif. Shortlist: JetBrains Mono, Fredoka 300, Fraunces 300"
+        },
+        {
+          "at": "2026-09-29T12:37:18Z",
+          "by": "claude",
+          "text": "Renamed from “Wordmark where the e is a paperclip”"
+        },
+        {
+          "at": "2026-09-29T12:37:18Z",
+          "by": "claude",
+          "text": "Files: landing/img/logo/clipped-wordmark.svg, landing/img/logo/clipped-icon.svg, ui/index.html, landing/index.html"
+        },
+        {
+          "at": "2026-09-29T12:37:18Z",
+          "by": "claude",
+          "text": "Note: Swapped into landing, install and board; favicon fixed. Commit + release when approved"
+        },
+        {
+          "at": "2026-09-29T12:37:18Z",
+          "by": "claude",
+          "text": "Moved to review — Wordmark in landing + install headers and board sidebar (paperclip alone when the sidebar is collapsed); new favicon shows in the browser tab"
+        }
+      ]
+    },
+    {
+      "key": "LE-123",
+      "title": "An older session's CLI hands off to the newest installed one instead of refusing the board",
+      "type": "bug",
+      "status": "review",
+      "note": "Restart the LeadChannels session so it picks up the new plugin",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "cli/src/handoff.ts",
+        "cli/test/handoff.test.ts"
+      ],
+      "links": [
+        "8a09b7f"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T11:50:43Z",
+      "updatedAt": "2026-09-29T11:52:39Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:50:43Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:50:46Z",
+          "by": "claude",
+          "text": "Moved to review — Ship as 0.9.13; restart the LeadChannels session so it picks up the new plugin"
+        },
+        {
+          "at": "2026-09-29T11:50:46Z",
+          "by": "claude",
+          "text": "Type → bug"
+        },
+        {
+          "at": "2026-09-29T11:50:46Z",
+          "by": "claude",
+          "text": "Files: cli/src/handoff.ts, cli/test/handoff.test.ts"
+        },
+        {
+          "at": "2026-09-29T11:52:39Z",
+          "by": "claude",
+          "text": "Proof: 8a09b7f"
+        },
+        {
+          "at": "2026-09-29T11:52:39Z",
+          "by": "claude",
+          "text": "Note: Restart the LeadChannels session so it picks up the new plugin"
+        }
+      ]
+    },
+    {
+      "key": "LE-124",
+      "title": "UI work: the controls row sat on top of the table",
+      "type": "bug",
+      "status": "review",
+      "note": "Shipped in 0.9.15 — check Design → UI work",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [
+        "e928d26"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T11:57:22Z",
+      "updatedAt": "2026-09-29T11:58:30Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:57:22Z",
+          "by": "claude",
+          "text": "Created — review"
+        },
+        {
+          "at": "2026-09-29T11:58:26Z",
+          "by": "claude",
+          "text": "Proof: e928d26"
+        },
+        {
+          "at": "2026-09-29T11:58:30Z",
+          "by": "claude",
+          "text": "Note: Shipped in 0.9.15 — check Design → UI work"
         }
       ]
     }
