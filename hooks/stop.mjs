@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Stop: code changed this turn and no card moved → ask Claude to update the board,
-// at most once per turn. Each nudge costs a whole extra pass over the conversation,
+// Stop: code changed this turn and no card moved → ask Claude to update the board;
+// a UI edit brought in a new color, typeface or token and no design decision was
+// recorded → ask for one. Both go in one nudge, at most once per turn. Each nudge costs a whole extra pass over the conversation,
 // so the rest — decisions, loose ends, steps for the user — is left to the skill's
 // "Before you end a turn" check instead of a second nudge read from the reply.
 //
@@ -16,6 +17,13 @@ function lastBoardChange(boardFile) {
     ...(board.features ?? []).flatMap((f) => (f.log ?? []).map((e) => Date.parse(e.at))),
     ...(board.notes ?? []).map((n) => Date.parse(n.updatedAt)),
   ].filter(Number.isFinite);
+  return times.length ? Math.max(...times) : 0;
+}
+
+/** The last time a design decision was recorded or touched. */
+function lastDecision(boardFile) {
+  const board = JSON.parse(fs.readFileSync(boardFile, "utf8"));
+  const times = (board.notes ?? []).filter((n) => n.kind === "decision").map((n) => Date.parse(n.updatedAt)).filter(Number.isFinite);
   return times.length ? Math.max(...times) : 0;
 }
 
@@ -37,12 +45,26 @@ safely(async (input) => {
 
   // Not the file's mtime: `board touch` rewrites board.json on every new file, which
   // would look like an update. Only a log entry means a card actually moved.
-  const { lastEditAt, blockedFor } = state;
-  if (!lastEditAt || blockedFor === lastEditAt) return; // never twice for the same edit
-  if (lastBoardChange(boardFile) + 1000 >= lastEditAt) return;
+  const { lastEditAt, blockedFor, designEditAt, designBlockedFor, designCalls = [], designDoc } = state;
+  const code = !!lastEditAt && blockedFor !== lastEditAt && lastBoardChange(boardFile) + 1000 < lastEditAt;
+  const design = !!designEditAt && designBlockedFor !== designEditAt && lastDecision(boardFile) + 1000 < designEditAt;
+  if (!code && !design) return;
 
-  writeState(input.session_id, { blockedFor: lastEditAt, nudgedFor: turn || null });
+  writeState(input.session_id, {
+    ...(code ? { blockedFor: lastEditAt } : {}),
+    ...(design ? { designBlockedFor: designEditAt, designCalls: [] } : {}),
+    nudgedFor: turn || null,
+  });
+  const reasons = [];
+  if (code)
+    reasons.push(
+      "Code changed but the Clipped board didn't. Update it before finishing: move the card you worked on (`board update|park|review|done`), or add one if this was new work.",
+    );
+  if (design)
+    reasons.push(
+      `The UI changed with ${designDoc ? "design values that aren't in DESIGN.md" : "new design values"} (${designCalls.slice(0, 6).join(", ")}). If that was a design call — a color, a shade, a typeface, a token, the layout it serves — record it: \`board note add decision "<what is now true>" --body "<why>" --considered "<what lost>" --card <key>\`, with \`--decided-by user\` only if the user chose it. If it only followed the existing design, say so in one line.`,
+    );
   block(
-    "Code changed but the Clipped board didn't. Update it before finishing: move the card you worked on (`board update|park|review|done`), or add one if this was new work. If nothing worth recording changed, say so in one line and stop. Follow the clipped skill, and end with the one-line Board: footer.",
+    `${reasons.join(" ")} If nothing worth recording changed, say so in one line and stop. Follow the clipped skill, and end with the one-line Board: footer.`,
   );
 });

@@ -196,12 +196,12 @@ describe("hook behaviour", () => {
       runHook("asked.mjs", {
         hook_event_name: "PostToolUse", session_id: "q1", cwd: sb.root, tool_name: "AskUserQuestion",
         tool_input: { questions: [
-          { question: "Which theme is the default?", header: "Theme", multiSelect: false, options: [
-            { label: "Keep dark", description: "Ship as built" },
-            { label: "Light default", description: "Flip it and retune the light palette" },
+          { question: "Which auth provider?", header: "Auth", multiSelect: false, options: [
+            { label: "Keep Clerk", description: "Ship as built" },
+            { label: "Auth0", description: "Move the login over and migrate users" },
           ] },
-          { question: "Pills or tabs for the report sections?", header: "Sections", multiSelect: false, options: [
-            { label: "Pills", description: "" }, { label: "Tabs", description: "" },
+          { question: "Postgres or SQLite for the cache?", header: "Storage", multiSelect: false, options: [
+            { label: "Postgres", description: "" }, { label: "SQLite", description: "" },
           ] },
         ] },
         tool_response: { answers },
@@ -210,20 +210,79 @@ describe("hook behaviour", () => {
 
     it("lands in Questions as decided, with the pick and the options not taken", () => {
       const sb = withBoard();
-      ask(sb, { "Which theme is the default?": "Light default", "Pills or tabs for the report sections?": "Something else entirely" });
+      ask(sb, { "Which auth provider?": "Auth0", "Postgres or SQLite for the cache?": "Something else entirely" });
       const [a, b] = questions(sb);
-      expect(a).toMatchObject({ title: "Which theme is the default?", status: "done", updatedBy: "user" });
-      expect(a.note).toBe("Light default — Flip it and retune the light palette. Other options: Keep dark");
+      expect(a).toMatchObject({ title: "Which auth provider?", status: "done", updatedBy: "user" });
+      expect(a.note).toBe("Auth0 — Move the login over and migrate users. Other options: Keep Clerk");
       expect(b.note).toContain("Something else entirely. (their own answer)");
     });
 
     it("keeps an unanswered question open, and never adds the same question twice", () => {
       const sb = withBoard();
-      ask(sb, { "Which theme is the default?": "Keep dark" });
+      ask(sb, { "Which auth provider?": "Keep Clerk" });
       expect(questions(sb).map((f: { status: string }) => f.status)).toEqual(["done", "idea"]);
-      ask(sb, { "Pills or tabs for the report sections?": "Pills" });
+      ask(sb, { "Postgres or SQLite for the cache?": "Postgres" });
       expect(questions(sb)).toHaveLength(2);
-      expect(questions(sb)[1]).toMatchObject({ status: "done", note: "Pills. Other options: Tabs" });
+      expect(questions(sb)[1]).toMatchObject({ status: "done", note: "Postgres. Other options: SQLite" });
+    });
+
+    it("a design pick lands in the Design tab as the user's call, not in Questions", () => {
+      const sb = withBoard();
+      runHook("asked.mjs", {
+        hook_event_name: "PostToolUse", session_id: "q2", cwd: sb.root, tool_name: "AskUserQuestion",
+        tool_input: { questions: [{ question: "Which theme is the default?", header: "Theme", multiSelect: false, options: [
+          { label: "Keep dark", description: "Ship as built" },
+          { label: "Light default", description: "Flip it and retune the light palette" },
+        ] }] },
+        tool_response: { answers: { "Which theme is the default?": "Light default" } },
+      }, { CLIPPED_HOME: sb.home, CLIPPED_NOW: sb.env.CLIPPED_NOW as string });
+      expect(questions(sb)).toHaveLength(0);
+      expect(sb.read().notes).toMatchObject([{
+        kind: "decision", title: "Which theme is the default: Light default", decidedBy: "user",
+        body: "Light default — Flip it and retune the light palette. Picked from the options Claude showed.",
+        considered: "Keep dark — Ship as built",
+      }]);
+    });
+  });
+
+  describe("a UI change that brings in new design values", () => {
+    const setup = async () => {
+      const sb = withBoard();
+      delete sb.env.CLIPPED_NOW;
+      sb.board("add", "Restyle the pills", "--status", "active");
+      fs.writeFileSync(path.join(sb.root, "DESIGN.md"), "accent #2F5BFF, font Geist, token --ground");
+      await new Promise((r) => setTimeout(r, 1100)); // board times have second resolution
+      const env = { CLAUDE_PLUGIN_DATA: sb.home };
+      const edit = (file: string, new_string: string) => runHook("post-tool-use.mjs", {
+        session_id: "d1", cwd: sb.root, tool_name: "Edit", tool_input: { file_path: path.join(sb.root, file), old_string: "x", new_string },
+      }, env);
+      const stop = (turn: string) => runHook("stop.mjs", { session_id: "d1", cwd: sb.root, prompt_id: turn }, env);
+      return { sb, edit, stop };
+    };
+
+    it("asks for a design decision, naming the values DESIGN.md doesn't have", async () => {
+      const { sb, edit, stop } = await setup();
+      edit("ui/app.css", ".pill{color:#2f5bff;background:#FFB020;font-family:'Inter',sans-serif}\n:root{--hover:#eee}");
+      sb.board("update", "APP-1", "--note", "Pills restyled"); // the card moved, so only the design half is left
+      const r = stop("p1");
+      expect(r.code).toBe(2);
+      expect(r.err).not.toContain("Code changed");
+      expect(r.err).toContain("aren't in DESIGN.md (color #ffb020, color #eee, font Inter, token --hover)");
+      expect(r.err).not.toContain("#2f5bff");
+    });
+
+    it("stays quiet when the UI only reuses the design, or a decision was recorded", async () => {
+      const { sb, edit, stop } = await setup();
+      edit("ui/app.css", ".pill{color:#2F5BFF;font-family:Geist;background:var(--ground)}");
+      edit("src/store.ts", "const c = '#123456'"); // not a UI file
+      sb.board("update", "APP-1", "--note", "Pills restyled");
+      expect(stop("p1").code).toBe(0);
+
+      edit("ui/app.css", ".pill{color:#FFB020}");
+      sb.board("update", "APP-1", "--note", "Amber pills");
+      await new Promise((r) => setTimeout(r, 1100));
+      sb.board("note", "add", "decision", "Pills are amber", "--decided-by", "user");
+      expect(stop("p2").code).toBe(0);
     });
   });
 

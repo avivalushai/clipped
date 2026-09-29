@@ -161,7 +161,10 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
   // POST /api/projects/:id/notes · PATCH|DELETE /api/projects/:id/notes/:id
   if (seg[2] === "notes") {
     const b = (req.body ?? {}) as Record<string, unknown>;
-    const fields = [["--title", "title"], ["--body", "body"], ["--considered", "considered"], ["--url", "url"], ["--file", "file"]] as const;
+    const fields = [
+      ["--title", "title"], ["--body", "body"], ["--considered", "considered"],
+      ["--decided-by", "decidedBy"], ["--url", "url"], ["--file", "file"],
+    ] as const;
 
     if (seg.length === 3) {
       if (method !== "POST") throw new HttpError(405, "use POST");
@@ -176,6 +179,8 @@ export function handleApi(ctx: Ctx, req: ApiRequest): unknown | undefined {
       const id = seg[3]!.toUpperCase();
       note(p, id); // 404 before any write
       if (method === "DELETE") return board<Note>(ctx, p, ["note", "rm", id]);
+      // Agreeing with a decision is the one note write that must come from you, so it rides on the page's own actor.
+      if (method === "PATCH" && b.confirmed === true) return board<Note>(ctx, p, ["note", "confirm", id]);
       if (method !== "PATCH") throw new HttpError(405, "use PATCH or DELETE");
 
       const argv = ["note", "update", id];

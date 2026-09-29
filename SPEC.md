@@ -47,11 +47,12 @@ Claude Code session
 
 ## 3. Data model — `<repo>/.board/board.json`
 
-The board has five tabs over two collections. `features` holds the cards —
+The board has six tabs over two collections. `features` holds the cards —
 work with a status and a next step, whether that work is building something
-(**Features**) or finding something out (**Questions**). `notes` holds the three
+(**Features**) or finding something out (**Questions**). `notes` holds the four
 things that have no next step and so can't be cards: the **Brainstorm** that
-produced them, the **Plan** they came from, the **Reference** that answered them.
+produced them, the **Plan** they came from, the **Decision** that shaped them,
+the **Reference** that answered them.
 
 ```json
 {
@@ -108,10 +109,12 @@ but the UI renames them: Open · Looking into · Parked · Answered · Decided. 
 gap between Answered and Decided is the point — Claude finds the answer, the
 user makes the call.
 
-**Notes** are `{ id, kind, title, body, url, file, cards[], createdAt, updatedAt, updatedBy }`.
+**Notes** are `{ id, kind, title, body, considered, decidedBy, confirmedAt, url, file, cards[], createdAt, updatedAt, updatedBy }`.
 - `id`: `LOOP-N3` — a separate counter (`nextNoteNum`) so notes never take a card's number
-- `kind`: `brainstorm | plan | reference`
-- `body` carries a brainstorm's decisions, `file` a plan's document, `url` a reference's link
+- `kind`: `brainstorm | plan | decision | reference`
+- `body` carries a brainstorm's outcome or a decision's call and reason, `file` a plan's document, `url` a reference's link
+- `decidedBy` (decisions only, `""` otherwise): `user | claude` — who made the call. Defaults to whoever records it; Claude records `user` only when the user picked, asked for or corrected toward it (`--decided-by`)
+- `confirmedAt` (decisions only): when the user agreed with a call Claude made (`board note confirm`, or **I agree** on the board). Only the user can set it. A Claude call with no `confirmedAt` is *unchecked* — the session brief counts them (v5)
 - `cards` are the card keys the note produced or informed; the validator rejects a key that isn't on the board, so links can't dangle
 - No status, no steps, no progress: a note has no next step, which is exactly what keeps it off the work tabs
 - Every schema change bumps `schemaVersion`; the CLI migrates old files automatically.
@@ -209,7 +212,7 @@ If the user corrects ("that's part of saving"), merge/fix silently.
 ## 6. UI
 
 Start from `prototype/clipped.html` (working prototype with sample data). Keep:
-- Five tabs above the summary: Work · Questions · Brainstorms · Plans · References, each with a count
+- Six tabs above the summary: Work · Questions · Brainstorms · Plans · Decisions · References, each with a count
 - Left menu: all projects, parked count, progress
 - Views: Table (editable cells, add row, group/density/columns), Board (drag between columns), Timeline (idle time for parked)
 - Card drawer: status, note, steps, files, activity, "Continue with Claude" prompt
@@ -284,7 +287,7 @@ The prototype (`prototype/clipped.html`) is the reference; this section describe
 
 **Header** — Project: key badge + path, name, search, "board.json" (raw file), "+ New feature". All projects: "All features" + "N cards parked across M projects". Summary strip (% complete, stacked status bar, counts). Status chips with counts. View bar: Table | Board | Timeline + Group by (Status/Project/Nothing), Density, Columns menu, Hide done (remembered per browser).
 
-**Tabs** — Features and Questions are the card tabs and share the Table / Board / Timeline views; the Questions tab shows only `type: question` cards and relabels the statuses. Brainstorms, Plans and References each show a plainer table (Id · Project · Title · body/document/link · Cards · Updated · Last by · delete) with an add-row at the top and no status, progress or grouping. A card chip in the Cards column jumps to that card and opens it.
+**Tabs** — Features and Questions are the card tabs and share the Table / Board / Timeline views; the Questions tab shows only `type: question` cards and relabels the statuses. Brainstorms, Plans, Decisions and References each show a plainer table (Id · Project · Title · body/document/link · Cards · Updated · Last by · delete; Decisions add **Whose call** — You, or Claude with *unchecked* and an **Agree** button, or *you agreed*). The decisions tab is labelled **Design** and has two halves, switched at the right of the tab row: **Decisions** (that table) and **UI work** — the same cards as Work, in the same views, filtered to UI cards: in an area named like UI/Design/Frontend/Landing, or with at least half their files UI files (.css, .html, .tsx…), or linked from a design decision. A UI card shows in both Work and Design with an add-row at the top and no status, progress or grouping. A card chip in the Cards column jumps to that card and opens it.
 
 **Table** (default) — Key (opens card) · Project (All view) · Feature · Status · Next step / where stopped · Progress · Steps · Files · Updated · Last by. Cell borders, sortable headers, group rows with count + avg progress. Title/status/note edited in place (save on blur/Enter); status → Parked with empty note focuses the note. Parked rows: amber left stripe; Done: struck title. Persistent add-row at top (project, title, status, next step; Enter adds and keeps focus). Double-click row opens card.
 
@@ -296,6 +299,6 @@ The prototype (`prototype/clipped.html`) is the reference; this section describe
 
 A **question** drops what it doesn't have: no progress bar, no file list unless files were actually recorded, "What to check" instead of Steps with no 0/0 on an empty list, and a hand-off that says to record the answer with `board answer` — Answered, not Decided.
 
-**Note drawer** — a note has no status, no steps and no progress, so the panel answers different questions: id + project, editable title, kind and when it was last touched; the kind's own field (brainstorm → **what was decided**, given room as a textarea; plan → the document path; reference → the link, with an "Open host" line); **What it produced** — the cards it links to, each with its status, under a tally ("3 cards · 1 done"); Delete / Save; Esc closes. A plan with a document also offers **Bring it to the board again**: a prompt telling Claude to re-read it, naming the cards it already produced so nothing doubles. Card rows jump to the card and open it; the card drawer jumps back.
+**Note drawer** — a note has no status, no steps and no progress, so the panel answers different questions: id + project, editable title, kind and when it was last touched; the kind's own field (brainstorm → **what was decided**, given room as a textarea; plan → the document path; decision → **what we chose, and why**, **whose call** — with **I agree** and **It was my call** while a Claude call is unchecked — and **what was considered**; reference → the link, with an "Open host" line); **What it produced** — the cards it links to, each with its status, under a tally ("3 cards · 1 done"); Delete / Save; Esc closes. A plan with a document also offers **Bring it to the board again**: a prompt telling Claude to re-read it, naming the cards it already produced so nothing doubles. Card rows jump to the card and open it; the card drawer jumps back.
 
 **Status colors** — idea `#8391A7`, active `#0B93B5`, parked `#D2780A`, review `#7B5CE0`, done `#1E9E68`. Parked > 3 days shows age in amber.

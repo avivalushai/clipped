@@ -125,7 +125,7 @@ describe("board note", () => {
 
   it("explains an unknown subcommand", () => {
     const sb = withBoard();
-    expect(sb.board("note", "frobnicate").err).toContain("use add, list, show, update, link or rm");
+    expect(sb.board("note", "frobnicate").err).toContain("use add, list, show, update, link, confirm or rm");
   });
 });
 
@@ -167,7 +167,7 @@ describe("schemaVersion 2", () => {
     const sb = withBoard();
     const bad = (note: unknown) => validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [note] }).join(" ");
     const ok = {
-      id: "APP-N1", kind: "plan", title: "The spec", body: "", considered: "", url: "", file: "", cards: [],
+      id: "APP-N1", kind: "plan", title: "The spec", body: "", considered: "", decidedBy: "", confirmedAt: "", url: "", file: "", cards: [],
       createdAt: "2026-09-20T10:00:00Z", updatedAt: "2026-09-20T10:00:00Z", updatedBy: "claude",
     };
     expect(validateBoard({ ...sb.read(), nextNoteNum: 2, notes: [ok] })).toEqual([]);

@@ -23,6 +23,15 @@ export const MIGRATIONS: Record<number, Migration> = {
     features: ((board.features as Record<string, unknown>[]) ?? []).map((f) => ({ ...f, area: f.area ?? "" })),
     areas: board.areas ?? [],
   }),
+  // v4 → v5: decisions — notes say who made the call and whether you agreed.
+  4: (board) => ({
+    ...board,
+    notes: ((board.notes as Record<string, unknown>[]) ?? []).map((n) => ({
+      ...n,
+      decidedBy: n.decidedBy ?? "",
+      confirmedAt: n.confirmedAt ?? "",
+    })),
+  }),
 };
 
 export class MigrationError extends Error {}

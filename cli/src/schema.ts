@@ -1,10 +1,10 @@
 // board.json schema (SPEC §3) and a dependency-free validator.
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const STATUSES = ["idea", "active", "parked", "review", "done"] as const;
 export const TYPES = ["feature", "bug", "chore", "question"] as const;
-export const NOTE_KINDS = ["brainstorm", "plan", "reference"] as const;
+export const NOTE_KINDS = ["brainstorm", "plan", "decision", "reference"] as const;
 export const ACTORS = ["claude", "user"] as const;
 export const GRANULARITIES = ["coarse", "normal", "fine"] as const;
 
@@ -45,17 +45,22 @@ export interface Feature {
 }
 
 /**
- * The three tabs that aren't work: a brainstorm is a thinking session, a plan
- * is a document, a reference is a link. None of them has a status, because
- * none of them has a next step — that's what makes them notes and not cards.
+ * The tabs that aren't work: a brainstorm is a thinking session, a plan is a
+ * document, a decision is a call that was made, a reference is a link. None of
+ * them has a status, because none of them has a next step — that's what makes
+ * them notes and not cards.
  */
 export interface Note {
   id: string;
   kind: NoteKind;
   title: string;
   body: string;
-  /** A brainstorm's other options — what was weighed and not chosen. */
+  /** A brainstorm's or decision's other options — what was weighed and not chosen. */
   considered: string;
+  /** A decision's author: who made the call ("" on every other kind). */
+  decidedBy: Actor | "";
+  /** When you agreed with a decision Claude made ("" = never checked). */
+  confirmedAt: string;
   url: string;
   file: string;
   cards: string[]; // card keys this note produced or is about
@@ -200,6 +205,10 @@ export function validateBoard(b: unknown): string[] {
     if (!oneOf(NOTE_KINDS, n.kind)) err(`${p}.kind`, `must be one of ${NOTE_KINDS.join(", ")}`);
     if (!isStr(n.title) || !n.title.trim()) err(`${p}.title`, "must be a non-empty string");
     for (const k of ["body", "considered", "url", "file"] as const) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
+    if (n.kind === "decision" ? !oneOf(ACTORS, n.decidedBy) : n.decidedBy !== "")
+      err(`${p}.decidedBy`, n.kind === "decision" ? `must be one of ${ACTORS.join(", ")}` : "must be empty unless the note is a decision");
+    if (!isStr(n.confirmedAt) || (n.confirmedAt !== "" && !ISO_RE.test(n.confirmedAt)))
+      err(`${p}.confirmedAt`, "must be empty or an ISO-8601 UTC timestamp");
     if (!Array.isArray(n.cards) || !n.cards.every(isStr)) err(`${p}.cards`, "must be an array of card keys");
     else for (const key of n.cards as string[]) if (!seen.has(key)) err(`${p}.cards`, `no card ${key} on this board`);
 

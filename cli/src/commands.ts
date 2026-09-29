@@ -23,6 +23,7 @@ import { writeFileAtomic } from "./fsutil.js";
 import { readRegistry, registerProject, registryFile } from "./registry.js";
 import {
   type Board,
+  type Actor,
   type Feature,
   KEY_RE,
   type Note,
@@ -35,7 +36,7 @@ import {
   emptyBoard,
 } from "./schema.js";
 import { looksLikeAProject, projectRootFor } from "./project.js";
-import { findNote, formatNoteDetail, formatNoteLine, sortNotes, stampNote } from "./notes.js";
+import { findNote, formatNoteDetail, formatNoteLine, sortNotes, stampNote, uncheckedDecision } from "./notes.js";
 import { BOARD_DIR, type Located, boardFileFor, findBoard, mutateBoard, readBoard, requireBoard, writeBoard } from "./store.js";
 
 export type Opts = Record<string, string | boolean | string[] | undefined>;
@@ -272,7 +273,10 @@ export function context(ctx: Ctx, { opts }: Args) {
       .join(" · ");
     lines.push(`Older and unchecked: ${byStatus} — left out of this brief, \`board list --all\` shows them.`);
   }
-  const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map((k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}`);
+  const uncheckedCalls = b.notes.filter(uncheckedDecision).length;
+  const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map(
+    (k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}${k === "decision" && uncheckedCalls ? ` (${uncheckedCalls} mine, unchecked)` : ""}`,
+  );
   if (notes.length) lines.push(`Notes: ${notes.join(" · ")} — \`board note list\``);
   if (allMine)
     lines.push(
@@ -678,7 +682,7 @@ export function answer(ctx: Ctx, { pos, opts }: Args) {
   emit(ctx, opts, f, `${f.key} ${f.status === "done" ? "answered and closed" : "answered — decide when you're ready"}`);
 }
 
-// --- notes: brainstorms, plans, references ---------------------------------
+// --- notes: brainstorms, plans, decisions, references ----------------------
 
 function parseKind(v: string | undefined): NoteKind {
   if (v === undefined) throw new UserError(`missing kind — one of ${NOTE_KINDS.join(", ")}`);
@@ -711,12 +715,24 @@ export function note(ctx: Ctx, { pos, opts }: Args) {
     update: noteUpdate,
     edit: noteUpdate,
     link: noteLink,
+    confirm: noteConfirm,
+    agree: noteConfirm,
     rm: noteRemove,
     delete: noteRemove,
   };
   const fn = subs[sub];
-  if (!fn) throw new UserError(`unknown: board note ${sub} — use add, list, show, update, link or rm`);
+  if (!fn) throw new UserError(`unknown: board note ${sub} — use add, list, show, update, link, confirm or rm`);
   fn(ctx, rest, opts);
+}
+
+/** Who made a decision's call: --decided-by, else whoever is writing it down. */
+function decidedBy(ctx: Ctx, kind: NoteKind, opts: Opts, by: Actor): Actor | "" {
+  const v = str(opts, "decided-by");
+  if (kind !== "decision") {
+    if (v !== undefined) throw new UserError("--decided-by is only for decisions");
+    return "";
+  }
+  return v === undefined ? by : actor(ctx, v);
 }
 
 function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
@@ -724,6 +740,7 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
   const title = need(pos, 1, `title (e.g. board note add reference "The CRDT paper" --url ...)`).trim();
   if (!title) throw new UserError("title can't be empty");
   const by = actor(ctx, str(opts, "by"));
+  const who = decidedBy(ctx, kind, opts, by);
   const loc = boardForAdding(ctx, opts);
 
   const n = mutateBoard(loc, (b) => {
@@ -734,6 +751,8 @@ function noteAdd(ctx: Ctx, pos: string[], opts: Opts) {
       title,
       body: str(opts, "body") ?? "",
       considered: str(opts, "considered") ?? "",
+      decidedBy: who,
+      confirmedAt: "",
       url: str(opts, "url") ?? "",
       file: noteFile(ctx, loc.root, str(opts, "file")) ?? "",
       cards: noteCards(b, list(opts, "card")),
@@ -766,16 +785,28 @@ function noteUpdate(ctx: Ctx, pos: string[], opts: Opts) {
   const idArg = need(pos, 0, "note id");
   const by = actor(ctx, str(opts, "by"));
   const loc = requireBoard(ctx);
-  const fields = ["title", "body", "considered", "url", "file"] as const;
-  if (!fields.some((f) => str(opts, f) !== undefined) && !list(opts, "card").length && !str(opts, "kind"))
-    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind or --card)");
+  const fields = ["title", "body", "considered", "url", "file", "kind", "decided-by"] as const;
+  if (!fields.some((f) => str(opts, f) !== undefined) && !list(opts, "card").length)
+    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind, --decided-by or --card)");
 
   const n = mutateBoard(loc, (b) => {
     const n = findNote(b, idArg);
     const title = str(opts, "title")?.trim();
     if (title === "") throw new UserError("title can't be empty");
     if (title !== undefined) n.title = title;
-    if (str(opts, "kind") !== undefined) n.kind = parseKind(str(opts, "kind"));
+    if (str(opts, "kind") !== undefined) {
+      const kind = parseKind(str(opts, "kind"));
+      // Turning a brainstorm into a decision names whoever wrote it down; leaving decisions drops the author.
+      if (kind === "decision" && n.kind !== "decision") n.decidedBy = n.updatedBy;
+      if (kind !== "decision") (n.decidedBy = ""), (n.confirmedAt = "");
+      n.kind = kind;
+    }
+    if (str(opts, "decided-by") !== undefined) {
+      if (n.kind !== "decision") throw new UserError(`${n.id} is a ${n.kind} — --decided-by is only for decisions`);
+      const who = actor(ctx, str(opts, "decided-by"));
+      if (who !== n.decidedBy) n.confirmedAt = "";
+      n.decidedBy = who;
+    }
     if (str(opts, "body") !== undefined) n.body = str(opts, "body")!;
     if (str(opts, "considered") !== undefined) n.considered = str(opts, "considered")!;
     if (str(opts, "url") !== undefined) n.url = str(opts, "url")!;
@@ -804,6 +835,23 @@ function noteLink(ctx: Ctx, pos: string[], opts: Opts) {
     return { n, added };
   });
   emit(ctx, opts, n, added.length ? `${n.id} → ${added.join(", ")}` : `${n.id} already links those`);
+}
+
+/** You agree with a call Claude made. Only you can — Claude can't sign off its own decision. */
+function noteConfirm(ctx: Ctx, pos: string[], opts: Opts) {
+  const idArg = need(pos, 0, "decision id (e.g. LOOP-N3)");
+  if (actor(ctx, str(opts, "by")) !== "user")
+    throw new UserError("only you can agree with a decision — Claude records it, you confirm it on the board");
+  const n = mutateBoard(requireBoard(ctx), (b) => {
+    const n = findNote(b, idArg);
+    if (n.kind !== "decision") throw new UserError(`${n.id} is a ${n.kind}, not a decision`);
+    if (n.decidedBy === "claude" && !n.confirmedAt) {
+      n.confirmedAt = nowIso(ctx);
+      stampNote(ctx, n, "user");
+    }
+    return n;
+  });
+  emit(ctx, opts, n, n.decidedBy === "user" ? `${n.id} is already your call` : `Agreed with ${n.id} ${n.title}`);
 }
 
 function noteRemove(ctx: Ctx, pos: string[], opts: Opts) {

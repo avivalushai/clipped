@@ -474,6 +474,10 @@ function validateBoard(b) {
     if (!oneOf(NOTE_KINDS, n.kind)) err(`${p}.kind`, `must be one of ${NOTE_KINDS.join(", ")}`);
     if (!isStr(n.title) || !n.title.trim()) err(`${p}.title`, "must be a non-empty string");
     for (const k of ["body", "considered", "url", "file"]) if (!isStr(n[k])) err(`${p}.${k}`, "must be a string");
+    if (n.kind === "decision" ? !oneOf(ACTORS, n.decidedBy) : n.decidedBy !== "")
+      err(`${p}.decidedBy`, n.kind === "decision" ? `must be one of ${ACTORS.join(", ")}` : "must be empty unless the note is a decision");
+    if (!isStr(n.confirmedAt) || n.confirmedAt !== "" && !ISO_RE.test(n.confirmedAt))
+      err(`${p}.confirmedAt`, "must be empty or an ISO-8601 UTC timestamp");
     if (!Array.isArray(n.cards) || !n.cards.every(isStr)) err(`${p}.cards`, "must be an array of card keys");
     else for (const key of n.cards) if (!seen.has(key)) err(`${p}.cards`, `no card ${key} on this board`);
     for (const k of ["createdAt", "updatedAt"])
@@ -498,10 +502,10 @@ var SCHEMA_VERSION, STATUSES, TYPES, NOTE_KINDS, ACTORS, GRANULARITIES, KEY_RE, 
 var init_schema = __esm({
   "cli/src/schema.ts"() {
     "use strict";
-    SCHEMA_VERSION = 4;
+    SCHEMA_VERSION = 5;
     STATUSES = ["idea", "active", "parked", "review", "done"];
     TYPES = ["feature", "bug", "chore", "question"];
-    NOTE_KINDS = ["brainstorm", "plan", "reference"];
+    NOTE_KINDS = ["brainstorm", "plan", "decision", "reference"];
     ACTORS = ["claude", "user"];
     GRANULARITIES = ["coarse", "normal", "fine"];
     KEY_RE = /^[A-Z][A-Z0-9]{1,5}$/;
@@ -542,6 +546,11 @@ var init_project = __esm({
 });
 
 // cli/src/notes.ts
+function decidedLabel(n) {
+  if (n.kind !== "decision") return "";
+  if (n.decidedBy === "user") return "your call";
+  return n.confirmedAt ? "Claude's call, you agreed" : "Claude's call, unchecked";
+}
 function findNote(board2, input) {
   const raw = input.trim().toUpperCase();
   const want = /^\d+$/.test(raw) ? `${board2.project.key}-N${raw}` : /^N\d+$/.test(raw) ? `${board2.project.key}-${raw}` : raw;
@@ -563,6 +572,7 @@ function sortNotes(ns) {
 }
 function formatNoteLine(n, idWidth = 0) {
   const parts = [n.id.padEnd(idWidth), n.kind.padEnd(10), n.title];
+  if (n.kind === "decision") parts.push(`(${decidedLabel(n)})`);
   const target = noteTarget(n);
   if (target) parts.push(`\u2014 ${clip2(target, 60)}`);
   else if (n.body) parts.push(`\u2014 ${clip2(oneLine(n.body), 60)}`);
@@ -571,6 +581,8 @@ function formatNoteLine(n, idWidth = 0) {
 }
 function formatNoteDetail(ctx, n) {
   const lines = [`${n.id}  ${n.title}`, `${n.kind} \xB7 updated ${ageLabel(ctx, n.updatedAt)} by ${n.updatedBy}`];
+  if (n.kind === "decision")
+    lines.push(`Decided: ${decidedLabel(n)}${n.confirmedAt ? ` ${ageLabel(ctx, n.confirmedAt)}` : ""}`);
   if (n.url) lines.push(`Link: ${n.url}`);
   if (n.file) lines.push(`File: ${n.file}`);
   if (n.cards.length) lines.push(`Cards: ${n.cards.join(", ")}`);
@@ -578,13 +590,14 @@ function formatNoteDetail(ctx, n) {
   if (n.considered) lines.push("", "Considered:", n.considered);
   return lines.join("\n");
 }
-var KIND_ORDER, clip2, oneLine;
+var KIND_ORDER, uncheckedDecision, clip2, oneLine;
 var init_notes = __esm({
   "cli/src/notes.ts"() {
     "use strict";
     init_context();
     init_features();
-    KIND_ORDER = ["brainstorm", "plan", "reference"];
+    KIND_ORDER = ["brainstorm", "plan", "decision", "reference"];
+    uncheckedDecision = (n) => n.kind === "decision" && n.decidedBy === "claude" && !n.confirmedAt;
     clip2 = (s2, n) => s2.length > n ? s2.slice(0, n - 1) + "\u2026" : s2;
     oneLine = (s2) => s2.replace(/\s+/g, " ").trim();
   }
@@ -630,6 +643,15 @@ var init_migrations = __esm({
         ...board2,
         features: (board2.features ?? []).map((f) => ({ ...f, area: f.area ?? "" })),
         areas: board2.areas ?? []
+      }),
+      // v4 → v5: decisions — notes say who made the call and whether you agreed.
+      4: (board2) => ({
+        ...board2,
+        notes: (board2.notes ?? []).map((n) => ({
+          ...n,
+          decidedBy: n.decidedBy ?? "",
+          confirmedAt: n.confirmedAt ?? ""
+        }))
       })
     };
     MigrationError = class extends Error {
@@ -1080,7 +1102,14 @@ function handleApi(ctx, req) {
   }
   if (seg[2] === "notes") {
     const b = req.body ?? {};
-    const fields = [["--title", "title"], ["--body", "body"], ["--considered", "considered"], ["--url", "url"], ["--file", "file"]];
+    const fields = [
+      ["--title", "title"],
+      ["--body", "body"],
+      ["--considered", "considered"],
+      ["--decided-by", "decidedBy"],
+      ["--url", "url"],
+      ["--file", "file"]
+    ];
     if (seg.length === 3) {
       if (method !== "POST") throw new HttpError(405, "use POST");
       const argv = ["note", "add", str(b.kind, "kind"), str(b.title, "title")];
@@ -1093,6 +1122,7 @@ function handleApi(ctx, req) {
       const id = seg[3].toUpperCase();
       note(p, id);
       if (method === "DELETE") return board(ctx, p, ["note", "rm", id]);
+      if (method === "PATCH" && b.confirmed === true) return board(ctx, p, ["note", "confirm", id]);
       if (method !== "PATCH") throw new HttpError(405, "use PATCH or DELETE");
       const argv = ["note", "update", id];
       if (b.kind !== void 0 && b.kind !== "") argv.push("--kind", str(b.kind, "kind"));
@@ -1220,7 +1250,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.8.2";
+    VERSION = "0.9.0";
   }
 });
 
@@ -1565,7 +1595,10 @@ function context(ctx, { opts }) {
     const byStatus = STATUSES.filter((s2) => stale.some((f) => f.status === s2)).map((s2) => `${stale.filter((f) => f.status === s2).length} ${s2}`).join(" \xB7 ");
     lines.push(`Older and unchecked: ${byStatus} \u2014 left out of this brief, \`board list --all\` shows them.`);
   }
-  const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map((k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}`);
+  const uncheckedCalls = b.notes.filter(uncheckedDecision).length;
+  const notes = NOTE_KINDS.filter((k) => noteCounts[k]).map(
+    (k) => `${noteCounts[k]} ${k}${noteCounts[k] === 1 ? "" : "s"}${k === "decision" && uncheckedCalls ? ` (${uncheckedCalls} mine, unchecked)` : ""}`
+  );
   if (notes.length) lines.push(`Notes: ${notes.join(" \xB7 ")} \u2014 \`board note list\``);
   if (allMine)
     lines.push(
@@ -1921,18 +1954,29 @@ function note2(ctx, { pos, opts }) {
     update: noteUpdate,
     edit: noteUpdate,
     link: noteLink,
+    confirm: noteConfirm,
+    agree: noteConfirm,
     rm: noteRemove,
     delete: noteRemove
   };
   const fn = subs[sub];
-  if (!fn) throw new UserError(`unknown: board note ${sub} \u2014 use add, list, show, update, link or rm`);
+  if (!fn) throw new UserError(`unknown: board note ${sub} \u2014 use add, list, show, update, link, confirm or rm`);
   fn(ctx, rest, opts);
+}
+function decidedBy(ctx, kind, opts, by) {
+  const v = str2(opts, "decided-by");
+  if (kind !== "decision") {
+    if (v !== void 0) throw new UserError("--decided-by is only for decisions");
+    return "";
+  }
+  return v === void 0 ? by : actor(ctx, v);
 }
 function noteAdd(ctx, pos, opts) {
   const kind = parseKind(pos[0]);
   const title = need(pos, 1, `title (e.g. board note add reference "The CRDT paper" --url ...)`).trim();
   if (!title) throw new UserError("title can't be empty");
   const by = actor(ctx, str2(opts, "by"));
+  const who = decidedBy(ctx, kind, opts, by);
   const loc = boardForAdding(ctx, opts);
   const n = mutateBoard(loc, (b) => {
     const at = nowIso(ctx);
@@ -1942,6 +1986,8 @@ function noteAdd(ctx, pos, opts) {
       title,
       body: str2(opts, "body") ?? "",
       considered: str2(opts, "considered") ?? "",
+      decidedBy: who,
+      confirmedAt: "",
       url: str2(opts, "url") ?? "",
       file: noteFile(ctx, loc.root, str2(opts, "file")) ?? "",
       cards: noteCards(b, list(opts, "card")),
@@ -1971,15 +2017,26 @@ function noteUpdate(ctx, pos, opts) {
   const idArg = need(pos, 0, "note id");
   const by = actor(ctx, str2(opts, "by"));
   const loc = requireBoard(ctx);
-  const fields = ["title", "body", "considered", "url", "file"];
-  if (!fields.some((f) => str2(opts, f) !== void 0) && !list(opts, "card").length && !str2(opts, "kind"))
-    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind or --card)");
+  const fields = ["title", "body", "considered", "url", "file", "kind", "decided-by"];
+  if (!fields.some((f) => str2(opts, f) !== void 0) && !list(opts, "card").length)
+    throw new UserError("nothing to update (use --title, --body, --considered, --url, --file, --kind, --decided-by or --card)");
   const n = mutateBoard(loc, (b) => {
     const n2 = findNote(b, idArg);
     const title = str2(opts, "title")?.trim();
     if (title === "") throw new UserError("title can't be empty");
     if (title !== void 0) n2.title = title;
-    if (str2(opts, "kind") !== void 0) n2.kind = parseKind(str2(opts, "kind"));
+    if (str2(opts, "kind") !== void 0) {
+      const kind = parseKind(str2(opts, "kind"));
+      if (kind === "decision" && n2.kind !== "decision") n2.decidedBy = n2.updatedBy;
+      if (kind !== "decision") n2.decidedBy = "", n2.confirmedAt = "";
+      n2.kind = kind;
+    }
+    if (str2(opts, "decided-by") !== void 0) {
+      if (n2.kind !== "decision") throw new UserError(`${n2.id} is a ${n2.kind} \u2014 --decided-by is only for decisions`);
+      const who = actor(ctx, str2(opts, "decided-by"));
+      if (who !== n2.decidedBy) n2.confirmedAt = "";
+      n2.decidedBy = who;
+    }
     if (str2(opts, "body") !== void 0) n2.body = str2(opts, "body");
     if (str2(opts, "considered") !== void 0) n2.considered = str2(opts, "considered");
     if (str2(opts, "url") !== void 0) n2.url = str2(opts, "url");
@@ -2005,6 +2062,21 @@ function noteLink(ctx, pos, opts) {
     return { n: n2, added: added2 };
   });
   emit(ctx, opts, n, added.length ? `${n.id} \u2192 ${added.join(", ")}` : `${n.id} already links those`);
+}
+function noteConfirm(ctx, pos, opts) {
+  const idArg = need(pos, 0, "decision id (e.g. LOOP-N3)");
+  if (actor(ctx, str2(opts, "by")) !== "user")
+    throw new UserError("only you can agree with a decision \u2014 Claude records it, you confirm it on the board");
+  const n = mutateBoard(requireBoard(ctx), (b) => {
+    const n2 = findNote(b, idArg);
+    if (n2.kind !== "decision") throw new UserError(`${n2.id} is a ${n2.kind}, not a decision`);
+    if (n2.decidedBy === "claude" && !n2.confirmedAt) {
+      n2.confirmedAt = nowIso(ctx);
+      stampNote(ctx, n2, "user");
+    }
+    return n2;
+  });
+  emit(ctx, opts, n, n.decidedBy === "user" ? `${n.id} is already your call` : `Agreed with ${n.id} ${n.title}`);
 }
 function noteRemove(ctx, pos, opts) {
   const idArg = need(pos, 0, "note id");
@@ -2267,9 +2339,9 @@ var init_cli = __esm({
       },
       answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: answer },
       note: {
-        usage: `note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LOOP-3]...
-         note list [--kind plan] \xB7 note show LOOP-N3 \xB7 note update LOOP-N3 ... \xB7 note link LOOP-N3 LOOP-4 \xB7 note rm LOOP-N3`,
-        options: { kind: s, title: s, body: s, considered: s, url: s, file: s, card: many },
+        usage: `note add brainstorm|plan|decision|reference "Title" [--body ...] [--considered ...] [--decided-by user|claude] [--url ...] [--file ...] [--card LOOP-3]...
+         note list [--kind decision] \xB7 note show LOOP-N3 \xB7 note update LOOP-N3 ... \xB7 note link LOOP-N3 LOOP-4 \xB7 note confirm LOOP-N3 \xB7 note rm LOOP-N3`,
+        options: { kind: s, title: s, body: s, considered: s, "decided-by": s, url: s, file: s, card: many },
         run: note2
       },
       delete: { usage: "delete LOOP-3", options: {}, run: remove },

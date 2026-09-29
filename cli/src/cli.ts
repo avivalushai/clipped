@@ -49,8 +49,8 @@ const COMMANDS: Record<string, Command> = {
   },
   answer: { usage: `answer LOOP-7 "What you found out" [--done]`, options: { note: s, done: flag }, run: cmd.answer },
   note: {
-    usage: `note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LOOP-3]...\n         note list [--kind plan] · note show LOOP-N3 · note update LOOP-N3 ... · note link LOOP-N3 LOOP-4 · note rm LOOP-N3`,
-    options: { kind: s, title: s, body: s, considered: s, url: s, file: s, card: many },
+    usage: `note add brainstorm|plan|decision|reference "Title" [--body ...] [--considered ...] [--decided-by user|claude] [--url ...] [--file ...] [--card LOOP-3]...\n         note list [--kind decision] · note show LOOP-N3 · note update LOOP-N3 ... · note link LOOP-N3 LOOP-4 · note confirm LOOP-N3 · note rm LOOP-N3`,
+    options: { kind: s, title: s, body: s, considered: s, "decided-by": s, url: s, file: s, card: many },
     run: cmd.note,
   },
   delete: { usage: "delete LOOP-3", options: {}, run: cmd.remove },

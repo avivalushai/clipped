@@ -1,11 +1,21 @@
 // Pure helpers over a Board's notes: lookup, formatting, ordering.
-// Notes are the three tabs that aren't work — brainstorms, plans, references.
+// Notes are the tabs that aren't work — brainstorms, plans, decisions, references.
 
 import { type Ctx, UserError, nowIso } from "./context.js";
 import { ageLabel } from "./features.js";
 import type { Actor, Board, Note, NoteKind } from "./schema.js";
 
-export const KIND_ORDER: NoteKind[] = ["brainstorm", "plan", "reference"];
+export const KIND_ORDER: NoteKind[] = ["brainstorm", "plan", "decision", "reference"];
+
+/** A call Claude made that you haven't agreed with yet. */
+export const uncheckedDecision = (n: Note): boolean => n.kind === "decision" && n.decidedBy === "claude" && !n.confirmedAt;
+
+/** Who made a decision's call, and whether you've seen it. */
+export function decidedLabel(n: Note): string {
+  if (n.kind !== "decision") return "";
+  if (n.decidedBy === "user") return "your call";
+  return n.confirmedAt ? "Claude's call, you agreed" : "Claude's call, unchecked";
+}
 
 /** Accepts LE-N3, N3 or 3 — `board note` commands only ever mean a note. */
 export function findNote(board: Board, input: string): Note {
@@ -41,6 +51,7 @@ const oneLine = (s: string) => s.replace(/\s+/g, " ").trim();
 
 export function formatNoteLine(n: Note, idWidth = 0): string {
   const parts = [n.id.padEnd(idWidth), n.kind.padEnd(10), n.title];
+  if (n.kind === "decision") parts.push(`(${decidedLabel(n)})`);
   const target = noteTarget(n);
   if (target) parts.push(`— ${clip(target, 60)}`);
   else if (n.body) parts.push(`— ${clip(oneLine(n.body), 60)}`);
@@ -50,6 +61,8 @@ export function formatNoteLine(n: Note, idWidth = 0): string {
 
 export function formatNoteDetail(ctx: Ctx, n: Note): string {
   const lines = [`${n.id}  ${n.title}`, `${n.kind} · updated ${ageLabel(ctx, n.updatedAt)} by ${n.updatedBy}`];
+  if (n.kind === "decision")
+    lines.push(`Decided: ${decidedLabel(n)}${n.confirmedAt ? ` ${ageLabel(ctx, n.confirmedAt)}` : ""}`);
   if (n.url) lines.push(`Link: ${n.url}`);
   if (n.file) lines.push(`File: ${n.file}`);
   if (n.cards.length) lines.push(`Cards: ${n.cards.join(", ")}`);

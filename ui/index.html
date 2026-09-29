@@ -245,6 +245,8 @@ tr.grp:hover td{background:var(--sunk);color:var(--ink)}
 .who.claude b{background:var(--accent);color:var(--accent-ink)}
 .who.you b{background:var(--ink);color:var(--surface)}
 .hint{font-size:12px;color:var(--muted)}
+.call{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.callrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 
 /* ---------- home ---------- */
 .ends{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);overflow:hidden;box-shadow:var(--shadow)}
@@ -695,34 +697,50 @@ const noteLabel=f=>f.type==='question'
 const colLabel=c=>P.tab!=='questions'?c.label
   :c.id==='note'?'Answer / what you\u2019re checking':c.id==='title'?'Question':c.label;
 
-/* The five tabs. Features and questions are cards; the rest are notes. */
+/* The six tabs. Features and questions are cards; the rest are notes. */
 const TABS=[
   {id:'features',label:'Work',note:null},   /* the data is still features; the label isn't */
   {id:'questions',label:'Questions',note:null},
   {id:'brainstorms',label:'Brainstorms',note:'brainstorm'},
   {id:'plans',label:'Plans',note:'plan'},
+  {id:'decisions',label:'Design',heading:'Design decisions',note:'decision'},   /* the data is decisions; the tab is where design lives */
   {id:'references',label:'References',note:'reference'}];
 const TAB=()=>TABS.find(t=>t.id===P.tab)||TABS[0];
-const isNoteTab=()=>!!TAB().note;
+/* The Design tab holds two things: the decisions, and the UI work they shaped.
+   UI work is the same cards as in Work — shown here too, not moved. */
+const uiWork=()=>P.tab==='decisions'&&P.designView==='ui';
+const isNoteTab=()=>!!TAB().note&&!uiWork();
+const UI_AREA=/^(ui|ux|design|frontend|front[- ]end|web|landing|site|styles?|components?|theme)$/i;
+const UI_FILE=/\.(css|scss|sass|less|html?|jsx|tsx|vue|svelte|astro)$/i;
+/* A card is UI work when its area says so, most of its files are UI files, or a design decision links to it. */
+const isUiCard=f=>f.type!=='question'&&(UI_AREA.test(f.inArea||f.area||'')||
+  (f.files.length>0&&f.files.filter(x=>UI_FILE.test(x)).length*2>=f.files.length)||
+  S.notes.some(n=>n.kind==='decision'&&n.project===f.project&&n.cards.includes(f.key)));
 /* What the second column holds, per kind: the thing you'd actually click. */
 const NOTE_EMPTY={
   brainstorm:'No brainstorms yet. Claude adds one when a conversation lands on something worth keeping.',
   plan:'No plans yet. Point one at a spec or plan document and the cards it produced stay tied to it.',
+  decision:'No design decisions yet. Claude adds one whenever a call gets made — a color, a shade, a layout, a word the UI uses, how something behaves.',
   reference:'No references yet. Anything you looked up and would look up again belongs here.'};
 const NOTE_HINT={
   brainstorm:'A brainstorm is the thinking, not the work — what it decided lives on the cards it links to.',
   plan:'Plans hold the reasoning; the board holds the state. Editing a card never edits the document.',
+  decision:'Every call that shaped how the product looks and works, what lost, and whose call it was. Claude’s calls wait for you to agree.',
   reference:'Links you would otherwise have to scroll back through the chat to find.'};
-const KINDL={brainstorm:'Brainstorm',plan:'Plan',reference:'Reference'};
+const KINDL={brainstorm:'Brainstorm',plan:'Plan',decision:'Design decision',reference:'Reference'};
+/* What a note is called in a sentence ("+ New design decision"). */
+const NOUN={brainstorm:'brainstorm',plan:'plan',decision:'design decision',reference:'reference'};
 /* What the new-note row asks for first, in the words you'd use. */
-const NOTE_TITLE_PH={brainstorm:'What was the conversation about? Then Enter',plan:'Name the plan, then Enter',reference:'What is it? Then Enter'};
+const NOTE_TITLE_PH={brainstorm:'What was the conversation about? Then Enter',plan:'Name the plan, then Enter',decision:'What did you decide about the design? Then Enter',reference:'What is it? Then Enter'};
 /* The drawer asks a different thing of each kind than the table column does. */
 const NOTEBODY={
   brainstorm:{label:'What was decided',ph:'The decision the conversation reached \u2014 not everything that was said'},
   plan:{label:'Notes',ph:'Anything worth knowing that isn\u2019t in the document'},
+  decision:{label:'What we chose, and why',ph:'The call, and the reason given for it \u2014 not a reason made up afterwards'},
   reference:{label:'Why it\u2019s here',ph:'What this answered, in one line'}};
 const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decided (optional)'},
   plan:{k:'file',label:'Document',ph:'docs/plan.md (optional)'},
+  decision:{k:'body',label:'Chose, and why',ph:'Why this one (optional)'},
   reference:{k:'url',label:'Link',ph:'https://… (optional)'}};
 const GORDER={parked:0,active:1,review:2,idea:3,done:4};
 const KEY='clipped.v2';
@@ -768,7 +786,7 @@ const toFeature=(pid,c)=>({id:pid+':'+c.key,key:c.key,num:+c.key.slice(c.key.las
   log:(c.log||[]).map(l=>({at:Date.parse(l.at),by:l.by==='claude'?'claude':'you',text:l.text}))});
 
 const toNote=(pid,n)=>({id:pid+':'+n.id,nid:n.id,project:pid,kind:n.kind,title:n.title,
-  body:n.body||'',considered:n.considered||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
+  body:n.body||'',considered:n.considered||'',decidedBy:n.decidedBy||'',confirmedAt:n.confirmedAt||'',url:n.url||'',file:n.file||'',cards:(n.cards||[]).slice(),
   createdAt:Date.parse(n.createdAt),updatedAt:Date.parse(n.updatedAt),by:n.updatedBy==='claude'?'claude':'you'});
 
 async function loadAll(){
@@ -962,6 +980,7 @@ function renderNav(){
 /* Cards in the current tab: Questions holds the question cards, Features the rest. */
 function tabCards(){
   const p=proj(view), base=p?S.features.filter(f=>f.project===p.id):S.features;
+  if(uiWork()) return base.filter(isUiCard);
   return base.filter(f=>P.tab==='questions'?f.type==='question':f.type!=='question');
 }
 /* Areas the Area chip can offer here, with how many cards each holds ("" = no area yet). */
@@ -999,6 +1018,13 @@ function searchCtl(){
   return `<span class="searchctl ${open?'open':''}"><button class="opt sbtn" id="searchBtn" type="button" aria-label="Search ${what}" title="Search (/)" ${open?'tabindex="-1"':''}>${SEARCHICON}</button>${open?`<input class="search" id="search" type="search" placeholder="Search ${what}" value="${esc(query)}" aria-label="Search ${what}">`:''}</span>`;
 }
 function openSearch(){ searchOpen=true; render(); const n=$('search'); if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)} }
+/* Decisions | UI work — the two halves of the Design tab. */
+function designSwitch(){
+  const p=proj(view), decisions=(p?pn(p.id):S.notes).filter(n=>n.kind==='decision').length;
+  const was=P.designView; P.designView='ui'; const ui=tabCards().length; P.designView=was;
+  return `<div class="tabs" role="group" aria-label="Design">${[['decisions','Decisions',decisions],['ui','UI work',ui]].map(([id,l,c])=>
+    `<button data-dview="${id}" aria-pressed="${(P.designView||'decisions')===id}">${l}<span class="c">${c}</span></button>`).join('')}</div>`;
+}
 function tabStrip(){
   return `<div class="tabs tabs-top" role="group" aria-label="Section">${TABS.map(t=>
     `<button data-tab="${t.id}" aria-pressed="${P.tab===t.id}">${t.label}<span class="c">${tabCount(t)}</span></button>`).join('')}</div>`;
@@ -1006,7 +1032,8 @@ function tabStrip(){
 /* One line under the title that means something on every tab. */
 function homeSub(parked){
   const across=`across ${S.projects.length} project${S.projects.length===1?'':'s'}`;
-  if(isNoteTab()) return `${tabCount(TAB())} ${TAB().note}${tabCount(TAB())===1?'':'s'} ${across}.`;
+  if(uiWork()){const n=tabCards().length; return `${n} UI card${n===1?'':'s'} ${across} — the same cards as in Work, with the design decisions they shaped.`}
+  if(isNoteTab()) return `${tabCount(TAB())} ${NOUN[TAB().note]}${tabCount(TAB())===1?'':'s'} ${across}.`;
   if(P.tab==='questions'){
     const open=tabCards().filter(f=>f.status!=='done').length;
     return `${open} unsettled question${open===1?'':'s'} ${across}. Answered ones are waiting on a decision.`;
@@ -1160,12 +1187,12 @@ function renderPage(){
   const landed=firstLanded&&S.features.find(f=>f.id===firstLanded);
   let h=`${isHome?gettingStarted():''}${landed?`<div class="landed-bar" role="status"><b>🎉 Your first task just landed.</b> Claude added <button class="linkbtn" data-open="${landed.id}">${esc(landed.title)}</button> while you worked — that's how the board fills. <button class="xbtn" id="landedX" aria-label="Dismiss">×</button></div>`:''}<div class="head"><div>
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
-         :`<h1>All ${esc(TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
+         :`<h1>${esc(uiWork()?'UI work':TAB().heading||'All '+TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
     <div class="toolbar">${isNoteTab()?searchCtl():''}
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
-      <button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(TAB().note):noun}</button></div></div>
-  <div class="tabrow">${tabStrip()}${isNoteTab()?'':`
+      ${uiWork()?'':`<button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(NOUN[TAB().note]):noun}</button>`}</div></div>
+  <div class="tabrow">${tabStrip()}${P.tab==='decisions'?designSwitch():''}${isNoteTab()?'':`
     <div class="tabs" role="group" aria-label="View">${(P.tab==='questions'?['table','board']:['table','board','timeline']).map(m=>`<button data-mode="${m}" aria-pressed="${P.mode===m}">${ICON[m]}${m[0].toUpperCase()+m.slice(1)}</button>`).join('')}</div>`}</div>
   ${isNoteTab()?renderNotesPage(isHome):''}`;
   if(isNoteTab()) return h;
@@ -1248,8 +1275,19 @@ function noteCols(isHome){
   const f=NOTEFIELD[TAB().note];
   return [{id:'id',label:'Id',w:92},...(isHome?[{id:'project',label:'Project',w:124}]:[]),
     {id:'title',label:'Title',w:280},{id:'target',label:f.label,w:300},
+    ...(TAB().note==='decision'?[{id:'call',label:'Whose call',w:244}]:[]),
     {id:'cards',label:'Cards',w:132},{id:'updated',label:'Updated',w:92},{id:'by',label:'Last by',w:104},{id:'del',label:'',w:44}];
 }
+/* Whose call a decision was. Claude's stay "unchecked" until you agree — the
+   record is only honest if it shows which calls nobody looked at. */
+const unchecked=n=>n.kind==='decision'&&n.decidedBy==='claude'&&!n.confirmedAt;
+function callCell(n){
+  if(n.decidedBy!=='claude') return `${who('you')}`;
+  return unchecked(n)
+    ? `<span class="call">${who('claude')}<span class="muted">unchecked</span><button class="btn sm" data-agree="${n.id}" title="You agree with this call">Agree</button></span>`
+    : `<span class="call">${who('claude')}<span class="muted">you agreed</span></span>`;
+}
+const agree=n=>saveNote(n,{confirmed:true}).then(ok=>ok&&toast('Agreed with '+n.nid));
 const cardLink=(pid,key)=>`<button class="clink" data-card="${pid+':'+key}">${esc(key)}</button>`;
 
 function noteCell(c,n,isHome){
@@ -1261,6 +1299,7 @@ function noteCell(c,n,isHome){
     case 'target': return editableCell({id:n.id,k:f.k,attr:'data-nedit',value:n[f.k],ph:f.ph,cls:n.kind==='plan'?'mono':'',label:f.label,
       shown:n.kind==='reference'&&n.url?`<a class="ext" href="${esc(n.url)}" target="_blank" rel="noreferrer noopener" title="${esc(n.url)}">${esc(n.url)}</a>`:undefined});
     case 'cards': return `<td>${n.cards.length?n.cards.map(k=>cardLink(n.project,k)).join(' '):'<span class="muted">—</span>'}</td>`;
+    case 'call': return `<td>${callCell(n)}</td>`;
     case 'updated': return `<td class="mono">${ago(n.updatedAt)}</td>`;
     case 'by': return `<td>${who(n.by)}</td>`;
     case 'del': return `<td><button class="xbtn" data-ndel="${n.id}" title="Delete" aria-label="Delete ${esc(n.title)}">×</button></td>`;
@@ -1274,9 +1313,9 @@ function noteComposer(cols,isHome){
   for(const c of cols){
     if(c.id==='id') out+=`<td class="key">+ New</td>`;
     else if(c.id==='project') out+=`<td><span class="sel"><select id="nProj" aria-label="Project">${S.projects.map(p=>`<option value="${p.id}" ${p.id===view?'selected':''}>${esc(p.name)}</option>`).join('')}</select></span></td>`;
-    else if(c.id==='title') out+=`<td><input id="nTitle" class="cell-in title" placeholder="${esc(NOTE_TITLE_PH[TAB().note])}" aria-label="New ${esc(TAB().note)} title"></td>`;
+    else if(c.id==='title') out+=`<td><input id="nTitle" class="cell-in title" placeholder="${esc(NOTE_TITLE_PH[TAB().note])}" aria-label="New ${esc(NOUN[TAB().note])} title"></td>`;
     else if(c.id==='target') out+=`<td><input id="nTarget" class="cell-in ${TAB().note==='plan'||TAB().note==='reference'?'mono':'note'}" placeholder="${esc(f.ph)}" aria-label="${esc(f.label)}"></td>`;
-    else if(c.id==='cards'){ out+=`<td colspan="${cols.length-cols.indexOf(c)}"><button class="btn sm primary" id="nAdd">Add ${esc(TAB().note)}</button></td>`; break }
+    else if(c.id==='cards'){ out+=`<td colspan="${cols.length-cols.indexOf(c)}"><button class="btn sm primary" id="nAdd">Add ${esc(NOUN[TAB().note])}</button></td>`; break }
     else out+='<td></td>';
   }
   return `<tr class="composer">${out}</tr>`;
@@ -1520,6 +1559,9 @@ function bindNotes(p,isHome){
       saveNote(n,{[k]:v}).then(ok=>ok&&toast('Saved'));
     });
   });
+  document.querySelectorAll('[data-agree]').forEach(b=>b.onclick=e=>{ e.stopPropagation();
+    const n=S.notes.find(x=>x.id===b.dataset.agree); if(n) agree(n);
+  });
   document.querySelectorAll('[data-ndel]').forEach(b=>b.onclick=()=>{
     const n=S.notes.find(x=>x.id===b.dataset.ndel); if(!n) return;
     if(confirm('Delete '+n.nid+' “'+n.title+'”?')) deleteNote(n).then(ok=>ok&&toast(n.nid+' deleted'));
@@ -1581,6 +1623,7 @@ function bindPage(){
     $('search').addEventListener('blur',()=>setTimeout(()=>{if(searchOpen&&!query&&document.activeElement?.id!=='search'){searchOpen=false;render()}},120));
   }
   bindTabs();
+  document.querySelectorAll('[data-dview]').forEach(b=>b.onclick=()=>{P.designView=b.dataset.dview;filter='all';composing=false;savePrefs();render()});
   if(p&&$('projName')){
     const el=$('projName');
     el.addEventListener('keydown',e=>{
@@ -1610,7 +1653,7 @@ function bindPage(){
     P.areaPick=c.checked?[...cur,n]:cur.filter(x=>x!==n); savePrefs(); render(); document.querySelector('details.areas')?.setAttribute('open','')});
   if($('areaClear')) $('areaClear').onclick=()=>{P.areaPick=[];savePrefs();render()};
   document.querySelectorAll('[data-col]').forEach(c=>c.onchange=()=>{const id=c.dataset.col;P.hidden=c.checked?P.hidden.filter(x=>x!==id):[...P.hidden,id];savePrefs();render();document.querySelector('details.cols')?.setAttribute('open','')});
-  $('newBtn').onclick=()=>{composing=!composing;if(composing&&P.mode!=='table'){P.mode='table';savePrefs()}render();if(composing) $('cTitle')?.focus()};
+  if($('newBtn')) $('newBtn').onclick=()=>{composing=!composing;if(composing&&P.mode!=='table'){P.mode='table';savePrefs()}render();if(composing) $('cTitle')?.focus()};
   /* The new-card row closes on Escape, or when you leave it empty. */
   const closeComposer=()=>{composing=false;render()};
   ['cTitle','nTitle'].forEach(id=>{const el=$(id); if(!el) return;
@@ -1838,6 +1881,7 @@ function renderDrawer(){
 const NOTE_UNLINKED={
   brainstorm:'No cards yet. Claude links the ones a decision produced.',
   plan:'No cards from this document yet \u2014 /clipped:plan turns it into some.',
+  decision:'Not linked to a card yet. Claude links the cards this call shaped.',
   reference:'Not linked to a card yet.'};
 const hostOf=u=>{try{return new URL(u).host}catch(e){return u}};
 const noteCards=n=>n.cards.map(k=>S.features.find(f=>f.project===n.project&&f.key===k)).filter(Boolean);
@@ -1891,12 +1935,16 @@ function renderNoteDrawer(){
     <div class="drawer-b">
       ${target}
       <div class="field"><label class="lbl" for="nBody">${esc(fld.label)}</label><textarea id="nBody" placeholder="${esc(fld.ph)}">${esc(n.body)}</textarea></div>
-      ${n.kind==='brainstorm'?`<div class="field"><label class="lbl" for="nConsidered">What was considered</label><textarea id="nConsidered" placeholder="The options that lost, and why \u2014 what answers \u201cwhy didn\u2019t we just\u2026\u201d later">${esc(n.considered)}</textarea></div>`:''}
+      ${n.kind==='decision'?`<div class="field"><span class="lbl">Whose call</span><div class="callrow">${
+        n.decidedBy==='user'?`<span>${who('you')}</span><span class="hint">You made this call.</span>`
+        :unchecked(n)?`<span>${who('claude')}</span><span class="hint">Claude made this call and you haven\u2019t checked it.</span><button class="btn sm primary" id="nAgree">I agree</button><button class="btn sm ghost" id="nMine">It was my call</button>`
+        :`<span>${who('claude')}</span><span class="hint">Claude made this call; you agreed ${ago(Date.parse(n.confirmedAt))} ago.</span>`}</div></div>`:''}
+      ${n.kind==='brainstorm'||n.kind==='decision'?`<div class="field"><label class="lbl" for="nConsidered">What was considered</label><textarea id="nConsidered" placeholder="The options that lost, and why \u2014 what answers \u201cwhy didn\u2019t we just\u2026\u201d later">${esc(n.considered)}</textarea></div>`:''}
       <div class="field"><span class="lbl"><span>${n.kind==='reference'?'Where it was used':'What it produced'}</span>${cards.length?`<span class="mono">${esc(cardTally(cards))}</span>`:''}</span>
         ${cards.length?`<ul class="nlinks">${cards.map(f=>`<li><button class="nlink" data-gocard="${f.id}"><span class="dot" style="background:${color(f.status)}"></span><span class="mono st">${esc(f.key)}</span><span class="t">${esc(f.title)}</span><span class="st">${esc(stLabel(f))}</span></button></li>`).join('')}</ul>`
           :`<span class="hint">${esc(NOTE_UNLINKED[n.kind])}</span>`}</div>
       ${n.kind==='plan'&&n.file?`<div class="handoff"><b>Bring it to the board again</b><p>Plans get edited. This asks Claude to re-read the document and add only what isn\u2019t on the board yet.</p><div><button class="btn primary sm" id="nHandoff">Get the prompt</button></div></div>`:''}
-      <div class="drawer-f"><button class="btn danger ghost" id="nDel">Delete ${esc(KINDL[n.kind].toLowerCase())}</button><span class="saved" id="savedTag" aria-live="polite">Changes save when you leave a field</span></div>
+      <div class="drawer-f"><button class="btn danger ghost" id="nDel">Delete ${esc(NOUN[n.kind])}</button><span class="saved" id="savedTag" aria-live="polite">Changes save when you leave a field</span></div>
     </div></aside>`;
 
   fitDrawerText();
@@ -1909,6 +1957,8 @@ function renderNoteDrawer(){
   });
   $('nDel').onclick=()=>{ if(!confirm('Delete '+n.nid+' \u201c'+n.title+'\u201d? The cards it produced stay.')) return;
     deleteNote(n).then(ok=>{if(ok){openNote=null;render();toast(n.nid+' deleted')}})};
+  if($('nAgree')) $('nAgree').onclick=()=>commitNote().then(()=>agree(n));
+  if($('nMine')) $('nMine').onclick=()=>commitNote().then(()=>saveNote(n,{decidedBy:'user'}));
   if($('nHandoff')) $('nHandoff').onclick=()=>commitNote().then(()=>openDialog('Paste this into Claude',planPrompt(n)));
   document.querySelectorAll('[data-gocard]').forEach(b=>b.onclick=()=>commitNote().then(()=>{
     const f=S.features.find(x=>x.id===b.dataset.gocard); if(!f) return;

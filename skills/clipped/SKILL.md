@@ -40,12 +40,12 @@ board update LE-3 --area "Invoices"|auto       # put one card in an area by hand
 board ask "Which auth provider?" [--status active] [--next "..."]   # a question is a card
 board answer LE-7 "What you found out" [--done]        # --done only if they decided
 
-board note add brainstorm|plan|reference "Title" [--body ...] [--considered ...] [--url ...] [--file ...] [--card LE-3]...
-board note list [--kind plan] · note show LE-N3 · note update LE-N3 ... · note link LE-N3 LE-4 · note rm LE-N3
+board note add brainstorm|plan|decision|reference "Title" [--body ...] [--considered ...] [--decided-by user|claude] [--url ...] [--file ...] [--card LE-3]...
+board note list [--kind decision] · note show LE-N3 · note update LE-N3 ... · note link LE-N3 LE-4 · note rm LE-N3
 ```
 
-The board has five tabs. Two hold cards: **Features** and **Questions**. Three
-hold notes: **Brainstorms**, **Plans**, **References**.
+The board has six tabs. Two hold cards: **Features** and **Questions**. Four
+hold notes: **Brainstorms**, **Plans**, **Decisions**, **References**.
 
 Bugs and chores are cards too, and they live in Features alongside features —
 the tab holds the work, `--type` says what kind it is. Only `--type question`
@@ -88,13 +88,16 @@ or an answered question. Neither → nothing.
 | You spot a bug or chore outside the task and don't fix it | an `idea` card, `--type bug` or `chore` |
 | You tell the user they have to do something — add keys, run a migration, update the plugin, click connect in a dashboard | a `chore` in `review` (their turn): see **Steps only the user can do** |
 | A question someone has to go and find out later | `board ask` — Open |
-| You asked the user with the multiple-choice question widget | nothing: a hook records it in Questions, Decided with their pick — don't add it again |
+| You asked the user with the multiple-choice question widget | nothing: a hook records it — a design question as a decision (their call), any other in Questions, Decided — don't add it again |
+| You changed the UI | the card for the work, and a decision for any design call it made: see **Decisions** |
 | A question you answered with a table, a list, a comparison or a recommendation — looked up or from memory | `board ask` then `board answer` — Answered |
 | "Elaborate", "more detail", "why?" on an answer you recorded | `board answer` on the same card again — never a new one |
 | A fact you knew and said in a line | nothing |
 | The source an answer or the work rested on | a reference note, linked to its card |
-| A discussion that ended in a decision | a brainstorm note, plus an `idea` for each concrete thing still to build |
-| A run of small design or wording changes that settled a direction | one brainstorm note when the run ends |
+| A call that shapes the product — a look, a word, a layout, what the docs say, what's in scope — made by them or by you | a decision note: see **Decisions** |
+| A discussion that ended in a decision | a decision note, plus an `idea` for each concrete thing still to build |
+| A run of small design or wording changes that settled a direction | one decision note when the run ends |
+| A long discussion whose path is worth keeping, not only where it landed | a brainstorm note, linked to its decisions and ideas |
 | How the project is set up — where it deploys, which account or dashboard holds what, the command that matters | a reference note |
 | A plan document in the repo | cards, plus one plan note |
 | A plan you wrote in chat and they approved | steps on the card, not a note |
@@ -276,9 +279,9 @@ past a "maybe" that nobody picked up.
 
 **Settled over many small steps.** Design and wording often settle across a dozen
 small requests — this font, then that one; the terminal here, then there — and no
-single message feels like a decision. When such a run ends, write one brainstorm
-note: the body is where it landed, `--considered` is what was tried and dropped,
-and why. Link the card it served.
+single message feels like a decision. When such a run ends, write one decision
+note (see **Decisions**): the body is where it landed, `--considered` is what was
+tried and dropped, and why. Link the card it served.
 
 **Picked from a list.** When you laid out a list of options — a review, a set of
 suggestions, a numbered menu — and the user chose some of them to do now, the
@@ -315,10 +318,55 @@ one, and the note shouldn't exist.
 **A decision with nothing to build.** Some discussions end in a choice that
 creates no card — "we price at $29", "we drop Safari 15", "no ads before launch".
 Nothing is left to do, but in a month nobody remembers why. When the user
-states a decision like that, record it without asking, as one brainstorm note
-whose body is the decision and the reason in a sentence or two. If it closes an
-open question, `board answer <key> --done` instead: the question card already
-holds it.
+states a decision like that, record it without asking, as a decision note. If it
+closes an open question, `board answer <key> --done` instead: the question card
+already holds it.
+
+## Decisions
+
+A product is a pile of calls: this blue, that label, dark by default, the README
+before the install page. Most get made in passing — many by you, while building —
+and the reasons evaporate with the chat. A decision note keeps each call, what
+lost, and **whose call it was**.
+
+```
+board note add decision "The board is dark by default, with a light switch" \
+  --body "Matches the terminal it sits next to; light is one click away." \
+  --considered "Light only: flat next to the terminal. Follow the OS: surprised people on first open." \
+  --card LE-51
+```
+
+Record one when a call sets a direction or a rule someone would later ask "why?"
+about: a color or type choice that isn't already in the design system, a layout,
+a component's behaviour, a word the UI will use everywhere, what a doc covers or
+which doc is the source of truth, a scope or privacy line, a technical choice
+that shapes the product. Not every hex tweak: following an existing rule is not
+a decision.
+
+- **Whose call.** It defaults to you (Claude). Add `--decided-by user` only when
+  the user picked it, asked for it, or corrected you toward it. If you chose and
+  they didn't weigh in, it stays yours; that is what tells them which calls
+  nobody checked. When in doubt, it's yours.
+- **Never confirm your own call.** `board note confirm` is the user's: they agree
+  on the board. You can't run it.
+- **The why is the reason given, not one you make up afterwards.** If no reason
+  was given, say so in the body.
+- **Alternatives you showed.** If you produced variants (mockups, two layouts,
+  three palettes), name each one in `--considered` with why it lost. If a
+  variant exists as a file in the repo, point `--file` at it.
+- **One call per note.** A long discussion that settled five things is five
+  decisions and, if the path matters, one brainstorm note linking them.
+- A decision that turns out wrong isn't deleted: update it, and say what changed
+  in the body.
+
+**UI changes.** A UI change is two things on the board: the card for the work (it
+lands in the UI area through its files), and a decision for each design call the
+change made. A change that only reuses what `DESIGN.md` already has — its colors,
+fonts, tokens — made no call, and needs no decision. When a UI edit brings in a
+color, a typeface or a token that `DESIGN.md` doesn't have, the end-of-turn hook
+names them and asks: record the decision, or say in one line that it followed the
+existing design. If the project has a `DESIGN.md` and the call changes the design
+system itself, update `DESIGN.md` too, so the next reuse counts as following it.
 
 ## References
 
@@ -425,7 +473,7 @@ A decision, a loose end or a step for the user leaves no diff. The end-of-turn
 hook only catches code that changed without the board — nothing catches the
 rest, so check yourself before your last line:
 
-- Did something get **decided** — even across many small replies? → a brainstorm note
+- Did something get **decided** — by them or by you, even across many small replies? → a decision note
 - Did you **mention** something left to do — a bug, a chore, a "you'll need to"? → a card
 - Is there a **step only the user can do**? → a chore in their turn
 - Did a **suggestion** get discussed and not turned down? → an idea
