@@ -21,6 +21,17 @@
         "--no-open"
       ],
       "port": 4747
+    },
+    {
+      "name": "board-ui-repo",
+      "runtimeExecutable": "./bin/board",
+      "runtimeArgs": [
+        "ui",
+        "--no-open",
+        "--port",
+        "4749"
+      ],
+      "port": 4749
     }
   ]
 }

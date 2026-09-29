@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 118,
+  "nextNum": 122,
   "features": [
     {
       "key": "LE-1",
@@ -341,7 +341,7 @@
         "server/src/launch.ts"
       ],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-29T09:28:05Z",
+      "updatedAt": "2026-09-29T11:37:10Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -398,9 +398,22 @@
           "at": "2026-09-27T09:14:30Z",
           "by": "claude",
           "text": "Note: Two weeks of real sessions on Braille.AI and bud — I'll ask the DOGFOOD.md questions at the end"
+        },
+        {
+          "at": "2026-09-29T11:29:51Z",
+          "by": "claude",
+          "text": "Proof: http://localhost:4800"
+        },
+        {
+          "at": "2026-09-29T11:37:10Z",
+          "by": "claude",
+          "text": "Proof: https://useclipped.vercel.app"
         }
       ],
-      "links": [],
+      "links": [
+        "http://localhost:4800",
+        "https://useclipped.vercel.app"
+      ],
       "area": ""
     },
     {
@@ -432,7 +445,7 @@
       ],
       "files": [],
       "createdAt": "2026-09-23T13:02:51Z",
-      "updatedAt": "2026-09-23T14:08:39Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -464,10 +477,15 @@
           "at": "2026-09-23T14:08:39Z",
           "by": "claude",
           "text": "Moved to review — Built and tested, but it needs your accounts: Clerk keys, Supabase project + schema.sql, Vercel, PostHog EU, and the domain. site/README.md has the table"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ],
       "links": [],
-      "area": ""
+      "area": "Landing"
     },
     {
       "key": "LE-9",
@@ -479,7 +497,7 @@
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-24T12:20:41Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -496,10 +514,15 @@
           "at": "2026-09-24T12:20:41Z",
           "by": "claude",
           "text": "Renamed from “Ideas don't count toward progress”"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
       "links": [],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-10",
@@ -533,7 +556,7 @@
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T12:20:26Z",
-      "updatedAt": "2026-09-28T09:51:03Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -565,12 +588,17 @@
           "at": "2026-09-28T09:51:03Z",
           "by": "claude",
           "text": "Proof: https://github.com/avivalushai/clipped"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ],
       "links": [
         "https://github.com/avivalushai/clipped"
       ],
-      "area": ""
+      "area": "Landing"
     },
     {
       "key": "LE-12",
@@ -584,17 +612,22 @@
       "steps": [],
       "files": [],
       "createdAt": "2026-09-24T13:19:47Z",
-      "updatedAt": "2026-09-24T13:19:47Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-24T13:19:47Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
       "links": [],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-14",
@@ -971,7 +1004,7 @@
       "steps": [],
       "files": [],
       "createdAt": "2026-09-27T09:35:59Z",
-      "updatedAt": "2026-09-27T13:07:25Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -983,10 +1016,15 @@
           "at": "2026-09-27T13:07:25Z",
           "by": "claude",
           "text": "Moved to review — board rename \"New name\" — CLI, API and an editable title in the UI. I used it here: the board is called Clipped now, and the key stayed LE"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: CLI"
         }
       ],
       "links": [],
-      "area": ""
+      "area": "CLI"
     },
     {
       "key": "LE-22",
@@ -1201,17 +1239,22 @@
       "steps": [],
       "files": [],
       "createdAt": "2026-09-27T13:07:26Z",
-      "updatedAt": "2026-09-27T13:07:26Z",
+      "updatedAt": "2026-09-29T11:19:20Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T13:07:26Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-29T11:19:20Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
       "links": [],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-29",
@@ -1425,16 +1468,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-32",
@@ -1447,16 +1495,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-33",
@@ -1469,16 +1522,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-34",
@@ -1491,16 +1549,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-35",
@@ -1513,16 +1576,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-36",
@@ -1535,16 +1603,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-37",
@@ -1557,16 +1630,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-38",
@@ -1579,16 +1657,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-39",
@@ -1601,16 +1684,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:40Z",
-      "updatedAt": "2026-09-27T17:29:40Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:40Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-40",
@@ -1623,16 +1711,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:41Z",
-      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:41Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-41",
@@ -1645,16 +1738,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:41Z",
-      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:41Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-42",
@@ -1667,16 +1765,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:41Z",
-      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:41Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-43",
@@ -1689,16 +1792,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:29:41Z",
-      "updatedAt": "2026-09-27T17:29:41Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:29:41Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-44",
@@ -1847,16 +1955,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:35:59Z",
-      "updatedAt": "2026-09-27T17:35:59Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:35:59Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ],
-      "area": ""
+      "area": "Landing"
     },
     {
       "key": "LE-48",
@@ -1869,16 +1982,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-27T17:36:00Z",
-      "updatedAt": "2026-09-27T17:36:00Z",
+      "updatedAt": "2026-09-29T11:19:33Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-27T17:36:00Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ],
-      "area": ""
+      "area": "Landing"
     },
     {
       "key": "LE-49",
@@ -2083,16 +2201,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T11:33:13Z",
-      "updatedAt": "2026-09-28T11:33:13Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T11:33:13Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ],
-      "area": ""
+      "area": "Landing"
     },
     {
       "key": "LE-54",
@@ -2397,8 +2520,8 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T14:42:04Z",
-      "updatedAt": "2026-09-28T14:42:04Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:34Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T14:42:04Z",
@@ -2409,9 +2532,14 @@
           "at": "2026-09-28T14:42:04Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:34Z",
+          "by": "claude",
+          "text": "Area: Video"
         }
       ],
-      "area": ""
+      "area": "Video"
     },
     {
       "key": "LE-62",
@@ -2424,8 +2552,8 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T14:42:04Z",
-      "updatedAt": "2026-09-28T14:42:04Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:34Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T14:42:04Z",
@@ -2436,9 +2564,14 @@
           "at": "2026-09-28T14:42:04Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:34Z",
+          "by": "claude",
+          "text": "Area: Video"
         }
       ],
-      "area": ""
+      "area": "Video"
     },
     {
       "key": "LE-63",
@@ -2451,8 +2584,8 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T14:42:04Z",
-      "updatedAt": "2026-09-28T14:42:04Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:34Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T14:42:04Z",
@@ -2463,9 +2596,14 @@
           "at": "2026-09-28T14:42:04Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:34Z",
+          "by": "claude",
+          "text": "Area: Video"
         }
       ],
-      "area": ""
+      "area": "Video"
     },
     {
       "key": "LE-64",
@@ -2653,8 +2791,8 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T15:18:52Z",
-      "updatedAt": "2026-09-28T15:18:52Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:34Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T15:18:52Z",
@@ -2665,9 +2803,14 @@
           "at": "2026-09-28T15:18:52Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:34Z",
+          "by": "claude",
+          "text": "Area: Video"
         }
       ],
-      "area": ""
+      "area": "Video"
     },
     {
       "key": "LE-68",
@@ -2805,16 +2948,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T15:33:09Z",
-      "updatedAt": "2026-09-28T15:33:09Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T15:33:09Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-71",
@@ -2827,16 +2975,21 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T15:50:06Z",
-      "updatedAt": "2026-09-28T15:50:06Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T15:50:06Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ],
-      "area": ""
+      "area": "UI"
     },
     {
       "key": "LE-72",
@@ -2849,8 +3002,8 @@
       "files": [],
       "links": [],
       "createdAt": "2026-09-28T15:50:38Z",
-      "updatedAt": "2026-09-28T15:50:38Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:33Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T15:50:38Z",
@@ -2861,9 +3014,14 @@
           "at": "2026-09-28T15:50:38Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: Video"
         }
       ],
-      "area": ""
+      "area": "Video"
     },
     {
       "key": "LE-73",
@@ -3366,10 +3524,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "Landing",
       "createdAt": "2026-09-28T16:51:47Z",
-      "updatedAt": "2026-09-28T17:04:34Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:33Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T16:51:47Z",
@@ -3385,6 +3543,11 @@
           "at": "2026-09-28T17:04:34Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ]
     },
@@ -3444,10 +3607,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "Server",
       "createdAt": "2026-09-28T17:08:01Z",
-      "updatedAt": "2026-09-28T17:16:38Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:33Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T17:08:01Z",
@@ -3463,6 +3626,11 @@
           "at": "2026-09-28T17:16:38Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: Server"
         }
       ]
     },
@@ -3521,9 +3689,9 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "Hooks",
       "createdAt": "2026-09-28T17:18:21Z",
-      "updatedAt": "2026-09-28T17:33:54Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -3545,6 +3713,11 @@
           "at": "2026-09-28T17:33:54Z",
           "by": "claude",
           "text": "Note: Committed as 922d4f4 (0.7.4), not pushed yet."
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Hooks"
         }
       ]
     },
@@ -3900,9 +4073,9 @@
       "links": [
         "2468896"
       ],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-28T23:23:50Z",
-      "updatedAt": "2026-09-29T10:38:36Z",
+      "updatedAt": "2026-09-29T11:19:20Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4039,6 +4212,11 @@
           "at": "2026-09-29T10:38:36Z",
           "by": "claude",
           "text": "Proof: 2468896"
+        },
+        {
+          "at": "2026-09-29T11:19:20Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4052,15 +4230,20 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-28T23:57:17Z",
-      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T23:57:17Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4074,15 +4257,20 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "Landing",
       "createdAt": "2026-09-28T23:57:17Z",
-      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T23:57:17Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Landing"
         }
       ]
     },
@@ -4096,15 +4284,20 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-28T23:57:17Z",
-      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T23:57:17Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4118,15 +4311,20 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-28T23:57:17Z",
-      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T23:57:17Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4140,15 +4338,20 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-28T23:57:17Z",
-      "updatedAt": "2026-09-28T23:57:17Z",
+      "updatedAt": "2026-09-29T11:19:21Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-28T23:57:17Z",
           "by": "claude",
           "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4164,9 +4367,9 @@
       "links": [
         "096b6a1"
       ],
-      "area": "",
+      "area": "Server",
       "createdAt": "2026-09-29T09:24:16Z",
-      "updatedAt": "2026-09-29T10:11:45Z",
+      "updatedAt": "2026-09-29T11:19:22Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4183,6 +4386,11 @@
           "at": "2026-09-29T10:11:45Z",
           "by": "claude",
           "text": "Proof: 096b6a1"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: Server"
         }
       ]
     },
@@ -4196,10 +4404,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "Server",
       "createdAt": "2026-09-29T09:24:31Z",
-      "updatedAt": "2026-09-29T09:29:55Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:33Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T09:24:31Z",
@@ -4215,6 +4423,11 @@
           "at": "2026-09-29T09:29:55Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: Server"
         }
       ]
     },
@@ -4494,10 +4707,10 @@
         "f24fe1c",
         "ec4d17c"
       ],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-29T10:48:22Z",
-      "updatedAt": "2026-09-29T10:56:29Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:21Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T10:48:22Z",
@@ -4518,6 +4731,11 @@
           "at": "2026-09-29T10:56:29Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4572,10 +4790,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-29T10:53:11Z",
-      "updatedAt": "2026-09-29T10:56:29Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:21Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T10:53:11Z",
@@ -4586,6 +4804,11 @@
           "at": "2026-09-29T10:56:29Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:21Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4599,10 +4822,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-29T10:55:44Z",
-      "updatedAt": "2026-09-29T10:56:29Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:22Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T10:55:44Z",
@@ -4613,6 +4836,11 @@
           "at": "2026-09-29T10:56:29Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4626,10 +4854,10 @@
       "steps": [],
       "files": [],
       "links": [],
-      "area": "",
+      "area": "UI",
       "createdAt": "2026-09-29T10:56:49Z",
-      "updatedAt": "2026-09-29T11:03:23Z",
-      "updatedBy": "user",
+      "updatedAt": "2026-09-29T11:19:33Z",
+      "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T10:56:49Z",
@@ -4645,6 +4873,11 @@
           "at": "2026-09-29T11:03:23Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T11:19:33Z",
+          "by": "claude",
+          "text": "Area: UI"
         }
       ]
     },
@@ -4824,18 +5057,20 @@
       "key": "LE-116",
       "title": "UI work uses the same table as Work, plus a Design decisions column",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Design → UI work looks and works like Work: status chip, area chip, groups, sorting, resizing, pinned header; a Design decisions column with chips. Not committed.",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "0937988"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:15:09Z",
-      "updatedAt": "2026-09-29T11:15:09Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-29T11:18:37Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-29T11:15:09Z",
@@ -4846,6 +5081,16 @@
           "at": "2026-09-29T11:15:09Z",
           "by": "claude",
           "text": "Moved to review — Design → UI work looks and works like Work: status chip, area chip, groups, sorting, resizing, pinned header; a Design decisions column with chips. Not committed."
+        },
+        {
+          "at": "2026-09-29T11:17:23Z",
+          "by": "claude",
+          "text": "Proof: 0937988"
+        },
+        {
+          "at": "2026-09-29T11:18:37Z",
+          "by": "user",
+          "text": "Done"
         }
       ]
     },
@@ -4853,26 +5098,222 @@
       "key": "LE-117",
       "title": "Every card gets an area: Claude guesses one, the user can change it",
       "type": "feature",
-      "status": "review",
-      "note": "Branch area-guess (0.9.10) in ../loose-ends-area, not merged: main has the other session's uncommitted ui/index.html (reworking UI work). Then: merge, sync, restart :4747, push, and guess areas for the 48 cards that have none.",
+      "status": "done",
+      "note": "Shipped in 0.9.11. 44 cards got Claude's area guess, shown as '(guess)' in the Area dropdown; change any, or use New area…. 4 left blank: LE-10, LE-20, LE-46, LE-52.",
       "doneWhen": [],
       "steps": [],
       "files": [],
-      "links": [],
-      "area": "",
+      "links": [
+        "2366d5d"
+      ],
+      "area": "CLI",
       "createdAt": "2026-09-29T11:15:27Z",
-      "updatedAt": "2026-09-29T11:15:27Z",
-      "updatedBy": "claude",
+      "updatedAt": "2026-09-29T11:34:55Z",
+      "updatedBy": "user",
       "log": [
         {
           "at": "2026-09-29T11:15:27Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-29T11:19:22Z",
+          "by": "claude",
+          "text": "Area: CLI"
+        },
+        {
+          "at": "2026-09-29T11:19:47Z",
+          "by": "claude",
+          "text": "Updated — Shipped in 0.9.11. 44 cards got Claude's area guess, shown as '(guess)' in the Area dropdown; change any, or use New area…. 4 left blank: LE-10, LE-20, LE-46, LE-52."
+        },
+        {
+          "at": "2026-09-29T11:19:47Z",
+          "by": "claude",
+          "text": "Proof: 2366d5d"
+        },
+        {
+          "at": "2026-09-29T11:34:55Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-118",
+      "title": "Clipped in use: a million-tasks cut",
+      "type": "feature",
+      "status": "review",
+      "note": "Watch clipped-real-mess.mp4",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Chats pour out of the window while you scroll, counter to 2,309,209",
+          "done": true
+        },
+        {
+          "text": "Render and send",
+          "done": true
+        }
+      ],
+      "files": [
+        "video/real/clipped-real.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:17:50Z",
+      "updatedAt": "2026-09-29T11:22:06Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:17:50Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T11:17:57Z",
+          "by": "claude",
+          "text": "Step done: Chats pour out of the window while you scroll, counter to 2,309,209"
+        },
+        {
+          "at": "2026-09-29T11:22:06Z",
+          "by": "claude",
+          "text": "Step done: Render and send"
+        },
+        {
+          "at": "2026-09-29T11:22:06Z",
+          "by": "claude",
+          "text": "Moved to review — Watch clipped-real-mess.mp4"
+        }
+      ]
+    },
+    {
+      "key": "LE-119",
+      "title": "A paperclip logo: app icon and wordmark",
+      "type": "feature",
+      "status": "review",
+      "note": "Paperclip mark in the landing header and board sidebar; blue tile favicon in the browser tab; landing/img/logo/*.svg",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/img/logo/clipped-icon.svg",
+        "landing/img/logo/clipped-lockup.svg",
+        "landing/index.html",
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:22:32Z",
+      "updatedAt": "2026-09-29T11:36:44Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:22:32Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:27:08Z",
+          "by": "claude",
+          "text": "Note: User wants a paperclip in the mark; pick among paperclip set A–F (leaning B + D)"
+        },
+        {
+          "at": "2026-09-29T11:36:44Z",
+          "by": "claude",
+          "text": "Renamed from “A logo for Clipped”"
+        },
+        {
+          "at": "2026-09-29T11:36:44Z",
+          "by": "claude",
+          "text": "Files: landing/img/logo/clipped-icon.svg, landing/img/logo/clipped-lockup.svg, landing/index.html, ui/index.html"
+        },
+        {
+          "at": "2026-09-29T11:36:44Z",
+          "by": "claude",
+          "text": "Moved to review — Paperclip mark in the landing header and board sidebar; blue tile favicon in the browser tab; landing/img/logo/*.svg"
+        }
+      ]
+    },
+    {
+      "key": "LE-120",
+      "title": "Landing page catches up: Design tab, Outputs, areas, welcome page",
+      "type": "chore",
+      "status": "done",
+      "note": "Copy, tab chips, card features and both screenshots updated on landing/ and install page; not committed",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/index.html",
+        "landing/install.html"
+      ],
+      "links": [
+        "ebe9fca"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T11:27:51Z",
+      "updatedAt": "2026-09-29T11:33:34Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-29T11:27:51Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T11:29:42Z",
+          "by": "claude",
+          "text": "Moved to review — Copy, tab chips, card features and both screenshots updated on landing/ and install page; not committed"
+        },
+        {
+          "at": "2026-09-29T11:29:42Z",
+          "by": "claude",
+          "text": "Files: landing/index.html, landing/install.html"
+        },
+        {
+          "at": "2026-09-29T11:32:17Z",
+          "by": "claude",
+          "text": "Proof: ebe9fca"
+        },
+        {
+          "at": "2026-09-29T11:33:34Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-121",
+      "title": "Filters and grouping per tab: Type on Work, Who decided on Design, Kind and Running on Outputs",
+      "type": "feature",
+      "status": "idea",
+      "note": "Suggested: Work — Type filter, group by Type or Last touched; Design — Who decided filter (yours / Claude's unchecked / agreed), group by card; Outputs — Kind filter, Running now, hide done cards' outputs, group by card; Brainstorms — Led to work / Nothing yet; Plans & References — search is enough",
+      "doneWhen": [],
+      "steps": [
+        {
+          "text": "Grouping first: one Group by control on every tab, options per tab",
+          "done": false
+        }
+      ],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:38:33Z",
+      "updatedAt": "2026-09-29T11:40:27Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:38:33Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T11:40:27Z",
+          "by": "claude",
+          "text": "Step added: Grouping first: one Group by control on every tab, options per tab"
         }
       ]
     }
   ],
-  "nextNoteNum": 38,
+  "nextNoteNum": 39,
   "notes": [
     {
       "id": "LE-N1",
@@ -5540,11 +5981,50 @@
       "createdAt": "2026-09-29T10:56:49Z",
       "updatedAt": "2026-09-29T11:03:23Z",
       "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N38",
+      "kind": "brainstorm",
+      "title": "Logo directions for Clipped",
+      "body": "Round 1: 1 Paperclip C. 2 Clipped card (binder clip on a card). 3 Cut corner (blue square, top-right corner cut; best favicon). 4 Loose end, caught (thread + blue pin). 5 Clipped stack (status-color rows bound by a clip). 6 Wordmark with a cut-corner card as the period. Round 2: 7 Clothespin on a card. 8 Coupon cut-out (dashed border around a card). 9 Chat bubble becomes a card. 10 Square C monogram holding a card. 11 Pinned card. 12 Stapled cards. 13 Caught spark (idea inside a clip). 14 Terminal card (cut-corner square with >_). 15 Bookmark ribbon. Leaning: 3+6, or 9 / 10 / 14 as stronger stories.",
+      "considered": "Current mark is a checkbox in a rounded square; reads as a generic todo app",
+      "decidedBy": "",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [],
+      "createdAt": "2026-09-29T11:22:32Z",
+      "updatedAt": "2026-09-29T11:26:21Z",
+      "updatedBy": "claude"
     }
   ],
   "areas": [
     {
       "name": "Skills",
+      "paths": []
+    },
+    {
+      "name": "UI",
+      "paths": []
+    },
+    {
+      "name": "Landing",
+      "paths": []
+    },
+    {
+      "name": "CLI",
+      "paths": []
+    },
+    {
+      "name": "Server",
+      "paths": []
+    },
+    {
+      "name": "Hooks",
+      "paths": []
+    },
+    {
+      "name": "Video",
       "paths": []
     }
   ]

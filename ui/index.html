@@ -6,6 +6,7 @@
 <title>Clipped</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Crect width="24" height="24" rx="6" fill="%232F5BFF"/%3E%3Cpath transform="translate%2812 12%29 rotate%2840%29" d="M-2 -2.75V1.25a2 2 0 0 0 4 0V-5.25a3.5 3.5 0 0 0 -7 0V3.75a5 5 0 0 0 10 0V-3.75" fill="none" stroke="%23FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <style>
 /* Same tokens as the landing page (landing/index.html), so the product and the site look like one thing. */
@@ -60,7 +61,7 @@ button{cursor:pointer}
 
 /* ---------- left menu ---------- */
 .side{background:var(--side);border-right:1px solid var(--line);padding:18px 10px;display:flex;flex-direction:column;gap:16px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand{display:flex;align-items:center;gap:6px;padding:0 8px}
 .brand-mark{width:22px;height:22px;flex:none;color:var(--ink)}
 .brand b{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:-.01em}
 .nav{display:flex;flex-direction:column;gap:2px}
@@ -692,7 +693,7 @@ li.done .fr-check::after{content:"";width:8px;height:4px;border:2px solid #fff;b
 
 <div class="app" id="app">
   <aside class="side" id="side" aria-label="Projects">
-    <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/><path d="M8 12.5l2.6 2.5L16 9" stroke="var(--ground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Clipped</b></div>
+    <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path transform="translate(12 12) rotate(40) scale(1.12)" d="M-2 -2.75V1.25a2 2 0 0 0 4 0V-5.25a3.5 3.5 0 0 0 -7 0V3.75a5 5 0 0 0 10 0V-3.75" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Clipped</b></div>
     <nav class="nav" id="nav"></nav>
   </aside>
   <main id="mainEl"></main>
