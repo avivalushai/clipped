@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 114,
+  "nextNum": 115,
   "features": [
     {
       "key": "LE-1",
@@ -4713,10 +4713,12 @@
         "cli/test/plugin.test.ts",
         "cli/test/server.test.ts"
       ],
-      "links": [],
+      "links": [
+        "d05a0d6"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:03:23Z",
-      "updatedAt": "2026-09-29T11:03:23Z",
+      "updatedAt": "2026-09-29T11:06:12Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4728,6 +4730,40 @@
           "at": "2026-09-29T11:03:23Z",
           "by": "claude",
           "text": "Moved to review — Outputs tab lists links from cards (apps, sites, PRs, artifacts) with a live dot for localhost; a card with links shows Open buttons at the top of its panel; when Claude says 'running at http://localhost:3000' the link lands on the card in progress. Not committed."
+        },
+        {
+          "at": "2026-09-29T11:06:12Z",
+          "by": "claude",
+          "text": "Proof: d05a0d6"
+        }
+      ]
+    },
+    {
+      "key": "LE-114",
+      "title": "On All projects, every table shows which project a row is from, left of its title",
+      "type": "feature",
+      "status": "review",
+      "note": "All projects: Work, Questions, notes tabs and Outputs all have Project left of the title; it can't be switched off in Columns. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:07:22Z",
+      "updatedAt": "2026-09-29T11:07:22Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:07:22Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T11:07:22Z",
+          "by": "claude",
+          "text": "Moved to review — All projects: Work, Questions, notes tabs and Outputs all have Project left of the title; it can't be switched off in Columns. Not committed."
         }
       ]
     }

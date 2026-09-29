@@ -779,7 +779,7 @@ const ICON={
   timeline:'<svg viewBox="0 0 16 16"><path d="M2 4h6M5 8h8M3 12h5"/></svg>'};
 const COLS=[
   {id:'key',label:'Key',w:92,sort:'key',lock:true},
-  {id:'project',label:'Project',w:124,sort:'project',home:true},
+  {id:'project',label:'Project',w:124,sort:'project',home:true,lock:true},   /* on All projects, always: which project a row is from */
   {id:'title',label:'Card',w:380,sort:'title',lock:true},
   {id:'area',label:'Area',w:150,sort:'area'},
   {id:'status',label:'Status',w:136,sort:'status'},
@@ -1263,7 +1263,7 @@ function renderPage(){
         <option value="comfy" ${P.density==='comfy'?'selected':''}>Comfortable</option>
         <option value="compact" ${P.density==='compact'?'selected':''}>Compact</option></select></span>
       <details class="cols"><summary class="opt" style="padding-right:9px">Columns · ${visibleCols(isHome).length}</summary><div class="menu">
-        ${COLS.filter(c=>!c.home||isHome).map(c=>`<label><input type="checkbox" data-col="${c.id}" ${!P.hidden.includes(c.id)?'checked':''} ${c.lock?'disabled':''}>${colLabel(c)}</label>`).join('')}
+        ${COLS.filter(c=>!c.home||isHome).map(c=>`<label><input type="checkbox" data-col="${c.id}" ${c.lock||!P.hidden.includes(c.id)?'checked':''} ${c.lock?'disabled':''}>${colLabel(c)}</label>`).join('')}
         ${P.colW&&Object.keys(P.colW).length?`<button class="linkbtn colreset" id="colReset" type="button">Reset widths</button>`:''}
       </div></details>`:''}
       <label class="opt"><input type="checkbox" id="hideDone" ${P.hideDone?'checked':''}>Hide done</label>
@@ -1277,7 +1277,7 @@ function renderPage(){
 /* Column widths the user dragged, per table kind; the default otherwise. */
 const cw=(map,c)=>(P[map]&&P[map][c.id])||c.w;
 const grip=(map,c)=>`<span class="colgrip" data-grip="${c.id}" data-map="${map}" title="Drag to resize · double-click to reset" aria-hidden="true"></span>`;
-const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&!P.hidden.includes(c.id)&&!(c.id==='area'&&P.group==='area'));
+const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&(c.id==='project'||!P.hidden.includes(c.id))&&!(c.id==='area'&&P.group==='area'));
 
 function groupsOf(fs,isHome){
   const g=P.group==='project'&&!isHome?'status':P.group;
@@ -1432,7 +1432,7 @@ async function checkPorts(){
 setInterval(()=>{ if(!document.hidden&&document.querySelector('.odot[data-port]')) checkPorts() },15000);
 function renderOutputs(isHome){
   const outs=outputsHere();
-  const cols=[{id:'out',label:'Output',w:340},{id:'kind',label:'Kind',w:130},{id:'card',label:'Card',w:320},...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'at',label:'Added',w:92}];
+  const cols=[...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'out',label:'Output',w:340},{id:'kind',label:'Kind',w:130},{id:'card',label:'Card',w:320},{id:'at',label:'Added',w:92}];
   const cell=(c,o)=>{ switch(c.id){
     case 'out': return `<td><span class="outcell">${odot(o.port)}<a class="ext" href="${esc(o.url)}" target="_blank" rel="noreferrer noopener" title="${esc(o.url)}">${esc(o.label)}</a><span class="outarrow" aria-hidden="true">↗</span></span></td>`;
     case 'kind': return `<td><span class="outkind">${esc(o.kind)}</span></td>`;
