@@ -109,15 +109,15 @@ button{cursor:pointer}
 .side :focus-visible{outline-color:var(--accent)}
 
 /* ---------- main ---------- */
-main{padding-block:26px 24px;padding-inline:28px;min-width:0}
-/* The main column doesn't grow with the page: it's one screen tall, and the table box takes
-   what's left and scrolls on its own — in every tab, however short the table. That's what
-   lets the header row stick (a table that scrolls sideways can only pin its header inside
-   its own scroll box), and the page around it stays put. */
-.app{height:100dvh;min-height:0}
-main{height:100dvh;overflow-y:auto;display:flex;flex-direction:column}
-main>*{flex-shrink:0}
-main>.tbl-wrap.grid{flex:0 1 auto;min-height:220px}
+main{padding-block:26px 60px;padding-inline:28px;min-width:0}
+/* The page scrolls; the table only scrolls sideways. A box that scrolls sideways can't pin
+   its own header to the page, so a copy of the header row (.stick-head, built by
+   stickyHeads) is pinned instead and slides sideways with the table. The real header stays
+   in place, invisible, so the columns keep their widths. */
+.stick-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:var(--r-panel) var(--r-panel) 0 0}
+.stick-head table{table-layout:fixed;border-collapse:collapse}
+.stick-head.stuck{border-radius:0;box-shadow:0 6px 12px -10px rgba(0,0,0,.25)}
+.grid thead.ghost-head{visibility:hidden}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .crumb{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;gap:6px;align-items:center}
 h1{font-family:var(--display);font-weight:500;font-size:32px;letter-spacing:-.035em;line-height:1.1;margin:0;text-wrap:balance}
@@ -150,7 +150,7 @@ section{margin-bottom:32px}
 @media (prefers-reduced-motion:reduce){.searchctl .search{animation:none}}
 /* The table box is its own scroll area, no taller than the window, so its header row
    can stick with plain CSS — moving it by script lagged a frame behind the scroll. */
-.tbl-wrap.grid{overflow:auto;overscroll-behavior-y:contain}
+.tbl-wrap.grid{overflow-x:auto;overflow-y:hidden}
 .grid thead th{position:sticky;top:0;z-index:4;background:var(--surface);box-shadow:inset 0 -1px 0 var(--line)}
 .tabs{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .tabs button{border:0;background:none;padding:5px 13px;border-radius:999px;transition:color .15s ease,background-color .15s ease;font-weight:500;color:var(--muted)}
@@ -1104,7 +1104,7 @@ function bindFirstRun(){
   document.querySelectorAll('.fr-folder[data-row]').forEach(b=>b.onclick=()=>{ const id=b.dataset.row; openRow=openRow===id?null:id; render();
     if(openRow){ const lp=$('livePanel'); lp.classList.remove('nudge'); void lp.offsetWidth; lp.classList.add('nudge') } });
   /* Your real board — the one that's filling up. */
-  if($('liveGo')) $('liveGo').onclick=()=>{ inWelcome=false; boardChosen=true; firstLanded=null; view='home'; render(); $('mainEl').scrollTo(0,0) };
+  if($('liveGo')) $('liveGo').onclick=()=>{ inWelcome=false; boardChosen=true; firstLanded=null; view='home'; render(); window.scrollTo(0,0) };
 }
 
 /* ---------- confetti, once: the first task landing ---------- */
@@ -1485,6 +1485,39 @@ function renderTimeline(fs,isHome){
 }
 
 /* ---------- render & bind ---------- */
+/* ---------- the pinned header row ---------- */
+function syncHead(box){
+  const ct=box.querySelector('table'), t=ct.__twin, w=ct.__wrap; if(!t||!w) return;
+  [...ct.tHead.rows[0].cells].forEach(c=>{ const px=c.__twin.getBoundingClientRect().width+'px'; c.style.width=c.style.minWidth=c.style.maxWidth=px });
+  ct.style.width=t.getBoundingClientRect().width+'px'; ct.style.minWidth='';
+  box.style.width=w.getBoundingClientRect().width+'px';
+  box.style.marginBottom=-box.offsetHeight+'px';   /* lie over the real header, which keeps the space */
+  box.scrollLeft=w.scrollLeft;
+}
+function stickyHeads(){
+  document.querySelectorAll('.tbl-wrap.grid').forEach(w=>{
+    const t=w.querySelector('table'), head=t&&t.tHead; if(!head) return;
+    const box=document.createElement('div'); box.className='stick-head grid'+(w.classList.contains('compact')?' compact':'');
+    const ct=document.createElement('table'), ch=head.cloneNode(true); ct.appendChild(ch); box.appendChild(ct);
+    w.parentNode.insertBefore(box,w);
+    if(w.style.marginTop){ box.style.marginTop=w.style.marginTop; w.style.marginTop='0' }   /* the gap goes above both */
+    /* The copy is the one you use: sorting, select-all and resizing live there. */
+    head.classList.add('ghost-head'); head.setAttribute('aria-hidden','true');
+    head.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+    head.querySelectorAll('[data-sort]').forEach(e=>e.removeAttribute('data-sort'));
+    head.querySelectorAll('.colgrip').forEach(e=>e.remove());
+    head.querySelectorAll('input,button').forEach(e=>e.tabIndex=-1);
+    const real=[...head.rows[0].cells]; [...ch.rows[0].cells].forEach((c,i)=>c.__twin=real[i]);
+    ct.__twin=t; ct.__wrap=w;
+    syncHead(box);
+    w.addEventListener('scroll',()=>{box.scrollLeft=w.scrollLeft},{passive:true});
+  });
+  markStuck();
+}
+function markStuck(){ document.querySelectorAll('.stick-head').forEach(b=>b.classList.toggle('stuck',b.getBoundingClientRect().top<=1&&window.scrollY>0)) }
+addEventListener('scroll',markStuck,{passive:true});
+addEventListener('resize',()=>document.querySelectorAll('.stick-head').forEach(syncHead));
+
 function render(){
   $('app').classList.toggle('side-shut',!!P.sideShut);
   const realCards=S.features;
@@ -1495,6 +1528,7 @@ function render(){
   $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu';
   renderNav();
   $('mainEl').innerHTML=renderPage();
+  stickyHeads();
   if(view==='home'&&!boardChosen&&(inWelcome||!realProjects().length)){ bindFirstRun(); return }
   bindPage();
   if($('landedX')) $('landedX').onclick=()=>{firstLanded=null;render()};
@@ -1585,11 +1619,13 @@ function bindGrips(){
     g.onpointerdown=e=>{
       e.preventDefault(); e.stopPropagation();
       const th=g.parentElement, table=th.closest('table'), map=g.dataset.map, id=g.dataset.grip;
-      const x0=e.clientX, w0=th.getBoundingClientRect().width, t0=parseFloat(table.style.minWidth)||table.getBoundingClientRect().width;
+      const real=table.__twin||table, x0=e.clientX, w0=th.getBoundingClientRect().width, t0=parseFloat(real.style.minWidth)||real.getBoundingClientRect().width;
       try{ g.setPointerCapture(e.pointerId) }catch(err){}
       g.classList.add('drag'); document.body.classList.add('resizing');
       /* On the window, not the grip: the pointer leaves a 10px grip at once. */
-      const move=ev=>{ const w=Math.max(56,Math.round(w0+ev.clientX-x0)); th.style.width=w+'px'; th.style.minWidth=''; table.style.minWidth=(t0+w-w0)+'px' };
+      const move=ev=>{ const w=Math.max(56,Math.round(w0+ev.clientX-x0)), col=th.__twin||th;
+        col.style.width=w+'px'; col.style.minWidth=''; real.style.minWidth=(t0+w-w0)+'px';
+        if(th.__twin) syncHead(table.parentElement) };
       const up=()=>{ removeEventListener('pointermove',move); removeEventListener('pointerup',up); removeEventListener('pointercancel',up);
         g.classList.remove('drag'); document.body.classList.remove('resizing');
         P[map]={...(P[map]||{}),[id]:Math.round(th.getBoundingClientRect().width)}; savePrefs() };
@@ -1930,7 +1966,7 @@ function renderNoteDrawer(){
   $('drawerRoot').innerHTML=`<div class="scrim" id="scrim"></div>
   <aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(n.title)}">
     <div class="drawer-h"><div class="row"><span class="mono">${esc(n.nid)} \u00b7 ${esc(proj(n.project).name)}</span><button class="btn sm ghost" id="dClose">Close</button></div>
-      <input class="title-in" id="nTitleIn" value="${esc(n.title)}" aria-label="${esc(KINDL[n.kind])} title">
+      <textarea class="title-in" id="nTitleIn" rows="1" aria-label="${esc(KINDL[n.kind])} title">${esc(n.title)}</textarea>
       <div class="row"><span class="kindtag">${esc(KINDL[n.kind])}</span><span>updated ${ago(n.updatedAt)} ago by ${n.by==='claude'?'Claude':'you'}</span></div></div>
     <div class="drawer-b">
       ${target}
@@ -1953,7 +1989,7 @@ function renderNoteDrawer(){
   $('dClose').onclick=close;
   ['nTitleIn','nBody','nConsidered','nUrl','nFile'].forEach(id=>{const el=$(id); if(!el) return;
     el.addEventListener('blur',()=>commitNote().then(ok=>{const t=$('savedTag');if(t&&ok&&ok!=='same'){t.textContent='Saved';t.classList.add('on')}}));
-    el.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey||el.tagName==='INPUT')){e.preventDefault();el.blur()}});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey||el.tagName==='INPUT'||el.id==='nTitleIn')){e.preventDefault();el.blur()}});
   });
   $('nDel').onclick=()=>{ if(!confirm('Delete '+n.nid+' \u201c'+n.title+'\u201d? The cards it produced stay.')) return;
     deleteNote(n).then(ok=>{if(ok){openNote=null;render();toast(n.nid+' deleted')}})};
@@ -1969,7 +2005,7 @@ function renderNoteDrawer(){
   async function commitNote(){
     const ti=$('nTitleIn'); if(!ti) return true;
     const patch={};
-    const title=ti.value.trim()||n.title; if(title!==n.title) patch.title=title;
+    const title=ti.value.replace(/\s*\n\s*/g,' ').trim()||n.title; if(title!==n.title) patch.title=title;   // a pasted line break doesn't belong in a title
     const body=$('nBody').value.trim(); if(body!==n.body) patch.body=body;
     if($('nConsidered')&&$('nConsidered').value.trim()!==n.considered) patch.considered=$('nConsidered').value.trim();
     if($('nUrl')&&$('nUrl').value.trim()!==n.url) patch.url=$('nUrl').value.trim();
@@ -1993,7 +2029,7 @@ document.addEventListener('click',e=>{
   const side=e.target.closest('#side');
   if(side&&(P.sideShut?!e.target.closest('[data-go],[data-init]'):!e.target.closest('button,a,input,select,textarea,label,form,.nav-item'))){
     P.sideShut=!P.sideShut; savePrefs(); $('app').classList.toggle('side-shut',P.sideShut); $('side').title=P.sideShut?'Click to open the menu':'Click empty space to fold the menu'; return }
-  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();$('mainEl').scrollTo(0,0);return}
+  const g=e.target.closest('[data-go]'); if(g){view=g.dataset.go;query='';filter='all';openId=null;openNote=null;comp.project=null;sel.clear();render();window.scrollTo(0,0);return}
   const o=e.target.closest('[data-open]'); if(o&&!e.target.closest('.drawer')){openNote=null;openId=o.dataset.open;renderDrawer();return}
   const no=e.target.closest('[data-nopen]'); if(no&&!e.target.closest('.drawer')){openTheNote(no.dataset.nopen);return}
   document.querySelectorAll('details.cols[open]').forEach(d=>{ if(!d.contains(e.target)) d.removeAttribute('open') });
