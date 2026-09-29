@@ -2,7 +2,7 @@
   "name": "clipped",
   "displayName": "Clipped",
   "description": "A feature board Claude keeps for you while you build \u2014 per project, updated automatically, with everything you left halfway front and center.",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "author": {
     "name": "Aviv Alush"
   },

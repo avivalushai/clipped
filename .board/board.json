@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "project": {
     "name": "Clipped",
     "key": "LE"
@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 105,
+  "nextNum": 107,
   "features": [
     {
       "key": "LE-1",
@@ -3864,7 +3864,7 @@
       "title": "Design decisions have a home: DESIGN.md, a decision log, and a Design tab",
       "type": "feature",
       "status": "review",
-      "note": "Merged into main (2468896) but NOT installed: the other session started a new uncommitted ui/index.html edit (sticky header rework) 2s after the merge. Boards restored to v4 after an accidental migration from a test run. Release = plugin:sync + restart :4747 + import, once main has no uncommitted code.",
+      "note": "Open clipped.localhost:4747 → Design: Decisions (26, 2 of Claude's unchecked — Agree or It was my call) and UI work (the UI cards, also in Work). Shipped in 0.9.0/0.9.1.",
       "doneWhen": [],
       "steps": [
         {
@@ -3897,10 +3897,12 @@
         }
       ],
       "files": [],
-      "links": [],
+      "links": [
+        "2468896"
+      ],
       "area": "",
       "createdAt": "2026-09-28T23:23:50Z",
-      "updatedAt": "2026-09-29T10:29:58Z",
+      "updatedAt": "2026-09-29T10:38:36Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4027,6 +4029,16 @@
           "at": "2026-09-29T10:29:58Z",
           "by": "claude",
           "text": "Note: Merged into main (2468896) but NOT installed: the other session started a new uncommitted ui/index.html edit (sticky header rework) 2s after the merge. Boards restored to v4 after an accidental migration from a test run. Release = plugin:sync + restart :4747 + import, once main has no uncommitted code."
+        },
+        {
+          "at": "2026-09-29T10:38:36Z",
+          "by": "claude",
+          "text": "Updated — Open clipped.localhost:4747 → Design: Decisions (26, 2 of Claude's unchecked — Agree or It was my call) and UI work (the UI cards, also in Work). Shipped in 0.9.0/0.9.1."
+        },
+        {
+          "at": "2026-09-29T10:38:36Z",
+          "by": "claude",
+          "text": "Proof: 2468896"
         }
       ]
     },
@@ -4330,18 +4342,19 @@
       "title": "Every table's header stays pinned, and every row is the same height",
       "type": "bug",
       "status": "done",
-      "note": "In every tab (Work, Questions, Brainstorms, Plans, References, Decisions), scroll the table: the header stays at the top; rows are all 44px (34px compact). Not committed.",
+      "note": "The whole page scrolls; in every tab the header row sticks to the top of the screen and slides sideways with the table; resizing, sorting and select-all work from it",
       "doneWhen": [],
       "steps": [],
       "files": [
         "ui/index.html"
       ],
       "links": [
-        "8979cae"
+        "8979cae",
+        "35c4645"
       ],
       "area": "",
       "createdAt": "2026-09-29T10:24:46Z",
-      "updatedAt": "2026-09-29T10:26:01Z",
+      "updatedAt": "2026-09-29T10:38:05Z",
       "updatedBy": "user",
       "log": [
         {
@@ -4363,11 +4376,101 @@
           "at": "2026-09-29T10:26:01Z",
           "by": "user",
           "text": "Done"
+        },
+        {
+          "at": "2026-09-29T10:36:26Z",
+          "by": "claude",
+          "text": "Proof: 35c4645"
+        },
+        {
+          "at": "2026-09-29T10:36:47Z",
+          "by": "claude",
+          "text": "Started"
+        },
+        {
+          "at": "2026-09-29T10:36:47Z",
+          "by": "claude",
+          "text": "Moved to review — The whole page scrolls; in every tab the header row sticks to the top of the screen and slides sideways with the table; resizing, sorting and select-all work from it"
+        },
+        {
+          "at": "2026-09-29T10:38:05Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-105",
+      "title": "Every info panel's title wraps onto up to three lines",
+      "type": "feature",
+      "status": "done",
+      "note": "Open a brainstorm, plan, reference or decision with a long title: it wraps (up to 3 lines), like a card's",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [
+        "35c4645"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T10:36:37Z",
+      "updatedAt": "2026-09-29T10:38:05Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-29T10:36:37Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T10:36:37Z",
+          "by": "claude",
+          "text": "Moved to review — Open a brainstorm, plan, reference or decision with a long title: it wraps (up to 3 lines), like a card's"
+        },
+        {
+          "at": "2026-09-29T10:36:37Z",
+          "by": "claude",
+          "text": "Proof: 35c4645"
+        },
+        {
+          "at": "2026-09-29T10:38:05Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-106",
+      "title": "Tables open sorted: in progress, your turn, parked, idea, done last",
+      "type": "feature",
+      "status": "review",
+      "note": "Open any table: In progress first, then Your turn, Parked, Idea, Done at the bottom — in every grouping. Clicking a column header still sorts by it. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T10:40:08Z",
+      "updatedAt": "2026-09-29T10:40:08Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T10:40:08Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T10:40:08Z",
+          "by": "claude",
+          "text": "Moved to review — Open any table: In progress first, then Your turn, Parked, Idea, Done at the bottom — in every grouping. Clicking a column header still sorts by it. Not committed."
         }
       ]
     }
   ],
-  "nextNoteNum": 12,
+  "nextNoteNum": 37,
   "notes": [
     {
       "id": "LE-N1",
@@ -4382,7 +4485,9 @@
       "createdAt": "2026-09-24T14:08:03Z",
       "updatedAt": "2026-09-24T14:08:03Z",
       "updatedBy": "claude",
-      "considered": ""
+      "considered": "",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N2",
@@ -4397,7 +4502,9 @@
       "createdAt": "2026-09-24T14:08:03Z",
       "updatedAt": "2026-09-24T14:08:03Z",
       "updatedBy": "claude",
-      "considered": ""
+      "considered": "",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N3",
@@ -4425,7 +4532,9 @@
       ],
       "createdAt": "2026-09-27T17:29:41Z",
       "updatedAt": "2026-09-27T17:29:49Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N4",
@@ -4440,7 +4549,9 @@
       ],
       "createdAt": "2026-09-27T17:35:59Z",
       "updatedAt": "2026-09-27T17:35:59Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N5",
@@ -4456,7 +4567,9 @@
       ],
       "createdAt": "2026-09-27T17:35:59Z",
       "updatedAt": "2026-09-27T17:35:59Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N6",
@@ -4469,7 +4582,9 @@
       "cards": [],
       "createdAt": "2026-09-28T14:13:27Z",
       "updatedAt": "2026-09-28T14:13:27Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N7",
@@ -4485,7 +4600,9 @@
       ],
       "createdAt": "2026-09-28T15:07:28Z",
       "updatedAt": "2026-09-28T15:32:47Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N8",
@@ -4500,7 +4617,9 @@
       ],
       "createdAt": "2026-09-28T16:54:33Z",
       "updatedAt": "2026-09-28T16:54:33Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N9",
@@ -4515,7 +4634,9 @@
       ],
       "createdAt": "2026-09-28T18:34:47Z",
       "updatedAt": "2026-09-28T18:47:10Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N10",
@@ -4530,13 +4651,15 @@
       ],
       "createdAt": "2026-09-28T22:18:32Z",
       "updatedAt": "2026-09-28T22:18:32Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "decidedBy": "",
+      "confirmedAt": ""
     },
     {
       "id": "LE-N11",
-      "kind": "brainstorm",
+      "kind": "decision",
       "title": "A UI change is a card for the work plus a design decision for each call it made",
-      "body": "The user wants UI changes and design decisions to reliably land on the board. Reusing DESIGN.md values isn't a call; new colors, fonts or tokens are. (Becomes a decision once v5 ships.)",
+      "body": "The user wants UI changes and design decisions to reliably land on the board. Reusing DESIGN.md values isn't a call; new colors, fonts or tokens are.",
       "considered": "Skill instructions only: Claude forgets the silent calls. A nudge on every UI edit: too many tokens per turn.",
       "url": "",
       "file": "",
@@ -4544,7 +4667,459 @@
         "LE-93"
       ],
       "createdAt": "2026-09-29T09:17:29Z",
-      "updatedAt": "2026-09-29T09:17:29Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude",
+      "decidedBy": "user",
+      "confirmedAt": ""
+    },
+    {
+      "id": "LE-N12",
+      "kind": "decision",
+      "title": "Each status has its own colour family and there is one blue accent",
+      "body": "Chose: idea grey, active cyan, parked amber, review (Your turn) violet, done green; a single blue accent (`#2F5BFF` light). Parked rows get an amber tint or stripe. The exact values were retuned on 2026-09-28, but the hues didn't change.\nWhy: not recorded\nArea: design · Decided: 2026-09-22\nEvidence: `65df0e4` (prototype + SPEC §10 status colours). In `759f590a`, 2026-09-22, the user's first prompt calls the prototype \"the UI we designed\". `8374b13` retuned the values.",
+      "considered": "",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-3"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N13",
+      "kind": "decision",
+      "title": "The landing page remixes four sites the user picked",
+      "body": "Chose: Notion's rotating headline word, Cursor's light and delicate page, Clerk's tabbed one-line install box (Terminal / Claude Code / Ask Claude), and Cal.com's white cards with a grey preview panel.\nWhy: the user named one thing they loved about each site (\"its title that change the word\", \"the delicate design\", \"the way they show the installation line\", \"the way their cards look\").\nArea: design · Decided: 2026-09-28\nEvidence: `62eb31af` 2026-09-28 10:03, where the user lists the four sites. The first remix is reconstructed in `docs/design-variants/landing-v2-first-remix.html`. It became live in `1396094`.",
+      "considered": "Claude's list of 20 tech landing pages, including Linear, Resend, PostHog, Things, Obsidian, Arc, Superhuman and Notion. The user picked these four.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-49"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N14",
+      "kind": "decision",
+      "title": "The hero headline is \"Never lose that ___ again.\" with the changing word in a centred code chip",
+      "body": "Chose: the user assembled the hero from two pages. The title came from the new page, with the changing word placed in a chip. The product picture on the right came from the original page. The subtitle and install box came from the new page, and the round \"Read the source\" button from the old one. The \"Story\" copy version won, and title B won out of four. A five-card story strip (\"You started writing … Chaos.\") went under the hero. On the same day, the 36-second intro video replaced that strip.\nWhy: user preference, stated piece by piece. For the story strip, the user wanted \"the powerful story I want a person to read and say to themselves — Build! I know that!!!\". For replacing the strip with the video, the user approved Claude's placement proposal.\nArea: design · Decided: 2026-09-28\nEvidence: `62eb31af` 2026-09-28 10:34 (combination spec), 10:43 (\"love the story 2 option\"), 10:58 (\"lets go with B\"), 11:06 (story strip). `1396094` (v4 becomes index.html), `7d08c0f` (video replaces the strip). Variants v2 to v4 are reconstructed in `docs/design-variants/`.",
+      "considered": "title A \"Which chat was that ___ in?\", C \"Every ___, on one board.\", D \"That ___? It's on the board.\"; copy versions Current, Sharp and Short; a typed word in the subtitle instead of the headline (the 2026-09-27 page).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-49",
+        "LE-55"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N15",
+      "kind": "decision",
+      "title": "The board and the landing page share one design language",
+      "body": "Chose: the board UI took the landing page's tokens: warm off-white and near-black, white rounded cards in grey columns, pill buttons and tabs, mono status tags, and the fading blueprint grid. The grid stays fixed to the window, so content scrolls over it.\nWhy: user: \"A gap has created now: the landing page uses a different design language than the product itself.\" Also user: \"i loved the grid background on the original landing page - add it\", and asked for the background to stay still while scrolling.\nArea: design · Decided: 2026-09-28\nEvidence: `62eb31af` 2026-09-28 11:13 (the request) and 10:47 (the grid). `8374b13`, `4c2aeeb`. The pre-restyle board is at `8374b13^:ui/index.html`.",
+      "considered": "keeping the prototype's look (dark navy sidebar `#0B1220`, `#EDF1F7` page, Bricolage Grotesque / IBM Plex)",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-51",
+        "LE-78"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N16",
+      "kind": "decision",
+      "title": "Light is the default theme and dark follows the system",
+      "body": "Chose: both pages default to a warm light theme and switch to dark under `prefers-color-scheme: dark`. The landing and install pages also have a sun/moon switch. The board has no switch and follows the system only.\nWhy: Claude brought light-as-default in with the Cursor-style v2 page (\"the warm off-white Cursor look as the default\"). The user adopted v2 wholesale with \"the rest of the site needs to be the same as the new one\" but never discussed the default itself.\nArea: design · Decided: 2026-09-28\nEvidence: `4d1369c6` 2026-09-27 10:04–10:10; `da446d8` (dark default); `62eb31af` 2026-09-28 10:08 (v2) and 10:34; `1396094`; LE-N4.",
+      "considered": "dark only (landing, 2026-09-27 10:04, Claude's \"more technical\" pass); dark by default with a light switch (landing 2026-09-27 to 2026-09-28, recorded in LE-N4; the switch itself was the user's request, \"allow to switch from white to dark mode\"); the prototype's system-following light/dark.",
+      "decidedBy": "claude",
+      "confirmedAt": "2026-09-29T10:43:01Z",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-19",
+        "LE-49"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:43:01Z",
+      "updatedBy": "user"
+    },
+    {
+      "id": "LE-N17",
+      "kind": "decision",
+      "title": "The board's sidebar is light",
+      "body": "Chose: a light, warm sidebar with the current project as a raised pill, replacing the dark navy sidebar that stayed dark in light mode.\nWhy: Claude recommended it \"so the app feels like the page\"; the user answered \"light sidebar\" without giving a reason.\nArea: design · Decided: 2026-09-28\nEvidence: `62eb31af` 2026-09-28 11:13 (Claude's two questions) and 11:18 (\"light sidebar, keep Geist — go ahead\"); `8374b13`.",
+      "considered": "keeping the sidebar dark in light mode, as in the prototype.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-51"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N18",
+      "kind": "decision",
+      "title": "Geist and Geist Mono are the typefaces everywhere",
+      "body": "Chose: Geist for text and headings, Geist Mono for code, statuses and labels, on the landing page, the install guide, the board and the videos. The design checker's \"overused font\" warning is silenced and recorded as the user's decision.\nWhy: Claude picked Geist because it \"read as technical\" after the user said the top of the page still looked \"childish\" and asked for something more technical and code-oriented. The user then said \"keep Geist\" without a reason.\nArea: design · Decided: 2026-09-28\nEvidence: `4d1369c6` 2026-09-27 11:56–12:05; `bd23e4d` (Schibsted); `62eb31af` 2026-09-28 11:18; `1396094`, `8374b13`; LE-N4 \"Considered\".",
+      "considered": "Bricolage Grotesque + IBM Plex (the prototype's fonts; Claude said Bricolage's quirky shapes were \"most of the childish feel\"). Schibsted Grotesk + JetBrains Mono (Claude's less-common suggestion; the user said \"try\" it, then said it \"look the same\"). \"A more distinctive font\" (Claude offered this about four times).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-19",
+        "LE-51"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N19",
+      "kind": "decision",
+      "title": "Marketing videos recreate the app, show a made-up project, and use a local AI voice with music",
+      "body": "Chose: a scripted recreation of the Claude Code desktop window, a fictional Nimbus CRM board filled by real `board` commands in the real UI, a female Kokoro voice generated locally, and a music bed.\nWhy: from the option texts the user picked. Claude can't screen-record the desktop app, and a recreation keeps the user's real sessions off screen. Kokoro keeps the script on the machine. The real board is \"busy and full of internal wording\".\nArea: design · Decided: 2026-09-28\nEvidence: `205ddcf9` 2026-09-28 12:44 and 14:40 (AskUserQuestion answers), 12:54 (\"use the female voice\"), 14:05 (\"try with music\"); `7d08c0f`.",
+      "considered": "the user screen-recording the app; this repo's real board; an Apple Premium voice; the user recording the voiceover; ElevenLabs; music only; silent. The male voice and the macOS Samantha voice were tried and dropped.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-55",
+        "LE-64",
+        "LE-66",
+        "LE-68",
+        "LE-73",
+        "LE-90"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N20",
+      "kind": "decision",
+      "title": "One board, three views (Table, Board, Timeline), with Table as the default",
+      "body": "Chose: a table with editable cells and grouping, a kanban board with drag between columns, and a 14-day timeline that shows how long parked work has sat idle.\nWhy: not recorded\nArea: ux · Decided: 2026-09-22\nEvidence: `65df0e4` (prototype, SPEC §6, §10); `0e58524`.",
+      "considered": "",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-3"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N21",
+      "kind": "decision",
+      "title": "Ideas weigh nothing: they sit in one collapsed group and don't count toward progress",
+      "body": "Chose: the Idea group is collapsed, with a one-line peek, and is excluded from the percentage. Claude offers once, when a brainstorm reaches decisions, to put the results on the board.\nWhy: user: \"i want us to be able to collect ideas brain storm and etc and make them as a group\". Claude's reason for this form was that ten brainstormed ideas counted at 0% \"would drag that 78% complete down to something like 40%\".\nArea: ux · Decided: 2026-09-23\nEvidence: `759f590a` 2026-09-23 16:08–16:12; `c6de89a`.",
+      "considered": "the user's own proposal of a separate \"closed list\" of ideas. Claude argued against it because it needs a schema change and new commands, and \"flat idea lists rot\". The user then asked for the group.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-9"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N22",
+      "kind": "decision",
+      "title": "Clicking anywhere on a row opens its panel; editing needs the hover pencil",
+      "body": "Chose: a single click opens the card or note panel from any row, on every tab. The title and note show a pencil on hover, and only a pencil click turns the cell into a field. The note is read-only in the table. With a panel open, one click on another row switches straight to it.\nWhy: user: \"when clicking on row on the ui - the info panel needs to open\". Later the user described the pencil model exactly: \"only by clicking on the edit it will be allow the user to edit — if not clicked in the edit icon the row will be clickable\". The user also said switching was \"very slow\".\nArea: ux · Decided: 2026-09-24\nEvidence: `759f590a` 2026-09-24 13:26–13:34; `70255f1e` 2026-09-27 10:11; `4d1369c6` 2026-09-27 17:17; `a79c953`, `364400b`, `36756a2`, `06e45d1`.",
+      "considered": "double-click to open (the prototype; Claude said it \"never advertised\" itself); an always-editable note cell (Claude flagged the conflict, and the user picked \"make the note read-only in the table\").",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-23",
+        "LE-30"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N23",
+      "kind": "decision",
+      "title": "Five tabs: Work and Questions hold cards; Brainstorms, Plans and References hold notes",
+      "body": "Chose: two collections behind five tabs. A question is a card because it has a next step and an end. Brainstorms, plans and references are lighter notes with no status. The rule: a card has a next step, a note doesn't.\nWhy: user: ideas, market research and references come up mid-flow, and \"any idea tossed out or reference mentioned requires scrolling back and breaking the flow\". The user then asked \"can it be added as tabs?\".\nArea: ux · Decided: 2026-09-24\nEvidence: `44114d26` 2026-09-24 13:44–13:50; LE-N1. The work landed inside `76dc37b`, whose message describes something else. The user chose \"Leave it\" rather than rewrite pushed history.",
+      "considered": "Claude pushed back. It proposed `question` as a type plus a Group-by-Type option, plans as a filter facet, and references kept out of the product (\"tabs are group-by with amnesia\"). The user answered \"do all 5\", and Claude replied: \"You raised it, I pushed back, you've decided\".",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-15"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N24",
+      "kind": "decision",
+      "title": "Notes get their own panel, linked both ways with the cards they produced",
+      "body": "Chose: one panel shell with a body per kind. A brainstorm shows \"what was decided\" and \"what it produced\". A plan shows its document and \"Bring it to the board again\". A question drops the progress bar and steps. A card lists \"Where it came from\".\nWhy: the user asked what the panel should show for brainstorms, questions and plans. The user approved Claude's answer (\"build it\"), which was one shell with four bodies \"instead of the feature drawer pretending to fit everything\".\nArea: ux · Decided: 2026-09-24\nEvidence: `bffa86a1` 2026-09-24 14:50–14:52; `00e78e6`.",
+      "considered": "no panel for references (Claude: \"may not need a drawer\").",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-18"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N25",
+      "kind": "decision",
+      "title": "\"Your turn\" closes in one click, the numbers stop flattering, and every change can be undone",
+      "body": "Chose: \"Looks good — Done\" and \"Needs work\" (with a reason) on cards waiting for the user. An Undo toast after status changes. The panel autosaves. The headline counts only Done, and \"N waiting on you\" sits beside it. Proof links, bulk actions, blue \"changed since you looked\" dots and `~` paths were added too.\nWhy: Claude's builder and PM walkthrough said review cards were piling up (21) and the percentage counted the user's queue as nearly done. The user picked 15 of the 28 suggestions by id.\nArea: ux · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 12:47 (\"fix the things you just listed\"); `4d1369c6` 2026-09-27 15:48–15:53 (\"A1 A2 A4 A5 B1 B2 C3 D3 D4 E1 E4 F1 F2 F3\"); `16b22da`, `0237e66`; LE-N3.",
+      "considered": "the 13 unpicked suggestions, now ideas LE-31 to LE-43. They include a \"Last 7 days\" view, a phone view listing only what's waiting, and \"home leads with waiting on you\".",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-27",
+        "LE-30",
+        "LE-31",
+        "LE-43"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N26",
+      "kind": "decision",
+      "title": "Only two keyboard shortcuts: `/` for search and `n` for a new card",
+      "body": "Chose: `/` and `n`, plus Esc to clear. Both are suppressed while typing or while a panel is open.\nWhy: Claude: \"Two, deliberately — a bigger keymap is one nobody asked for and everybody has to be taught.\"\nArea: ux · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 12:55–13:00; `16b22da`.",
+      "considered": "",
+      "decidedBy": "claude",
+      "confirmedAt": "2026-09-29T10:43:08Z",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-27"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:43:08Z",
+      "updatedBy": "user"
+    },
+    {
+      "id": "LE-N27",
+      "kind": "decision",
+      "title": "Projects without a board show in the sidebar, drawn from folders Claude Code has worked in",
+      "body": "Chose: the sidebar lists every folder that appears in `~/.claude/projects` session files, greyed out with \"Create board\". It skips `$HOME`, hidden folders, Claude's own folders and `Library`. The user approved the feature; limiting it to Claude Code folders was Claude's call, and Claude flagged it as one the user \"might disagree\" with.\nWhy: user: \"why i dont see all the project i have in claude code in the ui\". Claude's reason for the scope: \"the board is about work you're actually doing\".\nArea: ux · Decided: 2026-09-24\nEvidence: `759f590a` 2026-09-24 13:15–13:26 (\"build it\"); `e44b486`.",
+      "considered": "pointing at any folder manually (Claude: \"a different feature\"); letting the web page initialise any path (rejected as a security risk, so only known paths are accepted).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-12"
+      ],
+      "createdAt": "2026-09-29T10:38:21Z",
+      "updatedAt": "2026-09-29T10:38:21Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N28",
+      "kind": "decision",
+      "title": "Work is grouped by product area inferred from files; parent/child nesting waits",
+      "body": "Chose: each card gets an Area, taken from the folder most of its files are in until the area is named. There is an Area column with a status-style dropdown, Group by Area, and a multi-select Area filter chip that reads \"All\" when empty and \"N areas\" when several are picked. Parents were removed from the data model before release.\nWhy: user: \"I still think people will confuse the 'area' with the 'parent'. I want to keep it simple at first.\"\nArea: ux · Decided: 2026-09-28\nEvidence: `4d1369c6` 2026-09-28 15:18 (brainstorm), 15:35 (\"the user won't understand it, maybe use as tag?\"), 15:44–15:57, 16:19–16:31; `5c82a8e`, `4c2aeeb`; LE-N7.",
+      "considered": "Claude recommended area plus parent. Both parent displays were built on two demo projects for the user to compare: a \"↳ parent\" line under the title, and a \"Part of\" column. Also in LE-N7: one strict tree (Jira epics), tags only (\"they drift\"), a free graph (\"unreadable in a list\"), and deep nesting (\"hides work\").",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-69",
+        "LE-71",
+        "LE-76"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N29",
+      "kind": "decision",
+      "title": "The table chrome stays out of the way until asked for",
+      "body": "Chose: the table header stays pinned (the table scrolls in its own box). The \"+ New\" row appears only after clicking \"+ New card\" and closes on a second click. Search is a magnifier left of the Area chip. The menu folds to a rail on click. The sidebar dropped the per-project parked count and the Live chip. Group rows fold from a click anywhere on the row. Columns resize by dragging.\nWhy: all were user requests. The only stated reason is for the sticky header: \"in order to show the user what's the columns\".\nArea: ux · Decided: 2026-09-28\nEvidence: `4d1369c6` 2026-09-28 12:33, 16:12–16:45; `a21956e`, `a7429c7`, `49a70d7`, `4c2aeeb`, `865ffaf`.",
+      "considered": "pinning the header to the screen with the whole page scrolling. Claude called it \"a bigger change to the page layout\" and didn't do it.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-57",
+        "LE-59",
+        "LE-74",
+        "LE-75",
+        "LE-77",
+        "LE-79",
+        "LE-82"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N30",
+      "kind": "decision",
+      "title": "First-time users get an empty state, a sample project, a self-ticking checklist and a tour, built locally only",
+      "body": "Chose: build all seven ideas from LE-N9 on a local test board, with no deploy until the user has looked. The next step (LE-N10) is a guided two-minute test session in a scratch folder.\nWhy: user: first-time users \"probably won't have anything\"; \"the page needs to invite the user to interact and engage\".\nArea: ux · Decided: 2026-09-28\nEvidence: `4d1369c6` 2026-09-28 18:45–23:20 (\"can you do it only locally dont deploy it\", \"build every thing include 4,5,6,7\"); LE-N9, LE-N10. Not committed: it lives in the main checkout's working tree.",
+      "considered": "a tour on the empty screen (\"nothing to point at yet\"); fake cards on the user's real board; pre-filling boards by reading past conversations (breaks the \"never read what was said\" promise); starting Claude from the browser (not possible).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-91",
+        "LE-92"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N31",
+      "kind": "decision",
+      "title": "The product is called Clipped",
+      "body": "Chose: \"Clipped\". It is the plugin id, the skill, the `/clipped:*` commands and the `CLIPPED_*` env prefix, and `~/.loose-ends` migrated to `~/.clipped`. The CLI stays `board` (with `clipped` as an alias since 0.4.0), and the data file stays `.board/board.json`.\nWhy: not recorded. The user typed \"Clipped\" instead of choosing any offered option.\nArea: copy · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 09:25–09:31 (AskUserQuestion; answer \"Clipped\"), 11:59 (the critique); `508918c`, `de1c428`.",
+      "considered": "Threads, Halfway, Parked and \"Keep Loose Ends\" (Claude's options). Later that day, in the product review, Claude argued the name \"is working against you\": it's past tense, it means \"cut short\", and \"Clipped board\" sounds like \"clipboard\". Claude suggested Parked, Halfway, Breadcrumbs or Pickup. The user didn't rename or reply to that point.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-20",
+        "LE-21"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N32",
+      "kind": "decision",
+      "title": "Half-done work is \"Parked\", with a line saying where you stopped",
+      "body": "Chose: `parked` is a first-class status, and parking requires a note. The session brief always carries parked notes, and the UI shows how long parked work has been idle.\nWhy: SPEC principle 5: \"'Parked' is the heart of the product.\" No further reasoning was recorded.\nArea: copy · Decided: 2026-09-22\nEvidence: `65df0e4` (SPEC §1); `25fd493` (\"park requires a note\"); `4b4d5a8` (the brief keeps parked notes).",
+      "considered": "",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-1"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N33",
+      "kind": "decision",
+      "title": "Words that fought each other were renamed: \"Your turn\", \"Work\", `/clipped:question`, `--next / --stopped / --check`",
+      "body": "Chose: the `review` status is labelled **Your turn**. The Features tab is **Work** and its column is **Card**. `/clipped:ask` became `/clipped:question`. The card's note takes the flag that names its meaning in each status. `done` stops calling everything a feature.\nWhy: Claude's product review said \"Review\" means code review \"to every developer alive\", the Features tab held bugs and chores, `/ask` read like \"ask Claude something\", and \"note\" meant two things. The user approved: \"do 2 (Words fighting each other) and 3 (Copy that won't land) … and the rest\".\nArea: copy · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 11:59–12:11; `de1c428`.",
+      "considered": "\"Check it\" instead of Your turn, and \"Cards\" instead of Work (both offered by Claude).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-28"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N34",
+      "kind": "decision",
+      "title": "The install call to action says \"Install it\" and leads with the two commands",
+      "body": "Chose: the main button says \"Install it\" and the FAQ is headed \"Before you install\" (Claude's copy, approved in the same batch as D-22). The hero shows the two `/plugin` commands first, with \"or ask Claude to install it\" as the alternative (the user's call).\nWhy: Claude: \"Add now — add what, to where?\"; \"Things friends asked me\" alienates strangers. User, on Claude's version that led with the spoken sentence: \"not so sure users will understand it, what about the run regularly (two command lines)\".\nArea: copy · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 11:18–11:20, 12:04; `bae9a60`, `de1c428`.",
+      "considered": "leading with \"Install the Clipped plugin from …\" as a sentence; \"Get the two commands\".",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-19",
+        "LE-28"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N35",
+      "kind": "decision",
+      "title": "Marketing examples are a CRM, \"Nimbus CRM\"",
+      "body": "Chose: the example sessions, boards and videos use a CRM: a half-built CSV import, email sync, and drag-and-drop order.\nWhy: user: \"change it to something that related to build crm app\". No reason given.\nArea: copy · Decided: 2026-09-27\nEvidence: `bffa86a1` 2026-09-27 10:19–10:59; `3f7aca3`.",
+      "considered": "\"Loopstation\", a loop sampler (Claude's original); four hero scenes Claude offered, which the user dismissed.",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-19"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
+      "updatedBy": "claude"
+    },
+    {
+      "id": "LE-N36",
+      "kind": "decision",
+      "title": "The messaging speaks to builders",
+      "body": "Chose: the videos address \"you, as a builder\" and end on \"As a builder, your job is to ship. Let Clipped remember the rest.\" The user set the direction; Claude wrote the exact line.\nWhy: user: \"i want another video in this way of thinking but in the end stronger sentence — this had to be with a messaging to builders\".\nArea: copy · Decided: 2026-09-28\nEvidence: `205ddcf9` 2026-09-28 15:04–15:16, 17:45.",
+      "considered": "\"Stop searching. Start shipping.\" and \"You build. Clipped remembers.\" (Claude's alternatives; the user's pick isn't recorded).",
+      "decidedBy": "user",
+      "confirmedAt": "",
+      "url": "",
+      "file": "",
+      "cards": [
+        "LE-66",
+        "LE-90"
+      ],
+      "createdAt": "2026-09-29T10:38:22Z",
+      "updatedAt": "2026-09-29T10:38:22Z",
       "updatedBy": "claude"
     }
   ],

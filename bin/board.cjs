@@ -1250,7 +1250,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.9.1";
+    VERSION = "0.9.2";
   }
 });
 

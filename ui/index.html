@@ -742,7 +742,10 @@ const NOTEFIELD={brainstorm:{k:'body',label:'What came of it',ph:'What was decid
   plan:{k:'file',label:'Document',ph:'docs/plan.md (optional)'},
   decision:{k:'body',label:'Chose, and why',ph:'Why this one (optional)'},
   reference:{k:'url',label:'Link',ph:'https://… (optional)'}};
-const GORDER={parked:0,active:1,review:2,idea:3,done:4};
+/* The order work is shown in: what's moving, what's waiting on you, what's stopped, what's
+   not started, and what's finished — at the bottom. */
+const SORDER=['active','review','parked','idea','done'];
+const GORDER={active:0,review:1,parked:2,idea:3,done:4};
 const KEY='clipped.v2';
 const NOW=Date.now(), M=60000, H=60*M, D=24*H;
 const PCOLORS=['#2F5BFF','#0B93B5','#E0561F','#7B5CE0','#1E9E68','#C2367A','#4B6A8F'];
@@ -892,7 +895,7 @@ let P={tab:'features',mode:'table',group:'status',density:'comfy',hidden:['files
 try{Object.assign(P,JSON.parse(localStorage.getItem(KEY+'.prefs'))||{})}catch(e){}
 const savePrefs=()=>{try{localStorage.setItem(KEY+'.prefs',JSON.stringify(P))}catch(e){}};
 let sel=new Set();   /* cards ticked for a bulk action */
-let view='home', query='', openId=null, sort={k:'updated',dir:1}, filter='all', addingProject=false, editCell=null;
+let view='home', query='', openId=null, sort={k:'default',dir:1}, filter='all', addingProject=false, editCell=null;
 /* A note opens its own drawer: same shell, different questions answered. */
 let openNote=null;
 let comp={project:null,status:'idea'};
@@ -1203,7 +1206,7 @@ function renderPage(){
   </div>
   <div class="chips" role="group" aria-label="Filter by status">
     <button data-filter="all" aria-pressed="${filter==='all'}">All <span class="c">${all.length}</span></button>
-    ${['parked','active','review','idea','done'].map(s=>`<button data-filter="${s}" aria-pressed="${filter===s}"><span class="dot" style="background:${color(s)}"></span>${sl(s)} <span class="c">${c(s)}</span></button>`).join('')}
+    ${SORDER.map(s=>`<button data-filter="${s}" aria-pressed="${filter===s}"><span class="dot" style="background:${color(s)}"></span>${sl(s)} <span class="c">${c(s)}</span></button>`).join('')}
   </div>
   <div class="viewbar">
     <div class="opts">
@@ -1242,7 +1245,7 @@ function groupsOf(fs,isHome){
   if(g==='none') return [{id:null,items:fs}];
   if(g==='project') return S.projects.map(p=>({id:p.id,head:`${pbadge(p,true)} ${esc(p.name)}`,items:fs.filter(f=>f.project===p.id)})).filter(x=>x.items.length);
   if(g==='area') return areaGroups(fs,isHome);
-  return ['parked','active','review','idea','done'].map(s=>({id:s,head:`<span class="dot" style="background:${color(s)}"></span> ${sl(s)}`,items:fs.filter(f=>f.status===s)})).filter(x=>x.items.length);
+  return SORDER.map(s=>({id:s,head:`<span class="dot" style="background:${color(s)}"></span> ${sl(s)}`,items:fs.filter(f=>f.status===s)})).filter(x=>x.items.length);
 }
 /* Areas in the order the board names them, then ones only guessed from folders,
    then cards with no files yet. A group per project on All projects. */
@@ -1264,6 +1267,7 @@ function areaGroups(fs,isHome){
 }
 function sortFs(fs){
   const val={key:f=>fkey(f),project:f=>proj(f.project).name,title:f=>f.title.toLowerCase(),area:f=>(f.inArea||'\uffff').toLowerCase(),status:f=>GORDER[f.status],progress:f=>progress(f)??-1,updated:f=>-f.updatedAt};
+  if(sort.k==='default') return [...fs].sort((a,b)=>GORDER[a.status]-GORDER[b.status]||b.updatedAt-a.updatedAt);
   const v=val[sort.k]||val.updated;
   return [...fs].sort((a,b)=>{const x=v(a),y=v(b);return (x>y?1:x<y?-1:(b.updatedAt-a.updatedAt))*sort.dir});
 }
@@ -1647,7 +1651,7 @@ function bindPencils(){
 function bindTabs(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{
     if(P.tab===b.dataset.tab) return;
-    P.tab=b.dataset.tab; filter='all'; openId=null; openNote=null; sel.clear(); sort={k:'updated',dir:1}; savePrefs(); render();
+    P.tab=b.dataset.tab; filter='all'; openId=null; openNote=null; sel.clear(); sort={k:'default',dir:1}; savePrefs(); render();
   });
 }
 
