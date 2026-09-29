@@ -162,6 +162,7 @@ section{margin-bottom:32px}
 .tabrow .tabs button{flex:none;white-space:nowrap}
 .tabs-top button .c{margin-left:6px;font-family:var(--mono);font-size:11px;color:var(--muted)}
 .tabs-top button[aria-pressed="true"] .c{color:var(--accent)}
+.tabs-top .tocheck{margin-left:6px;font-size:11px;font-weight:500;color:var(--s-review);white-space:nowrap}
 .pname{color:var(--muted)}
 .muted{color:var(--muted)}
 a.ext{color:var(--accent);text-decoration:none;font-family:var(--mono);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1047,9 +1048,12 @@ function designSwitch(){
   return `<div class="tabs" role="group" aria-label="Design">${[['decisions','Decisions',decisions],['ui','UI work',ui]].map(([id,l,c])=>
     `<button data-dview="${id}" aria-pressed="${(P.designView||'decisions')===id}">${l}<span class="c">${c}</span></button>`).join('')}</div>`;
 }
+/* Claude's design calls nobody has agreed with yet, here or across every project. */
+function toCheck(){ const p=proj(view); return (p?pn(p.id):S.notes).filter(unchecked).length }
 function tabStrip(){
+  const n=toCheck();
   return `<div class="tabs tabs-top" role="group" aria-label="Section">${TABS.map(t=>
-    `<button data-tab="${t.id}" aria-pressed="${P.tab===t.id}">${t.label}<span class="c">${tabCount(t)}</span></button>`).join('')}</div>`;
+    `<button data-tab="${t.id}" aria-pressed="${P.tab===t.id}">${t.label}<span class="c">${tabCount(t)}</span>${t.note==='decision'&&n?`<span class="tocheck" title="${n} design decision${n===1?'':'s'} Claude made that you haven\u2019t checked">${n} to check</span>`:''}</button>`).join('')}</div>`;
 }
 /* One line under the title that means something on every tab. */
 function homeSub(parked){
