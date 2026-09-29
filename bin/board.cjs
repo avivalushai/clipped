@@ -44,7 +44,7 @@ function actor(ctx, flag2) {
   if (v !== "claude" && v !== "user") throw new UserError(`--by must be claude or user (got "${v}")`);
   return v;
 }
-var import_node_fs, import_node_os, import_node_path, UserError, homeDir, nowIso;
+var import_node_fs, import_node_os, import_node_path, UserError, NewerBoardError, homeDir, nowIso;
 var init_context = __esm({
   "cli/src/context.ts"() {
     "use strict";
@@ -52,6 +52,8 @@ var init_context = __esm({
     import_node_os = __toESM(require("node:os"), 1);
     import_node_path = __toESM(require("node:path"), 1);
     UserError = class extends Error {
+    };
+    NewerBoardError = class extends UserError {
     };
     homeDir = (ctx) => {
       const dir = ctx.env.CLIPPED_HOME || import_node_path.default.join(import_node_os.default.homedir(), ".clipped");
@@ -301,8 +303,8 @@ function setStatus(ctx, f, to, by, note3) {
 function progress(f) {
   return { done: f.steps.filter((s2) => s2.done).length, total: f.steps.length };
 }
-function sortFeatures(fs14) {
-  return [...fs14].sort(
+function sortFeatures(fs15) {
+  return [...fs15].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) || b.updatedAt.localeCompare(a.updatedAt)
   );
 }
@@ -400,7 +402,7 @@ var init_registry = __esm({
 // cli/src/schema.ts
 function validateBoard(b) {
   const errs = [];
-  const err = (path14, msg) => errs.push(`${path14}: ${msg}`);
+  const err = (path15, msg) => errs.push(`${path15}: ${msg}`);
   if (!isObj(b)) return ["board: must be an object"];
   if (b.schemaVersion !== SCHEMA_VERSION) err("schemaVersion", `must be ${SCHEMA_VERSION}`);
   if (!isObj(b.project)) err("project", "must be an object");
@@ -624,8 +626,8 @@ function migrate(raw, migrations = MIGRATIONS, target = SCHEMA_VERSION) {
   if (!Number.isInteger(from) || from < 1)
     throw new MigrationError("board.json has no valid schemaVersion");
   if (from > target)
-    throw new MigrationError(
-      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin.`
+    throw new NewerSchemaError(
+      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin, or restart this Claude Code session if you already did.`
     );
   let v = from;
   while (v < target) {
@@ -636,7 +638,7 @@ function migrate(raw, migrations = MIGRATIONS, target = SCHEMA_VERSION) {
   }
   return { board: board2, from, to: v, migrated: v !== from };
 }
-var MIGRATIONS, MigrationError;
+var MIGRATIONS, MigrationError, NewerSchemaError;
 var init_migrations = __esm({
   "cli/src/migrations.ts"() {
     "use strict";
@@ -668,6 +670,8 @@ var init_migrations = __esm({
     };
     MigrationError = class extends Error {
     };
+    NewerSchemaError = class extends MigrationError {
+    };
   }
 });
 
@@ -698,6 +702,7 @@ function readBoard(file) {
   try {
     res = migrate(raw);
   } catch (e) {
+    if (e instanceof NewerSchemaError) throw new NewerBoardError(e.message);
     if (e instanceof MigrationError) throw new UserError(e.message);
     throw e;
   }
@@ -791,7 +796,7 @@ var init_projects = __esm({
     init_registry();
     init_schema();
     init_store();
-    projectId = (path14) => import_node_crypto2.default.createHash("sha1").update(path14).digest("hex").slice(0, 8);
+    projectId = (path15) => import_node_crypto2.default.createHash("sha1").update(path15).digest("hex").slice(0, 8);
   }
 });
 
@@ -1060,10 +1065,10 @@ var init_prefs = __esm({
 });
 
 // server/src/api.ts
-function board(ctx, project2, argv) {
+function board(ctx, project2, argv2) {
   const out = [];
   const err = [];
-  const code = run([...argv, "--json"], {
+  const code = run([...argv2, "--json"], {
     cwd: project2.path,
     env: { ...ctx.env, CLIPPED_BY: "user" },
     // the UI is the user typing
@@ -1079,20 +1084,20 @@ function project(ctx, id) {
   return p;
 }
 function applyPatch(ctx, p, key, patch) {
-  const argv = ["update", key];
-  if (patch.title !== void 0) argv.push("--title", str(patch.title, "title"));
-  if (patch.note !== void 0) argv.push("--note", str(patch.note, "note"));
-  if (patch.status !== void 0) argv.push("--status", str(patch.status, "status"));
-  if (patch.type !== void 0) argv.push("--type", str(patch.type, "type"));
-  for (const d of patch.doneWhen ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
+  const argv2 = ["update", key];
+  if (patch.title !== void 0) argv2.push("--title", str(patch.title, "title"));
+  if (patch.note !== void 0) argv2.push("--note", str(patch.note, "note"));
+  if (patch.status !== void 0) argv2.push("--status", str(patch.status, "status"));
+  if (patch.type !== void 0) argv2.push("--type", str(patch.type, "type"));
+  for (const d of patch.doneWhen ?? []) argv2.push("--done-when", str(d, "doneWhen entry"));
   if (patch.links) {
     const before = feature(p, key).links;
     const after = patch.links.map((l) => str(l, "link").trim()).filter(Boolean);
-    for (const l of after) if (!before.includes(l)) argv.push("--link", l);
-    for (const l of before) if (!after.includes(l)) argv.push("--unlink", l);
+    for (const l of after) if (!before.includes(l)) argv2.push("--link", l);
+    for (const l of before) if (!after.includes(l)) argv2.push("--unlink", l);
   }
-  if (patch.area !== void 0) argv.push("--area", str(patch.area, "area") || "auto");
-  if (argv.length > 2) board(ctx, p, argv);
+  if (patch.area !== void 0) argv2.push("--area", str(patch.area, "area") || "auto");
+  if (argv2.length > 2) board(ctx, p, argv2);
   if (patch.steps) {
     const before = feature(p, key).steps;
     const after = patch.steps.map((s2) => ({ text: str(s2?.text, "step text"), done: !!s2?.done }));
@@ -1106,8 +1111,8 @@ function applyPatch(ctx, p, key, patch) {
   return feature(p, key);
 }
 function handleApi(ctx, req) {
-  const { method, path: path14 } = req;
-  const seg = path14.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  const { method, path: path15 } = req;
+  const seg = path15.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   if (seg[0] === "discover" && seg.length === 1) {
     if (method !== "GET") throw new HttpError(405, "use GET");
     return discoverProjects(ctx);
@@ -1130,10 +1135,10 @@ function handleApi(ctx, req) {
     const b = req.body ?? {};
     const dir = str(b.path, "path");
     if (!isKnownProject(ctx, dir)) throw new HttpError(403, "that folder isn't a project Claude Code has worked in, or it already has a board");
-    const argv = ["init"];
+    const argv2 = ["init"];
     for (const [flag2, key] of [["--name", "name"], ["--key", "key"]])
-      if (b[key] !== void 0 && b[key] !== "") argv.push(flag2, str(b[key], key));
-    return board(ctx, { id: "", name: "", key: "", path: dir, addedAt: "" }, argv);
+      if (b[key] !== void 0 && b[key] !== "") argv2.push(flag2, str(b[key], key));
+    return board(ctx, { id: "", name: "", key: "", path: dir, addedAt: "" }, argv2);
   }
   const p = project(ctx, seg[1]);
   if (seg.length === 2) {
@@ -1158,11 +1163,11 @@ function handleApi(ctx, req) {
     ];
     if (seg.length === 3) {
       if (method !== "POST") throw new HttpError(405, "use POST");
-      const argv = ["note", "add", str(b.kind, "kind"), str(b.title, "title")];
+      const argv2 = ["note", "add", str(b.kind, "kind"), str(b.title, "title")];
       for (const [flag2, key] of fields)
-        if (key !== "title" && b[key] !== void 0 && b[key] !== "") argv.push(flag2, str(b[key], key));
-      for (const c of b.cards ?? []) argv.push("--card", str(c, "card key"));
-      return board(ctx, p, argv);
+        if (key !== "title" && b[key] !== void 0 && b[key] !== "") argv2.push(flag2, str(b[key], key));
+      for (const c of b.cards ?? []) argv2.push("--card", str(c, "card key"));
+      return board(ctx, p, argv2);
     }
     if (seg.length === 4) {
       const id = seg[3].toUpperCase();
@@ -1170,23 +1175,23 @@ function handleApi(ctx, req) {
       if (method === "DELETE") return board(ctx, p, ["note", "rm", id]);
       if (method === "PATCH" && b.confirmed === true) return board(ctx, p, ["note", "confirm", id]);
       if (method !== "PATCH") throw new HttpError(405, "use PATCH or DELETE");
-      const argv = ["note", "update", id];
-      if (b.kind !== void 0 && b.kind !== "") argv.push("--kind", str(b.kind, "kind"));
-      for (const [flag2, key] of fields) if (b[key] !== void 0) argv.push(flag2, str(b[key], key));
-      for (const c of b.cards ?? []) argv.push("--card", str(c, "card key"));
-      return argv.length > 3 ? board(ctx, p, argv) : note(p, id);
+      const argv2 = ["note", "update", id];
+      if (b.kind !== void 0 && b.kind !== "") argv2.push("--kind", str(b.kind, "kind"));
+      for (const [flag2, key] of fields) if (b[key] !== void 0) argv2.push(flag2, str(b[key], key));
+      for (const c of b.cards ?? []) argv2.push("--card", str(c, "card key"));
+      return argv2.length > 3 ? board(ctx, p, argv2) : note(p, id);
     }
   }
-  if (seg[2] !== "features") throw new HttpError(404, `no route ${path14}`);
+  if (seg[2] !== "features") throw new HttpError(404, `no route ${path15}`);
   if (seg.length === 3) {
     if (method !== "POST") throw new HttpError(405, "use POST");
     const b = req.body ?? {};
-    const argv = ["add", str(b.title, "title")];
+    const argv2 = ["add", str(b.title, "title")];
     for (const [flag2, key] of [["--status", "status"], ["--type", "type"], ["--note", "note"]])
-      if (b[key] !== void 0 && b[key] !== "") argv.push(flag2, str(b[key], key));
-    for (const s2 of b.steps ?? []) argv.push("--step", str(s2?.text, "step text"));
-    for (const d of b.doneWhen ?? []) argv.push("--done-when", str(d, "doneWhen entry"));
-    return withArea(p, board(ctx, p, argv));
+      if (b[key] !== void 0 && b[key] !== "") argv2.push(flag2, str(b[key], key));
+    for (const s2 of b.steps ?? []) argv2.push("--step", str(s2?.text, "step text"));
+    for (const d of b.doneWhen ?? []) argv2.push("--done-when", str(d, "doneWhen entry"));
+    return withArea(p, board(ctx, p, argv2));
   }
   if (seg.length === 4) {
     const key = seg[3].toUpperCase();
@@ -1195,7 +1200,7 @@ function handleApi(ctx, req) {
     if (method === "DELETE") return board(ctx, p, ["delete", key]);
     throw new HttpError(405, "use PATCH or DELETE");
   }
-  throw new HttpError(404, `no route ${path14}`);
+  throw new HttpError(404, `no route ${path15}`);
 }
 var HttpError, withArea, feature, note, str;
 var init_api = __esm({
@@ -1298,7 +1303,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.9.12";
+    VERSION = "0.9.13";
   }
 });
 
@@ -1561,16 +1566,16 @@ function listCmd(ctx, { opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
   const statuses = str2(opts, "status")?.split(",").map((s2) => parseStatus(s2.trim()));
   const type = parseType(str2(opts, "type"));
-  let fs14 = board2.features;
-  if (statuses) fs14 = fs14.filter((f) => statuses.includes(f.status));
-  else if (!opts.all) fs14 = fs14.filter((f) => f.status !== "done");
-  if (type) fs14 = fs14.filter((f) => f.type === type);
-  fs14 = sortFeatures(fs14);
-  const w = Math.max(0, ...fs14.map((f) => f.key.length));
+  let fs15 = board2.features;
+  if (statuses) fs15 = fs15.filter((f) => statuses.includes(f.status));
+  else if (!opts.all) fs15 = fs15.filter((f) => f.status !== "done");
+  if (type) fs15 = fs15.filter((f) => f.type === type);
+  fs15 = sortFeatures(fs15);
+  const w = Math.max(0, ...fs15.map((f) => f.key.length));
   const hidden = !statuses && !opts.all ? board2.features.filter((f) => f.status === "done").length : 0;
-  const lines = fs14.length ? fs14.map((f) => formatLine(f, w)) : ["No cards."];
+  const lines = fs15.length ? fs15.map((f) => formatLine(f, w)) : ["No cards."];
   if (hidden) lines.push(`(+${hidden} done \u2014 use --all)`);
-  emit(ctx, opts, fs14, lines);
+  emit(ctx, opts, fs15, lines);
 }
 function show(ctx, { pos, opts }) {
   const board2 = readBoard(requireBoard(ctx).file);
@@ -1622,8 +1627,8 @@ function context(ctx, { opts }) {
     }
     return true;
   };
-  const section = (title, fs14, extra) => {
-    const keep = fs14.filter(carry);
+  const section = (title, fs15, extra) => {
+    const keep = fs15.filter(carry);
     if (!keep.length) return;
     lines.push(`${title}:`);
     for (const f of keep) {
@@ -2330,8 +2335,8 @@ function helpText() {
     "Cards can be referred to as LOOP-3 or just 3; notes as LOOP-N3, N3 or 3."
   ].join("\n");
 }
-function run(argv, ctx) {
-  const [name, ...rest] = argv;
+function run(argv2, ctx) {
+  const [name, ...rest] = argv2;
   if (!name || name === "help" || name === "--help" || name === "-h") {
     ctx.out(helpText());
     return 0;
@@ -2362,6 +2367,10 @@ usage: board ${command.usage}`);
     command.run({ ...ctx, cwd: dir }, { pos: parsed.positionals, opts });
     return 0;
   } catch (e) {
+    if (e instanceof NewerBoardError && ctx.handoff) {
+      const code = ctx.handoff();
+      if (code !== void 0) return code;
+    }
     if (e instanceof UserError) ctx.err(`board: ${e.message}`);
     else ctx.err(`board: unexpected error: ${e.stack ?? e}`);
     return 1;
@@ -2435,9 +2444,53 @@ var init_cli = __esm({
 
 // cli/src/index.ts
 init_cli();
-process.exitCode = run(process.argv.slice(2), {
+
+// cli/src/handoff.ts
+var import_node_child_process2 = require("node:child_process");
+var import_node_fs14 = __toESM(require("node:fs"), 1);
+var import_node_path14 = __toESM(require("node:path"), 1);
+init_version();
+var parse = (v) => /^\d+\.\d+\.\d+$/.test(v) ? v.split(".").map(Number) : void 0;
+var newer = (a, b) => {
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
+  return false;
+};
+function findNewerCli(self, version = VERSION) {
+  const versionsDir = import_node_path14.default.dirname(import_node_path14.default.dirname(import_node_path14.default.dirname(self)));
+  let best;
+  const mine = parse(version);
+  if (!mine) return void 0;
+  let names;
+  try {
+    names = import_node_fs14.default.readdirSync(versionsDir);
+  } catch {
+    return void 0;
+  }
+  for (const name of names) {
+    const v = parse(name);
+    const file = import_node_path14.default.join(versionsDir, name, "bin", "board.cjs");
+    if (!v || !newer(v, best?.v ?? mine) || !import_node_fs14.default.existsSync(file)) continue;
+    best = { v, file };
+  }
+  return best?.file;
+}
+function handoff(self, argv2, env) {
+  if (env.CLIPPED_HANDED_OFF) return void 0;
+  const file = findNewerCli(self);
+  if (!file) return void 0;
+  const r = (0, import_node_child_process2.spawnSync)(process.execPath, [file, ...argv2], {
+    stdio: "inherit",
+    env: { ...process.env, CLIPPED_HANDED_OFF: "1" }
+  });
+  return r.status ?? 1;
+}
+
+// cli/src/index.ts
+var argv = process.argv.slice(2);
+process.exitCode = run(argv, {
   cwd: process.cwd(),
   env: process.env,
   out: (l) => process.stdout.write(l + "\n"),
-  err: (l) => process.stderr.write(l + "\n")
+  err: (l) => process.stderr.write(l + "\n"),
+  handoff: () => handoff(process.argv[1] ?? "", argv, process.env)
 });

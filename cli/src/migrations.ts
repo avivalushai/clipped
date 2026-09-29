@@ -35,6 +35,8 @@ export const MIGRATIONS: Record<number, Migration> = {
 };
 
 export class MigrationError extends Error {}
+/** The board was written by a newer CLI than this one. */
+export class NewerSchemaError extends MigrationError {}
 
 export interface MigrateResult {
   board: Record<string, unknown>;
@@ -55,8 +57,8 @@ export function migrate(
   if (!Number.isInteger(from) || (from as number) < 1)
     throw new MigrationError("board.json has no valid schemaVersion");
   if ((from as number) > target)
-    throw new MigrationError(
-      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin.`,
+    throw new NewerSchemaError(
+      `board.json is schemaVersion ${from}, but this CLI only knows up to ${target}. Update the Clipped plugin, or restart this Claude Code session if you already did.`,
     );
 
   let v = from as number;

@@ -13,9 +13,14 @@ export interface Ctx {
   env: Env;
   out: (line: string) => void;
   err: (line: string) => void;
+  /** Re-run this command with a newer installed CLI. Returns its exit code, or
+   *  undefined when there is none. Only the real entry point sets it. */
+  handoff?: () => number | undefined;
 }
 
 export class UserError extends Error {}
+/** The board needs a newer CLI than this one. */
+export class NewerBoardError extends UserError {}
 
 /** ~/.clipped, overridable with CLIPPED_HOME. */
 export const homeDir = (ctx: Ctx) => {

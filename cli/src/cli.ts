@@ -2,7 +2,7 @@ import path from "node:path";
 import { parseArgs, type ParseArgsConfig } from "node:util";
 import * as cmd from "./commands.js";
 import { VERSION } from "./version.js";
-import { type Ctx, UserError } from "./context.js";
+import { type Ctx, NewerBoardError, UserError } from "./context.js";
 
 type OptSpec = NonNullable<ParseArgsConfig["options"]>;
 
@@ -112,6 +112,13 @@ export function run(argv: string[], ctx: Ctx): number {
     command.run({ ...ctx, cwd: dir }, { pos: parsed.positionals, opts });
     return 0;
   } catch (e) {
+    // A session that started before a plugin update still runs the old CLI, and
+    // another session may already have upgraded the board. Hand the command to
+    // the newest installed CLI instead of failing.
+    if (e instanceof NewerBoardError && ctx.handoff) {
+      const code = ctx.handoff();
+      if (code !== undefined) return code;
+    }
     if (e instanceof UserError) ctx.err(`board: ${e.message}`);
     else ctx.err(`board: unexpected error: ${(e as Error).stack ?? e}`);
     return 1;

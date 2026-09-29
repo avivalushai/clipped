@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { type Ctx, UserError } from "./context.js";
+import { type Ctx, NewerBoardError, UserError } from "./context.js";
 import { writeJsonAtomic, withLock } from "./fsutil.js";
-import { migrate, MigrationError } from "./migrations.js";
+import { migrate, MigrationError, NewerSchemaError } from "./migrations.js";
 import { type Board, validateBoard } from "./schema.js";
 
 export const BOARD_DIR = ".board";
@@ -45,6 +45,7 @@ export function readBoard(file: string): Board {
   try {
     res = migrate(raw);
   } catch (e) {
+    if (e instanceof NewerSchemaError) throw new NewerBoardError(e.message);
     if (e instanceof MigrationError) throw new UserError(e.message);
     throw e;
   }
