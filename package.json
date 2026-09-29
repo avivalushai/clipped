@@ -1,6 +1,6 @@
 {
   "name": "clipped",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "private": true,
   "description": "A feature board Claude keeps for you while you build.",
   "type": "module",
