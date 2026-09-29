@@ -409,6 +409,7 @@ tr.composer .key{color:var(--accent);font-weight:600}
 
 /* ---------- view bar ---------- */
 .viewbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.gbar{margin:14px 0 -2px}
 .viewbar .opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .opt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:0 6px 0 12px;height:32px}
 .opt select{border:0;background:none;padding:4px 30px 4px 2px;margin-right:-14px;font-weight:500;color:var(--ink);cursor:pointer;appearance:none;-webkit-appearance:none}
@@ -435,7 +436,7 @@ details.cols .menu label:has(input:disabled){cursor:default;color:var(--muted)}
 details.cols .menu label:has(input:disabled):hover{background:none}
 details.cols .menu input{accent-color:var(--accent);width:14px;height:14px;margin:0}
 details.areas .menu{left:0;right:auto;transform-origin:top left;max-height:min(360px,60vh);overflow:auto}
-details.areas .menu::before{content:"Show areas"}
+details.areas .menu::before{content:attr(data-head)}
 details.areas .menu .an{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 details.areas .menu .ac{font-family:var(--mono);font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
 summary.opt.on{border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--ink)}
@@ -1026,17 +1027,39 @@ function areaOptions(){
   const names=[...m.keys()].filter(Boolean).sort((a,b)=>a.localeCompare(b));
   return [...names,...(m.has('')?['']:[])].map(n=>({name:n,count:m.get(n)}));
 }
+/* A multi-pick dropdown like the Area one: P[key] holds the ticked values; none ticked = all.
+   opts: [{v,l,n}] — value, label, count. */
+const picked=(key,opts)=>{const here=new Set(opts.map(o=>o.v)); return (P[key]||[]).filter(v=>here.has(v))};
+function pickCtl(key,label,opts,noun){
+  const on=picked(key,opts), shown=!on.length?'All':on.length===1?esc(opts.find(o=>o.v===on[0]).l):on.length+' '+noun;
+  return `<details class="cols areas" data-pickbox="${key}"><summary class="opt" style="padding-right:9px">${label} <b>${shown}</b></summary><div class="menu" data-head="Show ${noun}">
+    ${opts.map(o=>`<label><input type="checkbox" data-pick="${key}" data-val="${esc(o.v)}" ${on.includes(o.v)?'checked':''}><span class="an">${esc(o.l)}</span><span class="ac">${o.n}</span></label>`).join('')}
+    ${on.length?`<button class="linkbtn colreset" data-pickclear="${key}" type="button">Show all ${noun}</button>`:''}</div></details>`;
+}
+/* Type, on Work and UI work: features, bugs and chores. */
+const TYPEL={feature:'Feature',bug:'Bug',chore:'Chore'};
+const typeTab=()=>P.tab==='features'||uiWork();
+function typeOptions(){
+  const m=new Map(); for(const f of tabCards()) m.set(f.type,(m.get(f.type)||0)+1);
+  return Object.keys(TYPEL).filter(t=>m.has(t)).map(t=>({v:t,l:TYPEL[t],n:m.get(t)}));
+}
 /* The ticked areas that exist in this view. None ticked (or none here) = every area. */
 const areaPicked=()=>{const here=new Set(areaOptions().map(o=>o.name));return (P.areaPick||[]).filter(n=>here.has(n))};
 function scopeFeatures(){
-  const q=query.toLowerCase(), picked=areaPicked();
-  return tabCards().filter(f=>(!picked.length||picked.includes(f.inArea||''))&&
+  const q=query.toLowerCase(), areas=areaPicked(), types=typeTab()?picked('typePick',typeOptions()):[];
+  return tabCards().filter(f=>(!areas.length||areas.includes(f.inArea||''))&&(!types.length||types.includes(f.type))&&
     (filter==='all'||f.status===filter||(filter==='new'&&isNew(f)))&&(!P.hideDone||f.status!=='done'||filter==='done')&&
     (!q||f.title.toLowerCase().includes(q)||(f.note||'').toLowerCase().includes(q)||fkey(f).toLowerCase().includes(q)));
 }
+/* Area on the Design tab: a decision takes the area of the cards it shaped. */
+function decisionAreaOpts(){
+  const p=proj(view), m=new Map();
+  for(const n of (p?pn(p.id):S.notes).filter(n=>n.kind==='decision')){const a=noteArea(n); m.set(a,(m.get(a)||0)+1)}
+  return [...[...m.keys()].filter(Boolean).sort((a,b)=>a.localeCompare(b)),...(m.has('')?['']:[])].map(a=>({v:a,l:a||'No area',n:m.get(a)}));
+}
 function scopeNotes(){
-  const p=proj(view), q=query.toLowerCase(), kind=TAB().note;
-  return (p?pn(p.id):S.notes).filter(n=>n.kind===kind&&
+  const p=proj(view), q=query.toLowerCase(), kind=TAB().note, areas=kind==='decision'?picked('dAreaPick',decisionAreaOpts()):[];
+  return (p?pn(p.id):S.notes).filter(n=>n.kind===kind&&(!areas.length||areas.includes(noteArea(n)))&&
     (!q||n.title.toLowerCase().includes(q)||n.body.toLowerCase().includes(q)||
        n.url.toLowerCase().includes(q)||n.file.toLowerCase().includes(q)||n.nid.toLowerCase().includes(q)));
 }
@@ -1230,7 +1253,7 @@ function renderPage(){
       ${p?`<div class="crumb">${pbadge(p)}<span class="mono" title="${esc(p.path)}">${esc(tilde(p.path))}</span></div><h1><input class="h1in" id="projName" value="${esc(p.name)}" aria-label="Project name" spellcheck="false" title="Rename this project"></h1>${sessionLine(p)}`
          :`<h1>${esc(uiWork()?'UI work':TAB().heading||'All '+TAB().label.toLowerCase())}</h1><div class="sub">${esc(homeSub(parked))}</div>${sessionLine(null)}`}
     </div>
-    <div class="toolbar">${isNoteTab()||isOutTab()?searchCtl():''}
+    <div class="toolbar">
       ${p?`<button class="btn" id="showJson">board.json</button>`:''}
       ${uiWork()||isOutTab()?'':`<button class="btn primary" id="newBtn">+ New ${isNoteTab()?esc(NOUN[TAB().note]):noun}</button>`}</div></div>
   <div class="tabrow">${tabStrip()}${P.tab==='decisions'?designSwitch():''}${isNoteTab()||isOutTab()?'':`
@@ -1250,14 +1273,11 @@ function renderPage(){
     <div class="opts">
       ${searchCtl()}
       ${(()=>{const opts=areaOptions(); if(!opts.some(o=>o.name)) return ''; const picked=areaPicked();
-        return `<details class="cols areas"><summary class="opt" style="padding-right:9px">Area <b>${!picked.length?'All':picked.length===1?esc(picked[0]||'No area'):picked.length+' areas'}</b></summary><div class="menu">
+        return `<details class="cols areas" data-pickbox="areaPick"><summary class="opt" style="padding-right:9px">Area <b>${!picked.length?'All':picked.length===1?esc(picked[0]||'No area'):picked.length+' areas'}</b></summary><div class="menu" data-head="Show areas">
           ${opts.map(o=>`<label><input type="checkbox" data-area="${esc(o.name)}" ${picked.includes(o.name)?'checked':''}><span class="an">${o.name?esc(o.name):'No area yet'}</span><span class="ac">${o.count}</span></label>`).join('')}
           ${picked.length?`<button class="linkbtn colreset" id="areaClear" type="button">Show all areas</button>`:''}</div></details>`})()}
-      ${P.mode!=='board'?`<span class="opt">Group by<select id="groupSel" aria-label="Group by">
-        <option value="status" ${P.group==='status'?'selected':''}>Status</option>
-        <option value="area" ${P.group==='area'?'selected':''}>Area</option>
-        ${isHome?`<option value="project" ${P.group==='project'?'selected':''}>Project</option>`:''}
-        <option value="none" ${P.group==='none'?'selected':''}>Nothing</option></select></span>`:''}
+      ${typeTab()&&typeOptions().length>1?pickCtl('typePick','Type',typeOptions(),'types'):''}
+      ${P.mode!=='board'?groupCtl(isHome):''}
       ${P.mode==='table'?`<span class="opt">Density<select id="densSel" aria-label="Row density">
         <option value="comfy" ${P.density==='comfy'?'selected':''}>Comfortable</option>
         <option value="compact" ${P.density==='compact'?'selected':''}>Compact</option></select></span>
@@ -1276,10 +1296,41 @@ function renderPage(){
 /* Column widths the user dragged, per table kind; the default otherwise. */
 const cw=(map,c)=>(P[map]&&P[map][c.id])||c.w;
 const grip=(map,c)=>`<span class="colgrip" data-grip="${c.id}" data-map="${map}" title="Drag to resize · double-click to reset" aria-hidden="true"></span>`;
-const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&(!c.ui||uiWork())&&(c.id==='project'||!P.hidden.includes(c.id))&&!(c.id==='area'&&P.group==='area'));
+const visibleCols=isHome=>COLS.filter(c=>(!c.home||isHome)&&(!c.ui||uiWork())&&(c.id==='project'||!P.hidden.includes(c.id))&&!(c.id==='area'&&(uiWork()||!GROUPINGS[P.tab]?P.group:tabGroup())==='area'));
 
+/* Group by, per tab. Work (and UI work, the same table) keeps P.group; every
+   other tab remembers its own, and opens on the grouping that answers its question. */
+const GROUPINGS={
+  questions:{def:'status',opts:[['status','Status'],['touched','Last touched'],['area','Area'],['project','Project'],['none','Nothing']]},
+  decisions:{def:'who',opts:[['who','Who decided'],['card','Card'],['area','Area'],['none','Nothing']]},
+  brainstorms:{def:'led',opts:[['led','Led to work'],['touched','Last touched'],['none','Nothing']]},
+  references:{def:'none',opts:[['site','Site'],['none','Nothing']]},
+  outputs:{def:'kind',opts:[['kind','Kind'],['card','Card'],['project','Project'],['none','Nothing']]}};
+const WORK_GROUPS=[['status','Status'],['area','Area'],['project','Project'],['none','Nothing']];
+const groupOpts=isHome=>{const g=!uiWork()&&GROUPINGS[P.tab]; return (g?g.opts:WORK_GROUPS).filter(o=>o[0]!=='project'||isHome)};
+function tabGroup(){
+  const g=!uiWork()&&GROUPINGS[P.tab]; if(!g) return P.group;
+  const v=(P.tgroup||{})[P.tab], ok=groupOpts(!proj(view)).some(o=>o[0]===v);
+  return ok?v:g.def;
+}
+function groupCtl(isHome){
+  const cur=uiWork()||!GROUPINGS[P.tab]?(P.group==='project'&&!isHome?'status':P.group):tabGroup();
+  return `<span class="opt">Group by<select id="groupSel" aria-label="Group by">${groupOpts(isHome).map(([v,l])=>`<option value="${v}" ${cur===v?'selected':''}>${l}</option>`).join('')}</select></span>`;
+}
+/* Today, this week, earlier — by when a row last changed. */
+function touchedGroups(items,prefix,peek){
+  const day=new Date(); day.setHours(0,0,0,0); const d0=day.getTime(), w0=d0-6*864e5;
+  return [['today','Today',x=>x.updatedAt>=d0],['week','Earlier this week',x=>x.updatedAt<d0&&x.updatedAt>=w0],['older','Before that',x=>x.updatedAt<w0]]
+    .map(([id,l,fn])=>({id:prefix+':t:'+id,head:esc(l),items:items.filter(fn)})).filter(x=>x.items.length);
+}
+/* One group heading row, the same on every table. */
+function grpRow(g,span,peek){
+  const shut=g.id&&(P.collapsed||[]).includes(g.id);
+  return {shut,html:`<tr class="grp" data-grprow="${g.id}"><td colspan="${span}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}" aria-label="${shut?'Show':'Hide'} this group">${CHEVRON}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(x=>esc(peek(x))).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`};
+}
 function groupsOf(fs,isHome){
-  const g=P.group==='project'&&!isHome?'status':P.group;
+  const g=uiWork()||!GROUPINGS[P.tab]?(P.group==='project'&&!isHome?'status':P.group):tabGroup();
+  if(g==='touched') return touchedGroups(fs,P.tab);
   if(g==='none') return [{id:null,items:fs}];
   if(g==='project') return S.projects.map(p=>({id:p.id,head:`${pbadge(p,true)} ${esc(p.name)}`,items:fs.filter(f=>f.project===p.id)})).filter(x=>x.items.length);
   if(g==='area') return areaGroups(fs,isHome);
@@ -1365,7 +1416,7 @@ function noteComposer(cols,isHome){
 
 /* UI work: the cards behind the design — drawn by the same table as Work (same rows, chips,
    groups, sorting and resizing), with the design decisions each one made as an extra column. */
-function renderUiWork(isHome){ return renderTable(scopeFeatures(),isHome) }
+function renderUiWork(isHome){ return `<div class="viewbar gbar"><div class="opts">${searchCtl()}${typeOptions().length>1?pickCtl('typePick','Type',typeOptions(),'types'):''}${groupCtl(isHome)}</div></div>`+renderTable(scopeFeatures(),isHome) }
 
 /* ---------- outputs ----------
    Everything Claude made that you can open — an app on localhost, a deployed site, a pull
@@ -1398,17 +1449,30 @@ function outputsHere(){
 const portState={};
 const odot=port=>port?`<span class="odot ${portState[port]?.up===true?'up':portState[port]?.up===false?'down':''}" data-port="${port}" title="${portState[port]?.up===true?'Running':portState[port]?.up===false?'Not running right now':'Checking…'}"></span>`:'';
 async function checkPorts(){
-  const ports=[...new Set([...document.querySelectorAll('.odot[data-port]')].map(e=>+e.dataset.port))];
+  const ports=[...new Set([...document.querySelectorAll('.odot[data-port]')].map(e=>+e.dataset.port),...(isOutTab()?outputsHere().map(o=>o.port).filter(Boolean):[]))];
+  const before=JSON.stringify(ports.map(p=>portState[p]?.up));
   await Promise.all(ports.map(async port=>{
     if(portState[port]&&Date.now()-portState[port].at<10000) return;
     try{ const r=await api('/api/ping?port='+port); portState[port]={up:!!r.up,at:Date.now()} }catch(e){}
   }));
   document.querySelectorAll('.odot[data-port]').forEach(e=>{const st=portState[+e.dataset.port]; if(!st) return;
     e.classList.toggle('up',st.up); e.classList.toggle('down',!st.up); e.title=st.up?'Running':'Not running right now'});
+  if(isOutTab()&&P.outStopped&&JSON.stringify(ports.map(p=>portState[p]?.up))!==before) render();
 }
-setInterval(()=>{ if(!document.hidden&&document.querySelector('.odot[data-port]')) checkPorts() },15000);
+setInterval(()=>{ if(!document.hidden&&(document.querySelector('.odot[data-port]')||isOutTab())) checkPorts() },15000);
+const OKINDS=['Local app','Site','Pull request','Artifact','File'];
+function outGroups(outs,isHome){
+  const g=tabGroup(), put=(ids,head,fn)=>ids.map(id=>({id:'outputs:'+g+':'+id,head:head(id),items:outs.filter(o=>fn(o,id))})).filter(x=>x.items.length);
+  if(g==='kind') return put(OKINDS,esc,(o,k)=>o.kind===k);
+  if(g==='project') return put(S.projects.map(p=>p.id),id=>`${pbadge(proj(id),true)} ${esc(proj(id).name)}`,(o,id)=>o.card.project===id);
+  if(g==='card') return put([...new Set(outs.map(o=>o.card.id))],id=>{const f=S.features.find(x=>x.id===id);
+    return `<span class="dot" style="background:${color(f.status)}"></span> <span class="mono muted">${fkey(f)}</span> ${esc(f.title)}`},(o,id)=>o.card.id===id);
+  return [{id:null,items:outs}];
+}
+/* A local app counts as stopped once its port has been checked and didn't answer. */
+const stopped=o=>!!o.port&&portState[o.port]?.up===false;
 function renderOutputs(isHome){
-  const outs=outputsHere();
+  const all=outputsHere(), outs=all.filter(o=>!(P.outStopped&&stopped(o))&&!(P.outHideDone&&o.card.status==='done'));
   const cols=[...(isHome?[{id:'project',label:'Project',w:140}]:[]),{id:'out',label:'Output',w:340},{id:'kind',label:'Kind',w:130},{id:'card',label:'Card',w:320},{id:'at',label:'Added',w:92}];
   const cell=(c,o)=>{ switch(c.id){
     case 'out': return `<td><span class="outcell">${odot(o.port)}<a class="ext" href="${esc(o.url)}" target="_blank" rel="noreferrer noopener" title="${esc(o.url)}">${esc(o.label)}</a><span class="outarrow" aria-hidden="true">↗</span></span></td>`;
@@ -1417,10 +1481,16 @@ function renderOutputs(isHome){
     case 'project': return `<td><span class="projcell">${pbadge(proj(o.card.project),true)}${esc(proj(o.card.project).name)}</span></td>`;
     case 'at': return `<td class="mono">${ago(o.at)}</td>`;
   }};
-  const rows=outs.map(o=>`<tr data-row="${o.card.id}">${cols.map(c=>cell(c,o)).join('')}</tr>`).join('')
-    ||`<tr><td colspan="${cols.length}" class="empty">Nothing to open yet. When Claude starts an app, deploys a site or opens a pull request, the link lands here — and as a button on its card.</td></tr>`;
+  let rows='';
+  for(const g of outGroups(outs,isHome)){
+    const {shut,html}=grpRow(g,cols.length,o=>o.label);
+    if(g.id) rows+=html;
+    if(!shut) rows+=g.items.map(o=>`<tr data-row="${o.card.id}">${cols.map(c=>cell(c,o)).join('')}</tr>`).join('');
+  }
+  if(!rows&&all.length) rows=`<tr><td colspan="${cols.length}" class="empty">Nothing left to show — the filters above hide ${all.length} output${all.length===1?'':'s'}.</td></tr>`;
+  rows=rows||`<tr><td colspan="${cols.length}" class="empty">Nothing to open yet. When Claude starts an app, deploys a site or opens a pull request, the link lands here — and as a button on its card.</td></tr>`;
   const minW=cols.reduce((a,c)=>a+c.w,0);
-  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px;width:100%">
+  return `<div class="viewbar gbar"><div class="opts">${searchCtl()}${all.some(o=>o.port)?`<label class="opt"><input type="checkbox" id="outStopped" ${P.outStopped?'checked':''}>Hide stopped apps</label>`:''}<label class="opt"><input type="checkbox" id="outHideDone" ${P.outHideDone?'checked':''}>Hide done</label>${groupCtl(isHome)}</div></div><div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px;width:100%">
     <thead><tr>${cols.map(c=>`<th style="width:${c.w}px">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -1432,16 +1502,45 @@ function bindOutputs(){
   }));
 }
 
+/* Notes have no area of their own: a note takes the area of the first linked card that has one. */
+const noteArea=n=>(noteCards(n).find(f=>f.inArea)||{}).inArea||'';
+const siteOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return ''}};
+function noteGroups(ns,isHome){
+  const g=tabGroup(), t=P.tab, by=(key,label,order)=>{
+    const m=new Map(); for(const n of ns){ const k=key(n); if(!m.has(k)) m.set(k,[]); m.get(k).push(n) }
+    return [...m.keys()].sort(order).map(k=>({id:t+':'+g+':'+k,head:label(k),items:m.get(k)}));
+  };
+  if(!GROUPINGS[t]||g==='none') return [{id:null,items:ns}];
+  if(g==='touched') return touchedGroups(ns,t);
+  if(g==='who'){ const W=[['unchecked',"Claude's call, unchecked",unchecked],['you','Your call',n=>n.decidedBy!=='claude'],['agreed',"Claude's call, you agreed",n=>n.decidedBy==='claude'&&!!n.confirmedAt]];
+    return W.map(([id,l,fn])=>({id:t+':who:'+id,head:esc(l),items:ns.filter(fn)})).filter(x=>x.items.length) }
+  if(g==='led') return [['yes','Led to work',n=>n.cards.length>0],['no','Nothing yet',n=>!n.cards.length]]
+    .map(([id,l,fn])=>({id:t+':led:'+id,head:esc(l),items:ns.filter(fn)})).filter(x=>x.items.length);
+  const last=(a,b)=>(a==='')-(b==='')||a.localeCompare(b);
+  if(g==='area') return by(n=>(isHome?n.project+'\u0000':'')+noteArea(n),k=>{const [pid,a]=isHome?k.split('\u0000'):[null,k];
+    return `${pid?pbadge(proj(pid),true)+' ':''}<span class="area-name">${a?esc(a):'No area'}</span>`},last);
+  if(g==='site') return by(n=>siteOf(n.url),k=>k?esc(k):'No link',last);
+  if(g==='card'){ /* under the first card it names, so every note shows once */
+    const key=n=>(noteCards(n)[0]||{}).id||'';
+    const order=(a,b)=>(a==='')-(b==='')||(GORDER[S.features.find(f=>f.id===a)?.status]??9)-(GORDER[S.features.find(f=>f.id===b)?.status]??9);
+    return by(key,id=>{const f=S.features.find(x=>x.id===id); return f?`<span class="dot" style="background:${color(f.status)}"></span> <span class="mono muted">${fkey(f)}</span> ${esc(f.title)}`:'No card'},order) }
+  return [{id:null,items:ns}];
+}
 function renderNotesPage(isHome){
   if(uiWork()) return renderUiWork(isHome);
   // Claude's calls nobody has checked come first: they're the only rows waiting on you.
   const ns=scopeNotes().sort((a,b)=>unchecked(b)-unchecked(a)||b.updatedAt-a.updatedAt), cols=noteCols(isHome);
   const f=NOTEFIELD[TAB().note];
   let rows=S.projects.length&&composing?noteComposer(cols,isHome):'';
-  for(const n of ns) rows+=`<tr data-nrow="${n.id}">${cols.map(c=>noteCell(c,n,isHome)).join('')}</tr>`;
+  for(const g of noteGroups(ns,isHome)){
+    const {shut,html}=grpRow(g,cols.length,n=>n.title);
+    if(g.id) rows+=html;
+    if(!shut) for(const n of g.items) rows+=`<tr data-nrow="${n.id}">${cols.map(c=>noteCell(c,n,isHome)).join('')}</tr>`;
+  }
   if(!ns.length) rows+=`<tr><td colspan="${cols.length}" class="empty">${esc(NOTE_EMPTY[TAB().note])}</td></tr>`;
   const minW=cols.reduce((a,c)=>a+cw('noteColW',c),0);
-  return `<div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
+  const areaCtl=P.tab==='decisions'&&decisionAreaOpts().some(o=>o.v)?pickCtl('dAreaPick','Area',decisionAreaOpts(),'areas'):'';
+  return `<div class="viewbar gbar"><div class="opts">${searchCtl()}${areaCtl}${GROUPINGS[P.tab]?groupCtl(isHome):''}</div></div><div class="tbl-wrap grid ${P.density==='compact'?'compact':''}" style="margin-top:14px"><table style="min-width:${minW}px">
     <thead><tr>${cols.map(c=>`<th style="width:${cw('noteColW',c)}px">${grip('noteColW',c)}${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint">Click a row to open it; hover a cell and click its pencil to edit it here. ${esc(NOTE_HINT[TAB().note])}</p>`;
 }
@@ -1504,8 +1603,8 @@ function renderTable(fs,isHome){
   const th=c=>`<th style="${c.flex&&!(P.colW&&P.colW[c.id])?`min-width:${c.w}px`:`width:${cw('colW',c)}px`}">${grip('colW',c)}${c.id==='key'?`<input type="checkbox" class="rowsel" id="selAll" aria-label="Select all shown" ${fs.length&&fs.every(f=>sel.has(f.id))?'checked':''}>`:''}${c.sort?`<button data-sort="${c.sort}">${colLabel(c)}${sort.k===c.sort?`<span class="arr">${sort.dir>0?'↑':'↓'}</span>`:''}</button>`:colLabel(c)}</th>`;
   let rows=composing?composerRow(cols,isHome):'';
   for(const g of groupsOf(sortFs(fs),isHome)){
-    const shut=g.id&&(P.collapsed||[]).includes(g.id);
-    if(g.id) rows+=`<tr class="grp" data-grprow="${g.id}"><td colspan="${cols.length}"><button class="grp-toggle" data-grp="${g.id}" aria-expanded="${!shut}" aria-label="${shut?'Show':'Hide'} this group">${CHEVRON}</button>${g.head} · ${g.items.length}${shut?` <span class="grp-peek">${g.items.slice(0,4).map(f=>esc(f.title)).join(' · ')}${g.items.length>4?` · +${g.items.length-4}`:''}</span>`:''}</td></tr>`;
+    const {shut,html}=grpRow(g,cols.length,f=>f.title);
+    if(g.id) rows+=html;
     if(shut) continue;
     for(const f of g.items) rows+=`<tr data-row="${f.id}" class="${f.id===firstLanded?'landed':''} ${f.status==='parked'?'is-parked':''} ${f.status==='done'?'is-done':''} ${f.status==='idea'?'is-idea':''}">${cols.map(c=>cell(c,f)).join('')}</tr>`;
   }
@@ -1681,6 +1780,19 @@ async function addFeature(projectId,title,status,note){
   }catch(e){ toast(e.message); return null }
 }
 
+/* Group by, and the group rows: the whole row opens and closes a group; the chevron is the keyboard's way in. */
+function bindGroups(){
+  document.querySelectorAll('[data-pick]').forEach(c=>c.onchange=()=>{const k=c.dataset.pick, v=c.dataset.val, cur=P[k]||[];
+    P[k]=c.checked?[...cur.filter(x=>x!==v),v]:cur.filter(x=>x!==v); savePrefs(); render(); document.querySelector(`[data-pickbox="${k}"]`)?.setAttribute('open','')});
+  document.querySelectorAll('[data-pickclear]').forEach(b=>b.onclick=()=>{P[b.dataset.pickclear]=[];savePrefs();render()});
+  if($('outStopped')) $('outStopped').onchange=e=>{P.outStopped=e.target.checked;savePrefs();render()};
+  if($('outHideDone')) $('outHideDone').onchange=e=>{P.outHideDone=e.target.checked;savePrefs();render()};
+  if($('groupSel')) $('groupSel').onchange=e=>{const v=e.target.value;
+    if(!uiWork()&&GROUPINGS[P.tab]) P.tgroup={...(P.tgroup||{}),[P.tab]:v}; else P.group=v; savePrefs(); render()};
+  document.querySelectorAll('tr[data-grprow]').forEach(tr=>tr.onclick=()=>{const id=tr.dataset.grprow;
+    P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render();
+    document.querySelector(`[data-grp="${id}"]`)?.focus({preventScroll:true})});
+}
 function bindNotes(p,isHome){
   if($('newBtn')) $('newBtn').onclick=()=>{composing=!composing;render();if(composing) $('nTitle')?.focus()};
   const f=NOTEFIELD[TAB().note];
@@ -1790,18 +1902,14 @@ function bindPage(){
   if(p&&$('showJson')) $('showJson').onclick=()=>api('/api/projects/'+p.id+'/board')
     .then(b=>openDialog(tilde(p.path)+'/.board/board.json',JSON.stringify(b,null,2)))
     .catch(e=>toast(e.message));
+  bindGroups();
   if(isNoteTab()&&!uiWork()) return bindNotes(p,isHome);
   if(isOutTab()) return bindOutputs();
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{P.mode=b.dataset.mode;savePrefs();render()});
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const k=b.dataset.sort;sort=sort.k===k?{k,dir:-sort.dir}:{k,dir:1};render()});
-  if($('groupSel')) $('groupSel').onchange=e=>{P.group=e.target.value;savePrefs();render()};
   if($('densSel')) $('densSel').onchange=e=>{P.density=e.target.value;savePrefs();render()};
   if($('hideDone')) $('hideDone').onchange=e=>{P.hideDone=e.target.checked;savePrefs();render()};
-  /* The whole group row opens and closes it; the chevron is the keyboard's way in. */
-  document.querySelectorAll('tr[data-grprow]').forEach(tr=>tr.onclick=()=>{const id=tr.dataset.grprow;
-    P.collapsed=(P.collapsed||[]).includes(id)?P.collapsed.filter(x=>x!==id):[...(P.collapsed||[]),id];savePrefs();render();
-    document.querySelector(`[data-grp="${id}"]`)?.focus({preventScroll:true})});
   document.querySelectorAll('[data-area]').forEach(c=>c.onchange=()=>{const n=c.dataset.area, cur=areaPicked();
     P.areaPick=c.checked?[...cur,n]:cur.filter(x=>x!==n); savePrefs(); render(); document.querySelector('details.areas')?.setAttribute('open','')});
   if($('areaClear')) $('areaClear').onclick=()=>{P.areaPick=[];savePrefs();render()};
