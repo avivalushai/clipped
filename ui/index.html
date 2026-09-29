@@ -1375,7 +1375,7 @@ function renderUiWork(isHome){
   const calls=f=>S.notes.filter(n=>n.kind==='decision'&&n.project===f.project&&n.cards.includes(f.key));
   const cell=(c,f)=>{switch(c.id){
     case 'key': return `<td class="mono">${esc(f.key)}</td>`;
-    case 'project': return `<td>${pbadge(proj(f.project),true)} <span class="pname">${esc(proj(f.project).name)}</span></td>`;
+    case 'project': return `<td><span class="projcell">${pbadge(proj(f.project),true)}${esc(proj(f.project).name)}</span></td>`;
     case 'title': return `<td class="title"><span class="${f.status==='done'?'struck':''}">${esc(f.title)}</span></td>`;
     case 'status': return `<td><span class="uist"><span class="dot" style="background:${color(f.status)}"></span>${esc(stLabel(f))}</span></td>`;
     case 'area': return `<td>${f.inArea||f.area?esc(f.inArea||f.area):'<span class="muted">—</span>'}</td>`;

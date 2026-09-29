@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 115,
+  "nextNum": 116,
   "features": [
     {
       "key": "LE-1",
@@ -4749,10 +4749,12 @@
       "files": [
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "9be807a"
+      ],
       "area": "",
       "createdAt": "2026-09-29T11:07:22Z",
-      "updatedAt": "2026-09-29T11:07:22Z",
+      "updatedAt": "2026-09-29T11:08:32Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -4764,6 +4766,40 @@
           "at": "2026-09-29T11:07:22Z",
           "by": "claude",
           "text": "Moved to review — All projects: Work, Questions, notes tabs and Outputs all have Project left of the title; it can't be switched off in Columns. Not committed."
+        },
+        {
+          "at": "2026-09-29T11:08:32Z",
+          "by": "claude",
+          "text": "Proof: 9be807a"
+        }
+      ]
+    },
+    {
+      "key": "LE-115",
+      "title": "UI work: the Project cell stacked the badge over the name",
+      "type": "bug",
+      "status": "review",
+      "note": "Design → UI work on All projects: badge and project name on one line; rows 44px. Not committed.",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-29T11:10:37Z",
+      "updatedAt": "2026-09-29T11:10:37Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-29T11:10:37Z",
+          "by": "claude",
+          "text": "Created — active"
+        },
+        {
+          "at": "2026-09-29T11:10:37Z",
+          "by": "claude",
+          "text": "Moved to review — Design → UI work on All projects: badge and project name on one line; rows 44px. Not committed."
         }
       ]
     }
