@@ -410,6 +410,7 @@ tr.composer .key{color:var(--accent);font-weight:600}
 /* ---------- view bar ---------- */
 .viewbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .gbar{margin:14px 0 -2px}
+.gbar.flush{margin-bottom:12px}   /* the Work table has no top margin of its own */
 .viewbar .opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .opt{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:0 6px 0 12px;height:32px}
 .opt select{border:0;background:none;padding:4px 30px 4px 2px;margin-right:-14px;font-weight:500;color:var(--ink);cursor:pointer;appearance:none;-webkit-appearance:none}
@@ -1416,7 +1417,7 @@ function noteComposer(cols,isHome){
 
 /* UI work: the cards behind the design — drawn by the same table as Work (same rows, chips,
    groups, sorting and resizing), with the design decisions each one made as an extra column. */
-function renderUiWork(isHome){ return `<div class="viewbar gbar"><div class="opts">${searchCtl()}${typeOptions().length>1?pickCtl('typePick','Type',typeOptions(),'types'):''}${groupCtl(isHome)}</div></div>`+renderTable(scopeFeatures(),isHome) }
+function renderUiWork(isHome){ return `<div class="viewbar gbar flush"><div class="opts">${searchCtl()}${typeOptions().length>1?pickCtl('typePick','Type',typeOptions(),'types'):''}${groupCtl(isHome)}</div></div>`+renderTable(scopeFeatures(),isHome) }
 
 /* ---------- outputs ----------
    Everything Claude made that you can open — an app on localhost, a deployed site, a pull
