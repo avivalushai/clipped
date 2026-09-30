@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "project": {
     "name": "Clipped",
     "key": "LE"
@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 126,
+  "nextNum": 129,
   "features": [
     {
       "key": "LE-1",
@@ -5609,7 +5609,7 @@
       "key": "LE-125",
       "title": "The collapsed sidebar mark is the wordmark's own e",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Mark, icon and favicon rebuilt from the e in the wordmark; collapsed mark drawn at the same scale (1.83px wire in both)",
       "doneWhen": [],
       "steps": [],
@@ -5617,16 +5617,205 @@
         "ui/index.html",
         "landing/img/logo/clipped-mark.svg"
       ],
-      "links": [],
+      "links": [
+        "dcaf121",
+        "7b0a54f"
+      ],
       "area": "",
       "createdAt": "2026-09-29T12:45:05Z",
-      "updatedAt": "2026-09-29T12:45:05Z",
+      "updatedAt": "2026-09-29T12:47:11Z",
       "updatedBy": "claude",
       "log": [
         {
           "at": "2026-09-29T12:45:05Z",
           "by": "claude",
           "text": "Created — review"
+        },
+        {
+          "at": "2026-09-29T12:47:11Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-29T12:47:11Z",
+          "by": "claude",
+          "text": "Proof: dcaf121, 7b0a54f"
+        }
+      ]
+    },
+    {
+      "key": "LE-126",
+      "title": "Step plans: a plan broken into steps in chat lives in Plans as one plan with its steps",
+      "type": "feature",
+      "status": "done",
+      "note": "Shipped in 0.9.18 — the next plan we break into steps should land in Plans on its own",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [
+        "469cbf8"
+      ],
+      "area": "",
+      "createdAt": "2026-09-29T17:16:54Z",
+      "updatedAt": "2026-09-29T17:42:04Z",
+      "updatedBy": "user",
+      "log": [
+        {
+          "at": "2026-09-29T17:16:54Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-29T17:18:54Z",
+          "by": "user",
+          "text": "Renamed from “A plan made in chat is kept: goal, stages in order, a card per stage, and where you are”"
+        },
+        {
+          "at": "2026-09-29T17:18:54Z",
+          "by": "user",
+          "text": "Note: User's direction: a step-based plan made in chat is recorded as a single plan in the Plans tab with its steps, distinguished from document plans (a file). Steps live on the plan; a step can link to the card doing it."
+        },
+        {
+          "at": "2026-09-29T17:26:44Z",
+          "by": "claude",
+          "text": "Moved to review — Check the Plans tab and a step plan's panel at clipped.localhost:4797 (a copy of this board) — built in a separate worktree, schema v6, not committed"
+        },
+        {
+          "at": "2026-09-29T17:38:09Z",
+          "by": "claude",
+          "text": "Proof: 469cbf8"
+        },
+        {
+          "at": "2026-09-29T17:38:09Z",
+          "by": "claude",
+          "text": "Note: Shipped in 0.9.18 — the next plan we break into steps should land in Plans on its own"
+        },
+        {
+          "at": "2026-09-29T17:42:04Z",
+          "by": "user",
+          "text": "Done"
+        }
+      ]
+    },
+    {
+      "key": "LE-127",
+      "title": "Logo idea: an upright paperclip as a letter (I in CLIPPED, or l / i in Clipped)",
+      "type": "feature",
+      "status": "idea",
+      "note": "Side-by-side of 4: A Clipp·d e (live), B paperclip i, C CLIPPED paperclip I, D paperclip l. Waiting on the user's pick",
+      "doneWhen": [],
+      "steps": [],
+      "files": [],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-30T14:16:00Z",
+      "updatedAt": "2026-09-30T15:21:26Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-30T14:16:00Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-30T14:28:55Z",
+          "by": "claude",
+          "text": "Note: Bottom now on the baseline; pick height 1 (cap), 2 (a little above), 3 (higher). Leaning 2"
+        },
+        {
+          "at": "2026-09-30T14:45:24Z",
+          "by": "claude",
+          "text": "Renamed from “Logo idea: CLIPPED with an upright paperclip as the I”"
+        },
+        {
+          "at": "2026-09-30T14:45:24Z",
+          "by": "claude",
+          "text": "Note: Options: CLIPPED paperclip-I (baseline, a little above) · Clipped paperclip-l (1 l height, 2 taller) · Clipped paperclip-i. Compare with shipped Clipp·d"
+        },
+        {
+          "at": "2026-09-30T15:21:26Z",
+          "by": "claude",
+          "text": "Note: Side-by-side of 4: A Clipp·d e (live), B paperclip i, C CLIPPED paperclip I, D paperclip l. Waiting on the user's pick"
+        }
+      ]
+    },
+    {
+      "key": "LE-128",
+      "title": "The Clipped logo in Orbitron: its own e bent into a paperclip",
+      "type": "feature",
+      "status": "review",
+      "note": "Orbitron wordmark in landing/install headers and board sidebar; collapsed sidebar shows the e alone at the same size; favicon is the e in a tile",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "landing/img/logo/clipped-wordmark.svg",
+        "ui/index.html"
+      ],
+      "links": [],
+      "area": "",
+      "createdAt": "2026-09-30T15:25:55Z",
+      "updatedAt": "2026-09-30T16:22:43Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-09-30T15:25:55Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-09-30T15:37:08Z",
+          "by": "claude",
+          "text": "Renamed from “Narrower paperclip e: the width of a normal e”"
+        },
+        {
+          "at": "2026-09-30T15:37:08Z",
+          "by": "claude",
+          "text": "Note: Grid: 7 fonts (Quicksand, Comfortaa, Varela Round, Fredoka, M PLUS Rounded, Montserrat Alternates, Didact Gothic) × 4 e styles (flat, round+loop, stadium, curl). Standouts: Comfortaa/Montserrat Alt stadium, Quicksand flat"
+        },
+        {
+          "at": "2026-09-30T15:42:21Z",
+          "by": "claude",
+          "text": "Note: Wider font range: Orbitron, Audiowide, Exo 2, Righteous, Josefin Sans, Lexend Zetta, Rajdhani, Barlow Condensed, Sacramento — flat vs matched e (squared e for tech fonts). Standouts: Orbitron/Exo 2/Rajdhani squared e, Josefin flat"
+        },
+        {
+          "at": "2026-09-30T15:54:10Z",
+          "by": "claude",
+          "text": "Note: Round 3 (15 fonts): Space Grotesk, Chakra Petch, Oxanium, Michroma, Tomorrow, Share Tech, Kanit, Poiret One, Gruppo, Urbanist, Raleway, Titillium, Baumans, Sulphur Point, Bai Jamjuree. Standouts: Tomorrow/Chakra squared e, Michroma, Sulphur Point, Gruppo"
+        },
+        {
+          "at": "2026-09-30T15:59:00Z",
+          "by": "claude",
+          "text": "Note: New method: each font's own e, crossbar freed from the bowl and bent into an inner loop in the font's own stroke/terminals (16 fonts). Loops are small; strongest in Quicksand, Comfortaa, Raleway, Michroma"
+        },
+        {
+          "at": "2026-09-30T16:10:32Z",
+          "by": "claude",
+          "text": "Note: Font-native e now curls UP into the eye. Cleanest in Quicksand, Comfortaa, Raleway; squared fonts (Orbitron) get cramped"
+        },
+        {
+          "at": "2026-09-30T16:16:54Z",
+          "by": "claude",
+          "text": "Note: User loves Michroma + Orbitron (font-native e, loop up). Big comparison vs live done. Next: pick one → final files (outline the cut, no mask) + header swap + release"
+        },
+        {
+          "at": "2026-09-30T16:22:43Z",
+          "by": "claude",
+          "text": "Renamed from “Paperclip e: fonts that share its language, and more e styles”"
+        },
+        {
+          "at": "2026-09-30T16:22:43Z",
+          "by": "claude",
+          "text": "Files: landing/img/logo/clipped-wordmark.svg, ui/index.html"
+        },
+        {
+          "at": "2026-09-30T16:22:43Z",
+          "by": "claude",
+          "text": "Note: Swapped into landing, install, board (collapsed mark = the word's e at the same scale) and favicon; clean outlines, no masks. Commit + release when approved"
+        },
+        {
+          "at": "2026-09-30T16:22:43Z",
+          "by": "claude",
+          "text": "Moved to review — Orbitron wordmark in landing/install headers and board sidebar; collapsed sidebar shows the e alone at the same size; favicon is the e in a tile"
         }
       ]
     }
@@ -5648,7 +5837,8 @@
       "updatedBy": "claude",
       "considered": "",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N2",
@@ -5665,7 +5855,8 @@
       "updatedBy": "claude",
       "considered": "",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N3",
@@ -5695,7 +5886,8 @@
       "updatedAt": "2026-09-27T17:29:49Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N4",
@@ -5712,7 +5904,8 @@
       "updatedAt": "2026-09-27T17:35:59Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N5",
@@ -5730,7 +5923,8 @@
       "updatedAt": "2026-09-27T17:35:59Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N6",
@@ -5745,7 +5939,8 @@
       "updatedAt": "2026-09-28T14:13:27Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N7",
@@ -5763,7 +5958,8 @@
       "updatedAt": "2026-09-28T15:32:47Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N8",
@@ -5780,7 +5976,8 @@
       "updatedAt": "2026-09-28T16:54:33Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N9",
@@ -5797,7 +5994,8 @@
       "updatedAt": "2026-09-28T18:47:10Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N10",
@@ -5814,7 +6012,8 @@
       "updatedAt": "2026-09-28T22:18:32Z",
       "updatedBy": "claude",
       "decidedBy": "",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N11",
@@ -5831,7 +6030,8 @@
       "updatedAt": "2026-09-29T10:38:22Z",
       "updatedBy": "claude",
       "decidedBy": "user",
-      "confirmedAt": ""
+      "confirmedAt": "",
+      "steps": []
     },
     {
       "id": "LE-N12",
@@ -5848,7 +6048,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N13",
@@ -5865,7 +6066,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N14",
@@ -5883,7 +6085,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N15",
@@ -5901,7 +6104,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N16",
@@ -5919,7 +6123,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:43:01Z",
-      "updatedBy": "user"
+      "updatedBy": "user",
+      "steps": []
     },
     {
       "id": "LE-N17",
@@ -5936,7 +6141,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N18",
@@ -5954,7 +6160,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N19",
@@ -5976,7 +6183,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N20",
@@ -5993,7 +6201,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N21",
@@ -6010,7 +6219,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N22",
@@ -6028,7 +6238,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N23",
@@ -6045,7 +6256,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N24",
@@ -6062,7 +6274,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N25",
@@ -6082,7 +6295,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N26",
@@ -6099,7 +6313,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:43:08Z",
-      "updatedBy": "user"
+      "updatedBy": "user",
+      "steps": []
     },
     {
       "id": "LE-N27",
@@ -6116,7 +6331,8 @@
       ],
       "createdAt": "2026-09-29T10:38:21Z",
       "updatedAt": "2026-09-29T10:38:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N28",
@@ -6135,7 +6351,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N29",
@@ -6158,7 +6375,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N30",
@@ -6176,7 +6394,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N31",
@@ -6194,7 +6413,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N32",
@@ -6211,7 +6431,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N33",
@@ -6228,7 +6449,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N34",
@@ -6246,7 +6468,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N35",
@@ -6263,7 +6486,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N36",
@@ -6281,7 +6505,8 @@
       ],
       "createdAt": "2026-09-29T10:38:22Z",
       "updatedAt": "2026-09-29T10:38:22Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N37",
@@ -6298,7 +6523,8 @@
       ],
       "createdAt": "2026-09-29T10:56:49Z",
       "updatedAt": "2026-09-29T11:03:23Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     },
     {
       "id": "LE-N38",
@@ -6313,7 +6539,8 @@
       "cards": [],
       "createdAt": "2026-09-29T11:22:32Z",
       "updatedAt": "2026-09-29T11:26:21Z",
-      "updatedBy": "claude"
+      "updatedBy": "claude",
+      "steps": []
     }
   ],
   "areas": [
