@@ -382,6 +382,28 @@ describe("hook behaviour", () => {
     expect(stop("p2").code).toBe(2); // the unrecorded edit is still caught next turn
   });
 
+  it("Stop asks once per session for a first card when a project with no board gets code", () => {
+    const sb = sandbox();
+    const env = { CLAUDE_PLUGIN_DATA: sb.home };
+    const stop = (turn: string) => runHook("stop.mjs", { hook_event_name: "Stop", session_id: "nb1", cwd: sb.root, prompt_id: turn }, env);
+    expect(stop("p1").code).toBe(0); // nothing edited yet
+
+    runHook("post-tool-use.mjs", {
+      session_id: "nb1", cwd: sb.root, tool_name: "Write", tool_input: { file_path: path.join(sb.root, "src/app.ts") },
+    }, env);
+    const r = stop("p2");
+    expect(r.code).toBe(2);
+    expect(r.err).toContain("no Clipped board yet");
+    expect(stop("p3").code).toBe(0); // once per session, not every turn
+
+    // a file outside the project doesn't count
+    const other = { ...env };
+    runHook("post-tool-use.mjs", {
+      session_id: "nb2", cwd: sb.root, tool_name: "Write", tool_input: { file_path: path.join(sb.home, "x.ts") },
+    }, other);
+    expect(runHook("stop.mjs", { session_id: "nb2", cwd: sb.root, prompt_id: "p1" }, other).code).toBe(0);
+  });
+
   it("survives junk input instead of breaking the session", () => {
     for (const script of ["session-start.mjs", "post-tool-use.mjs", "stop.mjs"]) {
       const out = execFileSync(process.execPath, [path.join(repo, "hooks", script)], { input: "not json", encoding: "utf8" });

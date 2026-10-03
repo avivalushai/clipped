@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Stop: code changed this turn and no card moved → ask Claude to update the board;
+// Stop: code changed this turn and no card moved → ask Claude to update the board
+// (or, once per session, to start one when the project has none yet);
 // a UI edit brought in a new color, typeface or token and no design decision was
 // recorded → ask for one. Both go in one nudge, at most once per turn. Each nudge costs a whole extra pass over the conversation,
 // so the rest — decisions, loose ends, steps for the user — is left to the skill's
@@ -8,6 +9,8 @@
 // Blocking uses exit code 2 with the reason on stderr: the documented way for a
 // Stop hook to keep Claude going, whatever the JSON output shape of the day.
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { findBoardFile, readState, safely, writeState } from "./lib.mjs";
 
 /** The last time anything on the board moved: a card's log, or a note. */
@@ -27,6 +30,19 @@ function lastDecision(boardFile) {
   return times.length ? Math.max(...times) : 0;
 }
 
+/** Where `board add` would make a board — the same rules as looksLikeAProject in the CLI. */
+function isProjectDir(dir) {
+  const d = path.resolve(dir);
+  const claudeHome = path.resolve(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude"));
+  return (
+    d !== os.homedir() &&
+    d !== path.parse(d).root &&
+    !path.basename(d).startsWith(".") &&
+    !d.startsWith(claudeHome + path.sep) &&
+    !d.split(path.sep).includes("Library")
+  );
+}
+
 function block(reason) {
   process.stderr.write(reason);
   process.exit(2);
@@ -37,11 +53,21 @@ safely(async (input) => {
 
   const cwd = input.cwd || process.cwd();
   const boardFile = findBoardFile(cwd);
-  if (!boardFile) return;
-
   const state = readState(input.session_id);
   const turn = String(input.prompt_id ?? input.turn_number ?? "");
   if (turn && state.nudgedFor === turn) return; // one nudge per turn
+
+  // No board yet: the first card makes one, but a long build can go by without
+  // Claude ever adding it. Ask once per session, for code edited inside the project.
+  if (!boardFile) {
+    if (!state.lastEditAt || state.noBoardNudged || !isProjectDir(cwd)) return;
+    const file = path.resolve(cwd, state.lastEditFile ?? "");
+    if (path.relative(cwd, file).startsWith("..")) return;
+    writeState(input.session_id, { noBoardNudged: true, nudgedFor: turn || null });
+    block(
+      "This project has no Clipped board yet, and code changed. Record the work so the board appears: `board add \"<what you built>\" --status review` for finished work (or `--status active` if it's still going), one card per feature. If the user said they don't want a board here, say nothing and stop. End with the one-line Board: footer.",
+    );
+  }
 
   // Not the file's mtime: `board touch` rewrites board.json on every new file, which
   // would look like an update. Only a log entry means a card actually moved.
