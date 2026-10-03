@@ -10,17 +10,24 @@ export const KIND_ORDER: NoteKind[] = ["brainstorm", "plan", "decision", "refere
 /** A plan made in chat: it holds its own steps. A plan without steps is a document. */
 export const isStepPlan = (n: Note): boolean => n.kind === "plan" && n.steps.length > 0;
 
-/** How far a step plan has got. A step counts as done once it's ticked, or once the card doing it is done. */
-export function planProgress(b: Board, n: Note): { done: number; total: number; next: number } {
-  const doneCards = new Set(b.features.filter((f) => f.status === "done").map((f) => f.key));
-  const isDone = n.steps.map((s) => s.done || (!!s.card && doneCards.has(s.card)));
-  return { done: isDone.filter(Boolean).length, total: n.steps.length, next: isDone.indexOf(false) };
+/** How far a step plan has got. A step is done once it's ticked, or once the card
+ *  doing it is done. A step whose card waits for your review is behind us too: the
+ *  plan has moved on to the next step, it just isn't done until you've checked it. */
+export function planProgress(b: Board, n: Note): { done: number; total: number; next: number; toReview: number } {
+  const status = new Map(b.features.map((f) => [f.key, f.status]));
+  const isDone = n.steps.map((s) => s.done || (!!s.card && status.get(s.card) === "done"));
+  const inReview = n.steps.map((s, i) => !isDone[i] && !!s.card && status.get(s.card) === "review");
+  const next = n.steps.findIndex((_, i) => !isDone[i] && !inReview[i]);
+  return { done: isDone.filter(Boolean).length, total: n.steps.length, next, toReview: inReview.filter(Boolean).length };
 }
 
-/** "step 3 of 5" — or "all 5 steps done". */
+/** "step 3 of 5", "step 7 of 7 · 6 to review" — or "all 5 steps done". */
 export function planLabel(b: Board, n: Note): string {
-  const { done, total, next } = planProgress(b, n);
-  return done === total ? `all ${total} steps done` : `step ${next + 1} of ${total}`;
+  const { done, total, next, toReview } = planProgress(b, n);
+  if (done === total) return `all ${total} steps done`;
+  const review = toReview ? `${toReview} to review` : "";
+  if (next === -1) return `all ${total} steps built, ${review}`;
+  return [`step ${next + 1} of ${total}`, review].filter(Boolean).join(" · ");
 }
 
 /** A call Claude made that you haven't agreed with yet. */

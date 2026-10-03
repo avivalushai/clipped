@@ -1,2 +1,2 @@
 /** The plugin's version — kept equal to package.json and .claude-plugin/plugin.json (a test checks). */
-export const VERSION = "0.9.20";
+export const VERSION = "0.9.21";

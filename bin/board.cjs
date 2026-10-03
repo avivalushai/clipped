@@ -570,13 +570,18 @@ var init_project = __esm({
 
 // cli/src/notes.ts
 function planProgress(b, n) {
-  const doneCards = new Set(b.features.filter((f) => f.status === "done").map((f) => f.key));
-  const isDone = n.steps.map((s2) => s2.done || !!s2.card && doneCards.has(s2.card));
-  return { done: isDone.filter(Boolean).length, total: n.steps.length, next: isDone.indexOf(false) };
+  const status = new Map(b.features.map((f) => [f.key, f.status]));
+  const isDone = n.steps.map((s2) => s2.done || !!s2.card && status.get(s2.card) === "done");
+  const inReview = n.steps.map((s2, i) => !isDone[i] && !!s2.card && status.get(s2.card) === "review");
+  const next = n.steps.findIndex((_, i) => !isDone[i] && !inReview[i]);
+  return { done: isDone.filter(Boolean).length, total: n.steps.length, next, toReview: inReview.filter(Boolean).length };
 }
 function planLabel(b, n) {
-  const { done: done2, total, next } = planProgress(b, n);
-  return done2 === total ? `all ${total} steps done` : `step ${next + 1} of ${total}`;
+  const { done: done2, total, next, toReview } = planProgress(b, n);
+  if (done2 === total) return `all ${total} steps done`;
+  const review2 = toReview ? `${toReview} to review` : "";
+  if (next === -1) return `all ${total} steps built, ${review2}`;
+  return [`step ${next + 1} of ${total}`, review2].filter(Boolean).join(" \xB7 ");
 }
 function decidedLabel(n) {
   if (n.kind !== "decision") return "";
@@ -1350,7 +1355,7 @@ var VERSION;
 var init_version = __esm({
   "cli/src/version.ts"() {
     "use strict";
-    VERSION = "0.9.20";
+    VERSION = "0.9.21";
   }
 });
 

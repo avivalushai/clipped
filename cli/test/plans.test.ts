@@ -42,6 +42,22 @@ describe("step plans", () => {
     expect(sb.board("note", "list").out).toContain("(all 3 steps done)");
   });
 
+  it("moves past a step whose card waits for review, and says how many wait", () => {
+    const sb = withBoard();
+    sb.json("note", "add", "plan", "Builder", "--step", "Canvas", "--step", "Editor", "--step", "Export");
+    sb.json("add", "Canvas", "--status", "review");
+    sb.json("add", "Editor", "--status", "review");
+    sb.json("add", "Export", "--status", "active");
+    for (const i of [1, 2, 3]) sb.json("note", "step", "APP-N1", String(i), "--card", `APP-${i}`);
+    expect(sb.board("note", "list").out).toContain("(step 3 of 3 · 2 to review)");
+    expect(sb.board("note", "show", "APP-N1").out).toContain("[ ] 1. Canvas → APP-1"); // not done until checked
+    sb.json("update", "APP-3", "--status", "review");
+    expect(sb.board("note", "list").out).toContain("(all 3 steps built, 3 to review)");
+    expect(sb.board("context").out).not.toContain("APP-N1 Builder —"); // nothing left for Claude
+    for (const k of ["APP-1", "APP-2", "APP-3"]) sb.json("done", k, "--by", "user");
+    expect(sb.board("note", "list").out).toContain("(all 3 steps done)");
+  });
+
   it("puts a plan still under way in the session brief, with the step we're on", () => {
     const sb = withBoard();
     sb.json("note", "add", "plan", "Onboarding", "--step", "Header", "--step", "List");

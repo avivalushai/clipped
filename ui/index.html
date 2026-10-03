@@ -1400,14 +1400,18 @@ const cardLink=(pid,key)=>`<button class="clink" data-card="${pid+':'+key}">${es
 
 /* Two kinds of plan: a step plan was broken down in chat and holds its own steps;
    a document is a file in the repo. A step counts as done once it's ticked, or once
-   the card doing it is done. */
+   the card doing it is done. A step whose card waits for review is behind us too:
+   the plan has moved on, it just isn't done until you've checked it. */
 const isStepPlan=n=>n.kind==='plan'&&n.steps.length>0;
 function planProg(n){
-  const doneKeys=new Set(S.features.filter(f=>f.project===n.project&&f.status==='done').map(f=>f.key));
-  const done=n.steps.map(s=>s.done||(!!s.card&&doneKeys.has(s.card)));
-  const d=done.filter(Boolean).length;
-  return {done,count:d,total:n.steps.length,next:done.indexOf(false),
-    label:d===n.steps.length?`All ${d} steps done`:`Step ${done.indexOf(false)+1} of ${n.steps.length}`};
+  const st=new Map(S.features.filter(f=>f.project===n.project).map(f=>[f.key,f.status]));
+  const done=n.steps.map(s=>s.done||(!!s.card&&st.get(s.card)==='done'));
+  const rev=n.steps.map((s,i)=>!done[i]&&!!s.card&&st.get(s.card)==='review');
+  const d=done.filter(Boolean).length, r=rev.filter(Boolean).length, total=n.steps.length;
+  const next=n.steps.findIndex((_,i)=>!done[i]&&!rev[i]);
+  const tr=r?`${r} to review`:'';
+  return {done,count:d,total,next,toReview:r,
+    label:d===total?`All ${d} steps done`:next===-1?`All ${total} steps built, ${tr}`:[`Step ${next+1} of ${total}`,tr].filter(Boolean).join(' · ')};
 }
 function noteCell(c,n,isHome){
   const f=NOTEFIELD[n.kind];
