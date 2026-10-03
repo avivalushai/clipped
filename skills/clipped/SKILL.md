@@ -101,6 +101,7 @@ or an answered question. Neither → nothing.
 | A long discussion whose path is worth keeping, not only where it landed | a brainstorm note, linked to its decisions and ideas |
 | How the project is set up — where it deploys, which account or dashboard holds what, the command that matters | a reference note |
 | A plan document in the repo | cards, plus one plan note |
+| A plan file they hand you to build from — attached, pasted or a path, in the repo or not — laid out in phases or steps | a **step plan**, recorded before you start Phase 1, without asking: see **A plan you're handed** |
 | A plan you wrote in chat for one piece of work, and they approved | steps on the card, not a note |
 | A bigger thing broken into stages or numbered steps in chat — "Step 1… Step 2… Step 3…" | a **step plan**: one plan note holding the steps in order, see **Step plans** |
 | Thinking aloud, and anything the user turned down | nothing |
@@ -446,6 +447,25 @@ Rules that keep it useful:
 A plan you write yourself in the chat for **one piece of work** — in plan mode,
 or "here's how I'll do it" — is not a document. When the user approves it, it
 becomes the card: each step a `--step`, its end state the `--done-when`.
+
+### A plan you're handed
+
+When the user gives you a plan to build from — `@~/Downloads/PLAN.md Build this`,
+a pasted spec, a path — and it's laid out in phases, stages or numbered steps,
+that breakdown is already agreed: they wrote it. Record it as a step plan
+**before you start the first phase**, without asking, wherever the file lives:
+
+- Title it what the whole thing is; the body is the goal in a line, and where
+  the plan came from. One `--step` per phase, in the document's order and words.
+  `board note add plan "Blockout: a layout-first screen builder" --body "Block out screens with boxes, export a prompt. From ~/Downloads/PLAN.md." --step "Phase 1: iframe canvas" --step "Phase 2: data model" ...`
+- `--file` only takes a file inside the project. A plan from outside it goes in
+  the body by path; don't copy it into the repo unless asked.
+- Then work through it the step-plan way below: a card per phase as you start
+  it, pointed at by its step. When you stop between phases, the phase you
+  finished goes to `review` and the plan already knows which one is next.
+
+A plan file with no phases — a feature list, a spec — is the **Plans and specs**
+case above: offer the cards.
 
 ### Step plans
 

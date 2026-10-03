@@ -177,9 +177,10 @@ always for parked cards, for an active card's next step once a human has touched
 it, never for the review pile; and a card that is Claude's alone and untouched
 for 14 days drops out of the brief into a one-line count. The skill's *The brief
 is mine, not gospel* section says what Claude does when one turns out to be wrong.
+| UserPromptSubmit | The prompt names a file (`@path`, or a bare `~/…` or `/…` text file) laid out in two or more phases or steps → remind Claude to record it as a step plan before Phase 1, and remember it for Stop. Quiet when a plan note already names the file. |
 | PostToolUse (Edit/Write) | `board touch <file>` — record files on the active card. |
 | PostToolUse (AskUserQuestion) | A question Claude asked with the multiple-choice widget becomes a question card: Decided with the user's pick and the options not taken, or Open if it was skipped. Asking the same question again updates the same card. |
-| Stop | If code changed this turn and the board wasn't updated → ask Claude to update it before finishing. It doesn't read the reply: decisions and loose ends that leave no diff are the skill's "Before you end a turn" check, because each nudge costs a full extra pass over the conversation. Blocks with exit code 2 and the reason on stderr; at most once per turn, never loops. |
+| Stop | If code changed this turn and the board wasn't updated → ask Claude to update it before finishing. It doesn't read the reply: decisions and loose ends that leave no diff are the skill's "Before you end a turn" check, because each nudge costs a full extra pass over the conversation. Also asks once per session when a project with no board gets code edits (the first card makes the board), and once when a plan file handed over in the prompt still has no step plan. Blocks with exit code 2 and the reason on stderr; at most once per turn, never loops. |
 
 > Verify exact hook names, matcher syntax and the Stop-hook "block" mechanism against current Claude Code docs before implementing.
 

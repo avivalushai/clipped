@@ -138,9 +138,9 @@ describe("skill and commands", () => {
 describe("hooks.json", () => {
   const cfg = () => readJson("hooks/hooks.json").hooks;
 
-  it("wires the three events from SPEC §5 to executable scripts", () => {
+  it("wires the events from SPEC §5 to executable scripts", () => {
     const h = cfg();
-    expect(Object.keys(h).sort()).toEqual(["PostToolUse", "SessionStart", "Stop"]);
+    expect(Object.keys(h).sort()).toEqual(["PostToolUse", "SessionStart", "Stop", "UserPromptSubmit"]);
     for (const entries of Object.values(h) as any[])
       for (const e of entries)
         for (const hook of e.hooks) {
@@ -404,8 +404,43 @@ describe("hook behaviour", () => {
     expect(runHook("stop.mjs", { session_id: "nb2", cwd: sb.root, prompt_id: "p1" }, other).code).toBe(0);
   });
 
+  it("a plan file handed over in phases gets recorded as a step plan, with one reminder", () => {
+    const sb = sandbox();
+    delete sb.env.CLIPPED_NOW;
+    const env = { ...sb.env, CLAUDE_PLUGIN_DATA: sb.home };
+    const plan = path.join(sb.home, "Downloads", "PLAN.md");
+    fs.mkdirSync(path.dirname(plan), { recursive: true });
+    fs.writeFileSync(plan, "# Blockout\n\n## 13. Phases\n\n**Phase 1 — Canvas**\n- x\n\n**Phase 2 — Model**\n- y\n\n**Phase 3 — Editor**\n");
+    fs.writeFileSync(path.join(sb.home, "notes.md"), "# Notes\nNothing in phases here.\n");
+    const prompt = (text: string, turn: string) =>
+      runHook("plan-handed.mjs", { hook_event_name: "UserPromptSubmit", session_id: "hp", cwd: sb.root, prompt_id: turn, prompt: text }, env);
+    const stop = (turn: string) => runHook("stop.mjs", { hook_event_name: "Stop", session_id: "hp", cwd: sb.root, prompt_id: turn }, env);
+
+    expect(prompt(`@"${path.join(sb.home, "notes.md")}" tidy this`, "p0").raw).toBe(""); // not a plan
+    const r = prompt(`@"${plan}" Build this`, "p1");
+    expect(r.json.hookSpecificOutput.additionalContext).toContain("plan in 3 phases");
+
+    // Claude built Phase 1 without recording the plan: one reminder, and no board yet
+    const s1 = stop("p1");
+    expect(s1.code).toBe(2);
+    expect(s1.err).toContain("handed you a plan in 3 phases");
+    expect(stop("p2").code).toBe(0); // once
+
+    // recorded: the reminder doesn't come back, and handing it over again is quiet
+    sb.board("note", "add", "plan", "Blockout", "--body", `From ${plan}.`, "--step", "Phase 1", "--step", "Phase 2", "--step", "Phase 3");
+    expect(prompt(`@"${plan}" continue with phase 2`, "p3").raw).toBe("");
+    expect(stop("p3").code).toBe(0);
+  });
+
+  it("finds plan paths however they are named in a prompt", async () => {
+    const { pathsIn } = await import(path.join(repo, "hooks", "plans.mjs"));
+    expect(pathsIn('@"/a b/PLAN.md" Build this')).toEqual(["/a b/PLAN.md"]);
+    expect(pathsIn("build from @docs/plan.md, please")).toEqual(["docs/plan.md"]);
+    expect(pathsIn("here: ~/Downloads/spec.md.")).toEqual(["~/Downloads/spec.md"]);
+  });
+
   it("survives junk input instead of breaking the session", () => {
-    for (const script of ["session-start.mjs", "post-tool-use.mjs", "stop.mjs"]) {
+    for (const script of ["session-start.mjs", "post-tool-use.mjs", "stop.mjs", "plan-handed.mjs"]) {
       const out = execFileSync(process.execPath, [path.join(repo, "hooks", script)], { input: "not json", encoding: "utf8" });
       expect(out).toBe("");
     }
