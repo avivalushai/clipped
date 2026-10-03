@@ -7,7 +7,7 @@
   "settings": {
     "granularity": "normal"
   },
-  "nextNum": 129,
+  "nextNum": 132,
   "features": [
     {
       "key": "LE-1",
@@ -5743,7 +5743,7 @@
       "key": "LE-128",
       "title": "The Clipped logo in Orbitron: its own e bent into a paperclip",
       "type": "feature",
-      "status": "review",
+      "status": "done",
       "note": "Orbitron wordmark in landing/install headers and board sidebar; collapsed sidebar shows the e alone at the same size; favicon is the e in a tile",
       "doneWhen": [],
       "steps": [],
@@ -5751,10 +5751,13 @@
         "landing/img/logo/clipped-wordmark.svg",
         "ui/index.html"
       ],
-      "links": [],
+      "links": [
+        "f06170f",
+        "baa7c0d"
+      ],
       "area": "",
       "createdAt": "2026-09-30T15:25:55Z",
-      "updatedAt": "2026-09-30T16:22:43Z",
+      "updatedAt": "2026-09-30T16:24:48Z",
       "updatedBy": "claude",
       "log": [
         {
@@ -5816,6 +5819,128 @@
           "at": "2026-09-30T16:22:43Z",
           "by": "claude",
           "text": "Moved to review — Orbitron wordmark in landing/install headers and board sidebar; collapsed sidebar shows the e alone at the same size; favicon is the e in a tile"
+        },
+        {
+          "at": "2026-09-30T16:24:48Z",
+          "by": "claude",
+          "text": "Done"
+        },
+        {
+          "at": "2026-09-30T16:24:48Z",
+          "by": "claude",
+          "text": "Proof: f06170f, baa7c0d"
+        }
+      ]
+    },
+    {
+      "key": "LE-129",
+      "title": "A project without a board gets asked for its first card when code changes",
+      "type": "bug",
+      "status": "review",
+      "note": "In ComponentLab, ask Claude to add what it built; the board should appear",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "hooks/stop.mjs",
+        "cli/test/plugin.test.ts"
+      ],
+      "links": [
+        "ad4148f"
+      ],
+      "area": "",
+      "createdAt": "2026-10-03T12:42:42Z",
+      "updatedAt": "2026-10-03T12:43:33Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-10-03T12:42:42Z",
+          "by": "claude",
+          "text": "Created — review"
+        },
+        {
+          "at": "2026-10-03T12:43:33Z",
+          "by": "claude",
+          "text": "Proof: ad4148f"
+        },
+        {
+          "at": "2026-10-03T12:43:33Z",
+          "by": "claude",
+          "text": "Note: In ComponentLab, ask Claude to add what it built; the board should appear"
+        }
+      ]
+    },
+    {
+      "key": "LE-130",
+      "title": "A step plan moves past steps waiting for review and says how many wait",
+      "type": "bug",
+      "status": "review",
+      "note": "ComponentLab's plan reads 'Step 7 of 7 · 6 to review'",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "cli/src/notes.ts",
+        "ui/index.html"
+      ],
+      "links": [
+        "980b305"
+      ],
+      "area": "",
+      "createdAt": "2026-10-03T13:11:07Z",
+      "updatedAt": "2026-10-03T13:14:02Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-10-03T13:11:07Z",
+          "by": "claude",
+          "text": "Created"
+        },
+        {
+          "at": "2026-10-03T13:14:02Z",
+          "by": "claude",
+          "text": "Moved to review — ComponentLab's plan reads 'Step 7 of 7 · 6 to review'"
+        },
+        {
+          "at": "2026-10-03T13:14:02Z",
+          "by": "claude",
+          "text": "Renamed from “A step plan counts a step whose card is waiting for review as past it, not 'step 1 of 7'”"
+        },
+        {
+          "at": "2026-10-03T13:14:02Z",
+          "by": "claude",
+          "text": "Files: cli/src/notes.ts, ui/index.html"
+        },
+        {
+          "at": "2026-10-03T13:14:02Z",
+          "by": "claude",
+          "text": "Proof: 980b305"
+        }
+      ]
+    },
+    {
+      "key": "LE-131",
+      "title": "A plan file handed over in phases becomes a step plan, wherever it lives",
+      "type": "feature",
+      "status": "review",
+      "note": "In a new session: @ a plan file with phases and say Build this; the Plans tab gets a step plan before Phase 1",
+      "doneWhen": [],
+      "steps": [],
+      "files": [
+        "hooks/plan-handed.mjs",
+        "hooks/plans.mjs",
+        "skills/clipped/SKILL.md"
+      ],
+      "links": [
+        "5c08ac9"
+      ],
+      "area": "",
+      "createdAt": "2026-10-03T13:22:02Z",
+      "updatedAt": "2026-10-03T13:22:02Z",
+      "updatedBy": "claude",
+      "log": [
+        {
+          "at": "2026-10-03T13:22:02Z",
+          "by": "claude",
+          "text": "Created — review"
         }
       ]
     }
